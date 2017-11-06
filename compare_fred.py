@@ -157,8 +157,8 @@ elif values.mode == 0:
             lf=1
         else:
             lf=len(fred)
-        print tru
-        print fred
+        #print tru
+        #print fred
 
         pd=np.zeros((len(tru)),dtype=float)
         bpd= np.zeros((len(tru)),dtype=bool) ### probability of detection

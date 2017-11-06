@@ -15,7 +15,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from pylab import *
 from matplotlib.ticker import  MultipleLocator
 from matplotlib.ticker import  FormatStrFormatter
-
+print('hoi')
 
 '''
 dev:python3

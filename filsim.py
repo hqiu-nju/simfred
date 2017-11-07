@@ -153,8 +153,8 @@ def _main():
             npos=a[pulse] > 137
             #snr_sig+=sum((frbconvolvemap[j][pulse])**2*npos)
             #snr_bkg+=sum((dataset.astype(float)[j][pulse]-128)**2*npos)
-            snr_sig+=(sum(frbconvolvemap[j][pulse]*npos))
-            snr_bkg+=np.sqrt(sum(dataset.astype(float)[j][pulse]*npos)/128)
+            snr_sig+=sum(abs((datasetsum[j][pulse]*npos)**2-np.mean(datasetsum[j])**2))
+            snr_bkg+=np.sqrt(len(npos)*np.var(datasetsum[j]**2))
 
             #print(sum(frbconvolvemap[j][pulse]*npos),(sum(dataset.astype(float)[j][pulse]*npos)/128),len(npos))
         #print(snr_sig,snr_bkg)

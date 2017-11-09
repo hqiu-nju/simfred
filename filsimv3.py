@@ -53,7 +53,7 @@ def injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,ampl
         else:
             assert int(roof_dispersion_delay_samp)==int(bott_dispersion_delay_samp)
             frb[c,int(roof_dispersion_delay_samp)]=abs(roof_dispersion_delay_samp-bott_dispersion_delay_samp)
-            nodm[c,toffset]+= abs(roof_dispersion_delay_samp-bott_dispersion_delay_samp)
+            nodm[c,int(toffset)]+= abs(roof_dispersion_delay_samp-bott_dispersion_delay_samp)
         if w2:
             convolved=np.convolve(x,frb[c])
             ndcon=np.convolve(x,nodm[c])
@@ -171,7 +171,7 @@ dataset.T.tofile(mkout.fin)  #### print first timeset of noise
 #snr=50.0
 
 #if values.menu == 0:
-for i in xrange(1):
+for i in xrange(6):
     dataset = (np.random.randn(nchan, nsamp+99) + 0)  #reset noise
     snr=0.
     snr_sig=0.

@@ -96,7 +96,7 @@ f.write("##new file of truth of truth!!!!!"+outputname+"\n")
 f.write("# S/N, sampno, secs from file start, boxcar, idt, dm, beamno\n")
 fprint=values.printer
 readin=sgp.SigprocFile(inputname)
-readin.header['nchans']=1
+readin.header['nchans']=336
 mkout=sgp.SigprocFile(outputname,'w',readin.header)
 mkout.seek_data()
 readin.seek_data()
@@ -105,7 +105,7 @@ readin.seek_data()
 mkout.seek_data()
 readin.seek_data()
 #### these are system/constant parameters
-nchan = 1# channels
+nchan = readin.header['nchans']# channels
 fch1 = 1.464 # GHz
 foff =  -1/1e3 # GHz
 froof = fch1 # GHz need change to upper limit
@@ -196,7 +196,7 @@ for i in xrange(1):
     datasetsum[sat_mask]=255
     dataset1= datasetsum.astype(np.uint8)
     dataset1.T.tofile(mkout.fin)
-    d=frbconvolvemap
+    d=dedisp
     #print('nosquare')
     #### snr calculation
     mask=(d>0.5)

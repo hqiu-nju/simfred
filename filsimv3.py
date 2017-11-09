@@ -96,6 +96,7 @@ f.write("##new file of truth of truth!!!!!"+outputname+"\n")
 f.write("# S/N, sampno, secs from file start, boxcar, idt, dm, beamno\n")
 fprint=values.printer
 readin=sgp.SigprocFile(inputname)
+readin.header['nchans']=1
 mkout=sgp.SigprocFile(outputname,'w',readin.header)
 mkout.seek_data()
 readin.seek_data()
@@ -104,7 +105,7 @@ readin.seek_data()
 mkout.seek_data()
 readin.seek_data()
 #### these are system/constant parameters
-nchan = 336 # channels
+nchan = 1# channels
 fch1 = 1.464 # GHz
 foff =  -1/1e3 # GHz
 froof = fch1 # GHz need change to upper limit
@@ -203,6 +204,11 @@ for i in xrange(1):
 
     a=datasetsum
     pulse=normmap>0
+
+    npos=a*pulse > 137
+    #print(np.mean(abs(v1)),np.std(v1))
+
+    snr = d[d > 0.5].sum()/np.sqrt((d > 0.5).sum())
     a=np.where(pulse[-1])
     tend=tblock*(i+1)+a[0][len(a[0])/2]
     print snr,tend

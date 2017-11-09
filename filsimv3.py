@@ -17,7 +17,9 @@ import time
 __author__ = "Harry Qiu"
 
 
-def injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,w2):
+def injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,w2,nsamp):
+    nodm=np.zeros((nchan, nsamp))
+    nodmcon=np.zeros((nchan,nsamp+99))
     for c in xrange(nchan):
         ceil = froof + (c)*foff
         floor = froof + (c+1)*foff ###frequency of current channel
@@ -40,21 +42,30 @@ def injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,ampl
             start_block=int(roof_dispersion_delay_samp)
             start_cut = roof_dispersion_delay_samp-int(roof_dispersion_delay_samp)
             frb[c,start_block] += abs(1-start_cut)*amplitude
+            nodm[c,int(toffset)] += abs(1-start_cut)*amplitude
             end_block=int(bott_dispersion_delay_samp)
             ###hence the full signal part is start_block+1 to end_block-1
             frb[c,start_block+1:end_block] += 1*amplitude
+            nodm[c,int(toffset+1):int(toffset+length_scale)]+= 1*amplitude
             end_cut = abs(bott_dispersion_delay_samp-int(bott_dispersion_delay_samp))
             frb[c,end_block] += (end_cut)*amplitude
+            nodm[c,int(toffset+length_scale)] += (end_cut)*amplitude
         else:
             assert int(roof_dispersion_delay_samp)==int(bott_dispersion_delay_samp)
             frb[c,int(roof_dispersion_delay_samp)]=abs(roof_dispersion_delay_samp-bott_dispersion_delay_samp)
+            nodm[c,toffset]+= abs(roof_dispersion_delay_samp-bott_dispersion_delay_samp)
         if w2:
             convolved=np.convolve(x,frb[c])
+            ndcon=np.convolve(x,nodm[c])
         else:
             convolved=np.append(frb[c],np.zeros(99))
+            ndcon=np.append(nodm[c],np.zeros(99))
         normfac=np.sum(convolved)
         normmap[c]+=convolved/normfac
         frbconvolvemap[c]+=normmap[c]*flu
+        nodmcon[c]+=ndcon/normfac * flu
+    return frbconvolvemap,normmap,nodmcon
+
 
 date=time.strftime('%Y_%m_%d',time.localtime())
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -159,7 +170,7 @@ dataset.T.tofile(mkout.fin)  #### print first timeset of noise
 #snr=50.0
 
 #if values.menu == 0:
-for i in xrange(10):
+for i in xrange(1):
     dataset = (np.random.randn(nchan, nsamp+99) + 0)  #reset noise
     snr=0.
     snr_sig=0.
@@ -175,7 +186,7 @@ for i in xrange(10):
     else:
         x =1
     idt = abs(4.15*dm*(froof**-2 - (froof+336*foff)**-2)/tsamp)
-    injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2)
+    frbconvolvemap, normmap,dedisp = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,nsamp)
     #print i,t,toffset*tsamp,widthms,dm,flu
      # positions mask of burst on normmap
     datasetsum=(dataset.astype(float)+frbconvolvemap)*18+128
@@ -184,24 +195,14 @@ for i in xrange(10):
     datasetsum[sat_mask]=255
     dataset1= datasetsum.astype(np.uint8)
     dataset1.T.tofile(mkout.fin)
-    v1=dataset.astype(float)+frbconvolvemap
+    d=frbconvolvemap
     #print('nosquare')
     #### snr calculation
-    pulse=normmap >0
-    npos=v1*pulse > 0.5
-    #print(npos[0])
-        #npos=pulse
-        #snr_sig+=sum((frbconvolvemap[j][pulse])**2*npos)
-        #snr_bkg+=sum((dataset.astype(float)[j][pulse]-128)**2*npos)
-    snr_sig=np.sum(frbconvolvemap[npos])
-    snr_bkg=np.sqrt(np.sum(npos))
-    #print(flu,len(npos),snr_sig/nchan)
-    #print(snr_bkg,np.sqrt(snr_sig))
-    #print(sum(v1-np.mean(((datasetsum[j]-128)/18)**2)),np.sqrt(len(npos)*np.var(((datasetsum[j]-128)/18)**2)))
-    #print(snr_sig,snr_bkg)
+    mask=(d>0.5)
 
-    snr = (snr_sig)/(snr_bkg)
-    #snr= 10*np.log10(snr_sig/snr_bkg)
+
+    a=datasetsum
+    pulse=normmap>0
     a=np.where(pulse[-1])
     tend=tblock*(i+1)+a[0][len(a[0])/2]
     print snr,tend
@@ -277,6 +278,8 @@ if values.menu ==1 :
 '''
 
 f.close()
+mkout.fin.flush()
+mkout.fin.close()
 if values.show:
     pylab.figure()
     pylab.imshow(frbconvolvemap)

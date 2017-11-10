@@ -16,6 +16,13 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 __author__ = "Harry Qiu"
 
+def run_filsim(ident,dm,width,flu):
+    name=ident+str(int(dm))+'_'+str(width)+'_'+str(flu)+'_fixed'
+    print ('width, fluence, dm')
+    print (width,flu,dm)
+    print ('process file:'+name+' \n')
+    os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name)
+
 def _main():
     date=time.strftime('%Y_%m_%d',time.localtime())
 
@@ -23,11 +30,15 @@ def _main():
     parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Be verbose')
     parser.add_argument('-d', '--dmax',type=float, default=2000.)
     parser.add_argument('-s', '--stepdm',type=float, default=10)
-    parser.add_argument('-w', '--width',type=float, default=0.1)
-    parser.add_argument('--scranwidth',type=int, default=0, help='0 for standard, 1 for list, 2 for random scramble')
-    parser.add_argument('-f', '--fmax',type=float, default=10.)
-    parser.add_argument('--fchange',action='store_true')
     parser.add_argument('--dmin',type=float, default=100)
+    parser.add_argument('-w', '--width',type=float, default=0.1)
+    parser.add_argument('--wmax',type=float, default=10.0)
+    parser.add_argument('--stepw',type=float, default=0.5)
+    parser.add_argument('--fchange',action='store_true')
+    parser.add_argument('--wchange',action='store_true')
+    parser.add_argument('-l','--lmode',action='store_true')
+    parser.add_argument('--list',type=str,default='list')
+    parser.add_argument('-f', '--fmax',type=float, default=10.)
     parser.add_argument('--fmin',type=float, default=0.5)
     parser.add_argument('--stepflu',type=float, default=0.5)
     parser.add_argument('-n','--name',type=str, default='testset_')
@@ -41,33 +52,50 @@ def _main():
     dmax=values.dmax
     dmin=values.dmin
     dstep=values.stepdm
-    wswitch=values.scranwidth
+    wswitch=values.wchange
+    wstep=values.stepw
+    wmin=values.width
+    wmax=values.wmax
     fmax=values.fmax
     fmin=values.fmin
     fswitch=values.fchange
-    width=values.width
     ident=values.name
     fstep=values.stepflu
     flu=fmax
-    if wswitch ==0:
-        if fswitch:
-            for j in range(int((fmax-fmin)/fstep)+1):
-                flu=fmin+j*fstep
-                for i in range(int((dmax-dmin)/dstep)+1):
+    width=wmin
+    if values.lmode:
+        print('run list')
+        exc=np.loadtxt(values.list,delimiter=',')
+        for i in range(len(exc)):
+            run_filsim(ident,exc[i][1],exc[i][0],exc[i][2])
+
+
+    else:
+        if wswitch != True:
+            print("fix width")
+            if fswitch:
+                for j in range(int((fmax-fmin)/fstep)+1):
+                    flu=fmin+j*fstep
+                    for i in range(int((dmax-dmin)/dstep)+1):
+                        dm=i*dstep+dmin
+                        run_filsim(ident,dm,width,flu)
+            else:
+                for i in xrange(int((dmax-dmin)/dstep)+1):
                     dm=i*dstep+dmin
-                    name=ident+str(int(dm))+'_'+str(width)+'_'+str(flu)+'_fixed'
-                    print ('width, fluence, dm')
-                    print (width,flu,dm)
-                    print ('process file:'+name+' \n')
-                    os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name)
+                    run_filsim(ident,dm,width,flu)
         else:
-            for i in xrange(int((dmax-dmin)/dstep)+1):
-                dm=i*dstep+dmin
-                name=ident+str(int(dm))+'_'+str((width))+'_fixed'
-                print ('width, fluence, dm')
-                print (width,flu,dm)
-                print ('process file:'+name+' \n')
-                os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(fmax)+' -o '+name)
+            for k in range(int((wmax-wmin)/wstep)+1):
+                width=wmin+k*wstep
+                if fswitch:
+                    for j in range(int((fmax-fmin)/fstep)+1):
+                        flu=fmin+j*fstep
+                        for i in range(int((dmax-dmin)/dstep)+1):
+                            dm=i*dstep+dmin
+                            run_filsim(ident,dm,width,flu)
+                else:
+                    for i in xrange(int((dmax-dmin)/dstep)+1):
+                        dm=i*dstep+dmin
+                        run_filsim(ident,dm,width,flu)
 
     #os.system('tar -cvzf '+ident+"*.candlist candlist.tar.gz")
 

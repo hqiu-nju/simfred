@@ -17,10 +17,10 @@ import time
 __author__ = "Harry Qiu"
 
 
-def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,amplitude,flu,w2,nsamp):
+def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,amplitude,flu,w2,nsamp,offset):
     nodm=np.zeros((nchan, nsamp))
     nodmcon=np.zeros((nchan,nsamp+99))
-    toffset=int(tstart)+0.5
+    toffset=int(tstart)+offset
     for c in xrange(nchan):
         ceil = froof + (c)*foff
         floor = froof + (c+1)*foff ###frequency of current channel
@@ -82,6 +82,7 @@ parser.add_argument('-b', '--base',type=str, default='cut.fil')
 parser.add_argument('-o', '--output',type=str, default='set_'+date)
 parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('--nchan',type=int,default=336)
+parser.add_argument('-x','--offset',type=float,default=0.5, help='Offset within sample')
 #parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
 values = parser.parse_args()
@@ -189,7 +190,7 @@ for i in xrange(6):
     else:
         x =1
     idt = abs(4.15*dm*(froof**-2 - (froof+336*foff)**-2)/tsamp)
-    frbconvolvemap, normmap,dedisp = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,nsamp)
+    frbconvolvemap, normmap,dedisp = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,nsamp,values.offset)
     #print i,t,toffset*tsamp,widthms,dm,flu
      # positions mask of burst on normmap
     datasetsum=(dataset.astype(float)+frbconvolvemap)*18+128

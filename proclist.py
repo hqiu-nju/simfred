@@ -55,19 +55,19 @@ def _main():
                 flu=fmin+j*fstep
                 for i in range(int((dmax-dmin)/dstep)+1):
                     dm=i*dstep+dmin
-                    name=ident+str(int(dm))+'_'+str(width)+'_'+str(flu)+'_fixed.fil'
+                    name=ident+str(int(dm))+'_'+str(width)+'_'+str(flu)+'_fixed'
                     print ('width, fluence, dm')
                     print (width,flu,dm)
                     print ('process file:'+name+' \n')
-                    os.system('python filsim.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name)
+                    os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name)
         else:
             for i in xrange(int((dmax-dmin)/dstep)+1):
                 dm=i*dstep+dmin
-                name=ident+str(int(dm))+'_'+str((width))+'_fixed.fil'
+                name=ident+str(int(dm))+'_'+str((width))+'_fixed'
                 print ('width, fluence, dm')
                 print (width,flu,dm)
                 print ('process file:'+name+' \n')
-                os.system('python filsim.py -d '+str(dm)+' -w '+str(width)+' -f '+str(fmax)+' -o '+name)
+                os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(fmax)+' -o '+name)
 
     #os.system('tar -cvzf '+ident+"*.candlist candlist.tar.gz")
 

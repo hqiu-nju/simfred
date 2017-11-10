@@ -17,9 +17,10 @@ import time
 __author__ = "Harry Qiu"
 
 
-def injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,w2,nsamp):
+def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,amplitude,flu,w2,nsamp):
     nodm=np.zeros((nchan, nsamp))
     nodmcon=np.zeros((nchan,nsamp+99))
+    toffset=int(tstart)+0.5
     for c in xrange(nchan):
         ceil = froof + (c)*foff
         floor = froof + (c+1)*foff ###frequency of current channel
@@ -78,8 +79,9 @@ parser.add_argument('-p','--printer', action='store_true', help='Show progress')
 #parser.add_argument('-l', '--list',type=str, default='')
 parser.add_argument('-f', '--fluence',type=float, default=10)
 parser.add_argument('-b', '--base',type=str, default='cut.fil')
-parser.add_argument('-o', '--output',type=str, default='set_'+date+'.fil')
+parser.add_argument('-o', '--output',type=str, default='set_'+date)
 parser.add_argument('-s','--show', action='store_true', help='Show')
+parser.add_argument('--nchan',type=int,default=336)
 #parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
 values = parser.parse_args()
@@ -90,13 +92,13 @@ else:
 #date=time.strftime('%Y_%m_%d_%H_%M',time.localtime())
 #date='2000'
 inputname=values.base
-outputname=values.output
+outputname=values.output+".fil"
 f=open(outputname[:-4]+'.candlist','w')
 f.write("##new file of truth of truth!!!!!"+outputname+"\n")
 f.write("# S/N, sampno, secs from file start, boxcar, idt, dm, beamno\n")
 fprint=values.printer
 readin=sgp.SigprocFile(inputname)
-readin.header['nchans']=336
+readin.header['nchans']=values.nchan
 mkout=sgp.SigprocFile(outputname,'w',readin.header)
 mkout.seek_data()
 readin.seek_data()
@@ -196,7 +198,8 @@ for i in xrange(6):
     datasetsum[sat_mask]=255
     dataset1= datasetsum.astype(np.uint8)
     dataset1.T.tofile(mkout.fin)
-    d=dedisp
+    #d=dedisp
+    d = frbconvolvemap.flatten()
     #print('nosquare')
     #### snr calculation
     mask=(d>0.5)
@@ -208,7 +211,8 @@ for i in xrange(6):
     npos=a*pulse > 137
     #print(np.mean(abs(v1)),np.std(v1))
 
-    snr = d[d > 0.5].sum()/np.sqrt((d > 0.5).sum())
+    snr = d.sum()/np.sqrt((d > 0.0).sum())
+    print (d>0.0).sum()
     a=np.where(pulse[-1])
     tend=tblock*(i+1)+a[0][len(a[0])/2]
     print snr,tend

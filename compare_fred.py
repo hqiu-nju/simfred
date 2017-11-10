@@ -126,7 +126,7 @@ if values.mode ==1:
     binx=np.arange(fred.T[x][0],fred.T[x][len(fred.T[x])-1],50)
     biny=np.arange(tru.T[x][0],tru.T[x][len(tru.T[x])-1],50)
     axHistx.hist(fa, bins=1000)
-    n,bins,patches=axHisty.hist(pd, bins=1000, orientation='horizontal')
+    axHisty.hist(pd, bins=1000, orientation='horizontal')
     if values.show:
         plt.show()
     plt.savefig(values.output+name[x]+name[y]+".png")
@@ -198,19 +198,23 @@ elif values.mode == 0:
                     bpd[i]=1
                     break
 
-        print ('results found detected/accurate')
-        print (sum(bpd),len(bpd),sum(bfa))
+        #print ('results found detected/accurate')
+        #print (sum(bpd),len(bpd),sum(bfa))
         print ('detection rate')
-        print (float(sum(bpd))/len(bpd))
-        print ('false acquistion')
-        print (1-float(sum(bfa))/len(bfa))
+        print (str('samp'),i,float(sum(bpd))/len(bpd))
+        #print ('false acquistion')
+        #print (1-float(sum(bfa))/len(bfa))
         #### note that the dividing here will become wrong in python2
         #print (pd*bpd)
+        meanie=np.arange(int(np.max(fa))+1)
+        print(int(np.max(fa))+1)
+        ax.plot(meanie,meanie,color='orange')
         ax.scatter(tru.T[x],pd,color='darkblue')
         ax.scatter(fa,fred.T[x],color='darkblue')
-        ax.plot(tru.T[x],tru.T[x],color='orange')
+
         axHistx.hist(fa, bins=1000)
-        n,bins,patches=axHisty.hist(pd, bins=1000, orientation='horizontal')
+
+        axHisty.hist(pd, bins=1000, orientation='horizontal')
     if values.show:
         plt.show()
 

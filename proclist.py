@@ -17,7 +17,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 __author__ = "Harry Qiu"
 
 def run_filsim(ident,dm,width,flu,x):
-    name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(flu)+'_fixed'
+    name=ident+"_{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(flu)+'_fixed'
     print ('width, fluence, dm')
     print (width,flu,dm)
     print ('process file:'+name+' \n')
@@ -41,8 +41,8 @@ def _main():
     parser.add_argument('-f', '--fmax',type=float, default=10.)
     parser.add_argument('--fmin',type=float, default=0.5)
     parser.add_argument('--stepflu',type=float, default=0.5)
-    parser.add_argument('-n','--name',type=str, default='testset_')
-    parser.add_argument('--offset',type = str, default =0.5)
+    parser.add_argument('-o','--name',type=str, default='testset_')
+    parser.add_argument('-x','--offset',type = str, default =0.5)
     #parser.add_argument(dest='files', nargs='+')
     parser.set_defaults(verbose=False)
     values = parser.parse_args()

@@ -221,32 +221,39 @@ elif values.mode == 0:
     plt.savefig(values.output+name[x]+name[y]+".png")
     plt.close()
 elif values.mode ==2:
-    for i in range(0,6):
-        x=i
-        y=i
-        t=open(values.tlist,'r')
-        f=open(values.flist,'r')
-        t.seek(0)
-        f.seek(0)
-        a=t.readlines() ### truth
-        b=f.readlines() #### fredda
-        plrange=len(a)
-        print len(a),len(b)
-        fig, ax = plt.subplots(figsize=(10,8))
-        ax.set_xlabel('Truth '+units[x])
-        ax.set_ylabel('Fredda '+units[y])
-        divider = make_axes_locatable(ax)
-        axHistx = divider.append_axes("top", 0.8, pad=0.1, sharex=ax)
-        axHisty = divider.append_axes("right", 0.8, pad=0.1, sharey=ax)
-        for i in range(0,plrange):
-            tru=np.loadtxt(a[i][:-1],dtype=float)
-            fred=np.loadtxt(b[i][:-1],dtype=float)
-            lt=len(tru.T[0])
-            lf=len(fred.T[0])
-            pd=np.zeros((len(tru.T[0])),dtype=float)
-            bpd= np.zeros((len(tru.T[0])),dtype=bool) ### probability of detection
-            fa=np.zeros((lf),dtype=float)
-            bfa= np.zeros((lf),dtype=bool) ### false acquistion
+    t=open(values.truth,'r')
+    f=open(values.file,'r')
+    t.seek(0)
+    f.seek(0)
+    a=t.readlines() ### truth
+    b=f.readlines() #### fredda
+    plrange=len(a)
+    print len(a),len(b)
+    assert len(a)== len(b)
+    fig, ax = plt.subplots(figsize=(14,9))
+    ax.set_xlabel('Truth '+units[x])
+    ax.set_ylabel('Fredda '+units[y])
+    divider = make_axes_locatable(ax)
+    axHistx = divider.append_axes("top", 0.8, pad=0.1, sharex=ax)
+    axHisty = divider.append_axes("right", 0.8, pad=0.1, sharey=ax)
+    #tru=np.loadtxt(a[0][:-1],dtype=float)
+    #fred=np.loadtxt(b[0][:-1],dtype=float)
+    for i in range(0,plrange):
+        tru=np.loadtxt(a[i][:-1],dtype=float)
+        fred=np.loadtxt(b[i][:-1],dtype=float)
+        lt=len(tru)
+        if len(fred)==12:
+            lf=1
+        else:
+            lf=len(fred)
+        #print tru
+        #print fred
+
+        pd=np.zeros((len(tru)),dtype=float)
+        bpd= np.zeros((len(tru)),dtype=bool) ### probability of detection
+        fa=np.zeros((lf),dtype=float)
+        bfa= np.zeros((lf),dtype=bool) ### false acquistion
+        if lf !=1:
             for i in range(len(tru.T[2])):
                 check=tru.T[2][i]
                 if len(np.intersect1d(np.where(fred.T[2]<check+2),np.where(fred.T[2]>check-2))):
@@ -260,7 +267,7 @@ elif values.mode ==2:
                     #pd[i]= match
                     pd[i]= fred.T[x][np.where(fred.T[2]==float(match))]
                     bpd[i]=1
-            for j in range(len(fred.T[2])):
+            for j in range(lf):
                 check=fred.T[2][j]
                 if len(np.intersect1d(np.where(tru.T[2]<check+2),np.where(tru.T[2]>check-2))):
                     box=tru.T[2][np.intersect1d(np.where(tru.T[2]<check+2.5),np.where(tru.T[2]>check-2.5))]  ### time values
@@ -270,27 +277,38 @@ elif values.mode ==2:
                         match=box
                     fa[j]= tru.T[x][np.where(tru.T[2]==float(match))]
                     bfa[j]=1
-            print ('results found detected/accurate')
-            print (sum(bpd),len(bpd),sum(bfa))
-            print ('detection rate')
-            print (float(sum(bpd))/len(bpd))
-            print ('false acquistion')
-            print (1-float(sum(bfa))/len(bfa))
-            #### note that the dividing here will become wrong in python2
-            #print (pd*bpd)
-            ax.scatter(tru.T[x],pd,color='darkblue')
-            ax.scatter(fa,fred.T[x],color='darkblue')
-            ax.plot(tru.T[x],tru.T[x],color='orange')
-            binx=np.arange(fred.T[x][0],fred.T[x][len(fred.T[x])-1],50)
-            biny=np.arange(tru.T[x][0],tru.T[x][len(tru.T[x])-1],50)
-            axHistx.hist(fa, bins=1000)
-            n,bins,patches=axHisty.hist(pd, bins=1000, orientation='horizontal')
-        if values.show:
-            plt.show()
+        elif lf ==1:
+            for i in range(lt):
+                check = fred.T[2]
+                if check <= tru.T[2][i]+2.5 and check >= tru.T[2][i]-2.5:
+                    fa[0]= tru.T[x][i]
+                    bfa[0]=1
+                    pd[i]= fred.T[x]
+                    bpd[i]=1
+                    break
 
-        plt.savefig(values.output+name[x]+name[y]+".png")
-        plt.close()
+        #print ('results found detected/accurate')
+        #print (sum(bpd),len(bpd),sum(bfa))
+        print ('detection rate')
+        print (str('samp'),i,float(sum(bpd))/len(bpd))
+        #print ('false acquistion')
+        #print (1-float(sum(bfa))/len(bfa))
+        #### note that the dividing here will become wrong in python2
+        #print (pd*bpd)
+        meanie=np.arange(int(np.max(fa))+1)
+        print(int(np.max(fa))+1)
+        ax.plot(meanie,meanie,color='orange')
+        ax.scatter(tru.T[x],pd,color='darkblue')
+        ax.scatter(fa,fred.T[x],color='darkblue')
 
+        axHistx.hist(fa, bins=1000)
+
+        axHisty.hist(pd, bins=1000, orientation='horizontal')
+    if values.show:
+        plt.show()
+
+    plt.savefig(values.output+name[x]+name[y]+".png")
+    plt.close()
 
 
 

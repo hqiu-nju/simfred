@@ -172,7 +172,7 @@ print 'start'
 print nsamp,flu,tblock
 dataset.T.tofile(mkout.fin)  #### print first timeset of noise
 #snr=50.0
-
+xoff=values.offset
 #if values.menu == 0:
 for i in xrange(6):
     dataset = (np.random.randn(nchan, nsamp+99) + 0)  #reset noise
@@ -190,7 +190,7 @@ for i in xrange(6):
     else:
         x =1
     idt = abs(4.15*dm*(froof**-2 - (froof+336*foff)**-2)/tsamp)
-    frbconvolvemap, normmap,dedisp = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,nsamp,values.offset)
+    frbconvolvemap, normmap,dedisp = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,nsamp,xoff)
     #print i,t,toffset*tsamp,widthms,dm,flu
      # positions mask of burst on normmap
     datasetsum=(dataset.astype(float)+frbconvolvemap)*18+128

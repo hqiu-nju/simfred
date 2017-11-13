@@ -16,12 +16,12 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 __author__ = "Harry Qiu"
 
-def run_filsim(ident,dm,width,flu):
-    name=ident+str(int(dm))+'_'+str(width)+'_'+str(flu)+'_fixed'
+def run_filsim(ident,dm,width,flu,x):
+    name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(flu)+'_fixed'
     print ('width, fluence, dm')
     print (width,flu,dm)
     print ('process file:'+name+' \n')
-    os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name)
+    os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+x)
 
 def _main():
     date=time.strftime('%Y_%m_%d',time.localtime())
@@ -42,6 +42,7 @@ def _main():
     parser.add_argument('--fmin',type=float, default=0.5)
     parser.add_argument('--stepflu',type=float, default=0.5)
     parser.add_argument('-n','--name',type=str, default='testset_')
+    parser.add_argument('--offset',type = str, default =0.5)
     #parser.add_argument(dest='files', nargs='+')
     parser.set_defaults(verbose=False)
     values = parser.parse_args()
@@ -63,11 +64,12 @@ def _main():
     fstep=values.stepflu
     flu=fmax
     width=wmin
+    off=values.offset
     if values.lmode:
         print('run list')
         exc=np.loadtxt(values.list,delimiter=',')
         for i in range(len(exc)):
-            run_filsim(ident,exc[i][1],exc[i][0],exc[i][2])
+            run_filsim(ident,exc[i][1],exc[i][0],exc[i][2],off)
 
 
     else:
@@ -78,11 +80,11 @@ def _main():
                     flu=fmin+j*fstep
                     for i in range(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
-                        run_filsim(ident,dm,width,flu)
+                        run_filsim(ident,dm,width,flu,off)
             else:
                 for i in xrange(int((dmax-dmin)/dstep)+1):
                     dm=i*dstep+dmin
-                    run_filsim(ident,dm,width,flu)
+                    run_filsim(ident,dm,width,flu,off)
         else:
             for k in range(int((wmax-wmin)/wstep)+1):
                 width=wmin+k*wstep
@@ -91,11 +93,11 @@ def _main():
                         flu=fmin+j*fstep
                         for i in range(int((dmax-dmin)/dstep)+1):
                             dm=i*dstep+dmin
-                            run_filsim(ident,dm,width,flu)
+                            run_filsim(ident,dm,width,flu,off)
                 else:
                     for i in xrange(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
-                        run_filsim(ident,dm,width,flu)
+                        run_filsim(ident,dm,width,flu,off)
 
     #os.system('tar -cvzf '+ident+"*.candlist candlist.tar.gz")
 

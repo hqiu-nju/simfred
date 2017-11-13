@@ -221,15 +221,15 @@ elif values.mode == 0:
     plt.savefig(values.output+name[x]+name[y]+".png")
     plt.close()
 elif values.mode ==2:
-    t=open(values.truth,'r')
+    #t=open(values.truth,'r')
     f=open(values.file,'r')
-    t.seek(0)
+    #t.seek(0)
     f.seek(0)
-    a=t.readlines() ### truth
+    #a=t.readlines() ### truth
     b=f.readlines() #### fredda
-    plrange=len(a)
-    print len(a),len(b)
-    assert len(a)== len(b)
+    plrange=len(b)
+    print len(b)
+    #assert len(a)== len(b)
     fig, ax = plt.subplots(figsize=(14,9))
     ax.set_xlabel('Truth '+units[x])
     ax.set_ylabel('Fredda '+units[y])
@@ -239,7 +239,7 @@ elif values.mode ==2:
     #tru=np.loadtxt(a[0][:-1],dtype=float)
     #fred=np.loadtxt(b[0][:-1],dtype=float)
     for i in range(0,plrange):
-        tru=np.loadtxt(a[i][:-1],dtype=float)
+        tru=np.loadtxt(b[i][:-14]+'.candlist',dtype=float)
         fred=np.loadtxt(b[i][:-1],dtype=float)
         lt=len(tru)
         if len(fred)==12:
@@ -290,7 +290,7 @@ elif values.mode ==2:
         #print ('results found detected/accurate')
         #print (sum(bpd),len(bpd),sum(bfa))
         print ('detection rate')
-        print (str('samp'),i,float(sum(bpd))/len(bpd))
+        print (str('samp'),float(sum(bpd))/len(bpd))
         #print ('false acquistion')
         #print (1-float(sum(bfa))/len(bfa))
         #### note that the dividing here will become wrong in python2
@@ -310,6 +310,9 @@ elif values.mode ==2:
     plt.savefig(values.output+name[x]+name[y]+".png")
     plt.close()
 
+elif values.mode == 3:
+    tru=np.loadtxt(values.truth,dtype=float)
+    fred=np.loadtxt(values.file,dtype=float)
 
 
 

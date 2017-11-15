@@ -215,7 +215,7 @@ for i in xrange(2):
     npos=a*pulse > 137
     #print(np.mean(abs(v1)),np.std(v1))
 
-    snr = d.sum()/np.sqrt((d > 0.0).sum())
+    snr = d.sum()/np.sqrt((d > 0.5/(0.0073531156713352403/np.mean(d))).sum())
     print (d>0.0).sum()
     a=np.where(pulse[-1])
     tend=tblock*(i+1)+a[0][len(a[0])/2]

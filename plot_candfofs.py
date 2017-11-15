@@ -155,22 +155,47 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
             fred=np.loadtxt(fname,dtype=float)
             lf=len(fred.flatten())/12
             #print(fred)
-            fa=np.zeros((lf),dtype=float)
-            bfa= np.zeros((lf),dtype=bool) ### false acquistion
-            for i in range(lt):
-                dcheck=tru.T[5][i]
-                tcheck=tru.T[2][i]
-                dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
-                tpos=np.intersect1d(np.where(fred.T[2]<tcheck+2.5),np.where(fred.T[2]>tcheck-2.5))
-                pos=np.intersect1d(dpos,tpos)
-                if len(pos) >0:
-                    sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
-                    match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                    pd[i]= fred.T[x][pos][match][0]
-                    bpd[i]=1
-            for i in range(lf):
-                dcheck=fred.T[5][i]
-                tcheck=fred.T[2][i]
+            if lf >1:
+                fa=np.zeros((lf),dtype=float)
+                bfa= np.zeros((lf),dtype=bool) ### false acquistion
+                for i in range(lt):
+                    dcheck=tru.T[5][i]
+                    tcheck=tru.T[2][i]
+                    dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
+                    tpos=np.intersect1d(np.where(fred.T[2]<tcheck+2.5),np.where(fred.T[2]>tcheck-2.5))
+                    pos=np.intersect1d(dpos,tpos)
+                    if len(pos) >0:
+                        sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
+                        match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
+                        pd[i]= fred.T[x][pos][match][0]
+                        bpd[i]=1
+                for i in range(lf):
+                    dcheck=fred.T[5][i]
+                    tcheck=fred.T[2][i]
+                    dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
+                    tpos=np.intersect1d(np.where(tru.T[2]<tcheck+2.5),np.where(tru.T[2]>tcheck-2.5))
+                    pos=np.intersect1d(dpos,tpos)
+                    if len(pos) >0:
+                        sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
+                        match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                        fa[i]= tru.T[x][pos][match][0]
+                        bfa[i]=1
+                print (bfa,bpd)
+                pdx.append(float(sum(bfa))/len(bfa))
+                pdy.append(float(sum(bpd))/len(bpd))
+            else:
+                for i in range(lt):
+                    dcheck=tru.T[5][i]
+                    tcheck=tru.T[2][i]
+                    dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
+                    tpos=np.intersect1d(np.where(fred.T[2]<tcheck+2.5),np.where(fred.T[2]>tcheck-2.5))
+                    pos=np.intersect1d(dpos,tpos)
+                    if
+                        pd[i]= fred.T[x]
+                        bpd[i]=1
+
+                dcheck=fred.T[5]
+                tcheck=fred.T[2]
                 dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
                 tpos=np.intersect1d(np.where(tru.T[2]<tcheck+2.5),np.where(tru.T[2]>tcheck-2.5))
                 pos=np.intersect1d(dpos,tpos)
@@ -179,9 +204,9 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                     match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
                     fa[i]= tru.T[x][pos][match][0]
                     bfa[i]=1
-            print (bfa,bpd)
-            pdx.append(float(sum(bfa))/len(bfa))
-            pdy.append(float(sum(bpd))/len(bpd))
+                print (bfa,bpd)
+                pdx.append(float(sum(bfa))/len(bfa))
+                pdy.append(float(sum(bpd))/len(bpd))
         else:
             #print('no match file')
             pdx.append(0.)

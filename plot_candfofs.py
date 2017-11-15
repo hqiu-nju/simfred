@@ -150,9 +150,11 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
         pd=np.zeros((len(tru)),dtype=float)
         bpd= np.zeros((len(tru)),dtype=bool) ### probability of detection
         fname=a[i][:-9]+'fil.cand.fof'
-        if os.path.exists(fname)):
+        #print(fname,a[i])
+        if os.path.exists(fname):
             fred=np.loadtxt(fname,dtype=float)
-            lf=len(fred.T[0].flatten())/12
+            lf=len(fred.flatten())/12
+            #print(fred)
             fa=np.zeros((lf),dtype=float)
             bfa= np.zeros((lf),dtype=bool) ### false acquistion
             for i in range(lt):
@@ -163,10 +165,9 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                 pos=np.intersect1d(dpos,tpos)
                 if len(pos) >0:
                     sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
-                    if sigcheck <= 4:
-                        match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                        pd[i]= fred.T[x][pos][match][0]
-                        bpd[i]=1
+                    match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
+                    pd[i]= fred.T[x][pos][match][0]
+                    bpd[i]=1
             for i in range(lf):
                 dcheck=fred.T[5][i]
                 tcheck=fred.T[2][i]
@@ -175,12 +176,19 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                 pos=np.intersect1d(dpos,tpos)
                 if len(pos) >0:
                     sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
-                    if sigcheck <= 4:
-                        match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
-                        fa[i]= tru.T[x][pos][match][0]
-                        bfa[i]=1
+                    match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                    fa[i]= tru.T[x][pos][match][0]
+                    bfa[i]=1
+            print (bfa,bpd)
             pdx.append(float(sum(bfa))/len(bfa))
             pdy.append(float(sum(bpd))/len(bpd))
         else:
+            #print('no match file')
             pdx.append(0.)
             pdy.append(0.)
+    plt.scatter(pdx,pdy)
+    if values.show:
+        plt.show()
+
+    plt.savefig(values.output+"pdpfa.png")
+    plt.close()

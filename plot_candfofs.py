@@ -190,7 +190,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                     dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
                     tpos=np.intersect1d(np.where(fred.T[2]<tcheck+2.5),np.where(fred.T[2]>tcheck-2.5))
                     pos=np.intersect1d(dpos,tpos)
-                    if
+                    if len(pos) > 0:
                         pd[i]= fred.T[x]
                         bpd[i]=1
 

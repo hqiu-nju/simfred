@@ -116,9 +116,12 @@ tsamp = float(readin.header['tsamp'])*1000
 print (tsamp)# milliseconds
 amplitude=1.
 gauss_amp=amplitude # this has to be the same to achieve norm maximum?
-t = np.random.rand()*2*0 + 5 # random seconds between 5 and 10 set at 5, currently 5 seconds
+t = 5 # random seconds between 5 and 10 set at 5, currently 5 seconds
 #dm = np.random.rand()*400
 nsamp = int(t*1000/tsamp)
+if values.dm >2000:
+    t=7
+    nsamp = int(t*1000/tsamp)
 dataset = (np.random.randn(nchan, nsamp+99)*18 + 128).astype(np.uint8)
 frb = np.zeros((nchan, nsamp))
 times = np.arange(100)
@@ -174,7 +177,7 @@ dataset.T.tofile(mkout.fin)  #### print first timeset of noise
 #snr=50.0
 xoff=values.offset
 #if values.menu == 0:
-for i in xrange(6):
+for i in xrange(2):
     dataset = (np.random.randn(nchan, nsamp+99) + 0)  #reset noise
     snr=0.
     snr_sig=0.

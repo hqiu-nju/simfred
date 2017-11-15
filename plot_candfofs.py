@@ -30,7 +30,7 @@ parser = ArgumentParser(description='Script description', formatter_class=Argume
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Be verbose')
 parser.add_argument('-t','--truth',type=str,default='candlist')
 parser.add_argument('-f','--file',type=str,default='fredda')
-parser.add_argument('-m','--mode',type=int,default=0,help='0 parameter comparison draw, 1 pd fa draw, 2 sn offset draw')
+parser.add_argument('-m','--mode',type=int,default=0,help='0 parameter comparison draw(2 fof/candlists), 1 pd fa draw (must be list of files), 2 offset draw(list of files)')
 parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('-x','--xaxis',type=int,default=0)
 parser.add_argument('-y','--yaxis',type=int,default=0)
@@ -68,12 +68,12 @@ name[3]='_boxcar'
 name[4]='_idt'
 name[5]='_dm'
 name[6]='_beam'
-tru=np.loadtxt(values.truth,dtype=float)
-fred=np.loadtxt(values.file,dtype=float)
 x=values.xaxis
 y=values.yaxis
 if values.mode==0:  ######### for simply comparing truth and fredda for one parameter
     fig, ax = plt.subplots(figsize=(14,9))
+    tru=np.loadtxt(values.truth,dtype=float)
+    fred=np.loadtxt(values.file,dtype=float)
     y=x
     ax.set_xlabel('Truth '+units[x])
     ax.set_ylabel('Fredda '+units[y])
@@ -134,4 +134,53 @@ if values.mode==0:  ######### for simply comparing truth and fredda for one para
 if values.mode==1:   ### drawing the probability of detected versus false acquistion
     plt.xlabel("False Acquistion Rate")
     plt.ylabel("Detection Rate")
-    dmsets=np.unique(tru.T[5])
+    plt.xlim(-0.01,1.01)
+    plt.ylim(-0.01,1.01)
+    pdy=[]
+    pdx=[]
+    ###
+    t=open(values.truth,'r')
+    t.seek(0)
+    a=t.readlines() ### truth
+    ###detection Rate
+    plrange=len(a)
+    for i in range(plrange):
+        tru=np.loadtxt(a[i][:-1],dtype=float)
+        lt=len(tru.T[0])
+        pd=np.zeros((len(tru)),dtype=float)
+        bpd= np.zeros((len(tru)),dtype=bool) ### probability of detection
+        fname=a[i][:-9]+'fil.cand.fof'
+        if os.path.exists(fname)):
+            fred=np.loadtxt(fname,dtype=float)
+            lf=len(fred.T[0].flatten())/12
+            fa=np.zeros((lf),dtype=float)
+            bfa= np.zeros((lf),dtype=bool) ### false acquistion
+            for i in range(lt):
+                dcheck=tru.T[5][i]
+                tcheck=tru.T[2][i]
+                dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
+                tpos=np.intersect1d(np.where(fred.T[2]<tcheck+2.5),np.where(fred.T[2]>tcheck-2.5))
+                pos=np.intersect1d(dpos,tpos)
+                if len(pos) >0:
+                    sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
+                    if sigcheck <= 4:
+                        match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
+                        pd[i]= fred.T[x][pos][match][0]
+                        bpd[i]=1
+            for i in range(lf):
+                dcheck=fred.T[5][i]
+                tcheck=fred.T[2][i]
+                dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
+                tpos=np.intersect1d(np.where(tru.T[2]<tcheck+2.5),np.where(tru.T[2]>tcheck-2.5))
+                pos=np.intersect1d(dpos,tpos)
+                if len(pos) >0:
+                    sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
+                    if sigcheck <= 4:
+                        match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                        fa[i]= tru.T[x][pos][match][0]
+                        bfa[i]=1
+            pdx.append(float(sum(bfa))/len(bfa))
+            pdy.append(float(sum(bpd))/len(bpd))
+        else:
+            pdx.append(0.)
+            pdy.append(0.)

@@ -156,6 +156,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
             lf=len(fred.flatten())/12
             #print(fred)
             if lf >1:
+                #print(lf)
                 fa=np.zeros((lf),dtype=float)
                 bfa= np.zeros((lf),dtype=bool) ### false acquistion
                 for i in range(lt):
@@ -181,9 +182,10 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                         fa[i]= tru.T[x][pos][match][0]
                         bfa[i]=1
                 print (bfa,bpd)
-                pdx.append(float(sum(bfa))/len(bfa))
+                pdx.append(1.-float(sum(bfa))/len(bfa))
                 pdy.append(float(sum(bpd))/len(bpd))
             else:
+                #print('single fredda')
                 for i in range(lt):
                     dcheck=tru.T[5][i]
                     tcheck=tru.T[2][i]
@@ -200,12 +202,12 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                 tpos=np.intersect1d(np.where(tru.T[2]<tcheck+2.5),np.where(tru.T[2]>tcheck-2.5))
                 pos=np.intersect1d(dpos,tpos)
                 if len(pos) >0:
-                    sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
-                    match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                    sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
+                    match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
                     fa[i]= tru.T[x][pos][match][0]
                     bfa[i]=1
                 print (bfa,bpd)
-                pdx.append(float(sum(bfa))/len(bfa))
+                pdx.append(1.-float(sum(bfa))/len(bfa))
                 pdy.append(float(sum(bpd))/len(bpd))
         else:
             #print('no match file')

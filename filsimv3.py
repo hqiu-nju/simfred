@@ -178,7 +178,7 @@ xoff=values.offset
 realsamp=nsamp+int(widthsamp)*6
 diffsamp=int(widthsamp)*6
 #if values.menu == 0:
-for i in xrange(2):
+for i in xrange(10):
     dataset = (np.random.randn(nchan, realsamp) + 0)  #reset noise
     snr=0.
     snr_sig=0.
@@ -196,7 +196,7 @@ for i in xrange(2):
     #print('nosquare')
     #### snr calculation
     pulse=normmap>0
-    snr = d.sum()/np.sqrt((d > 0.5).sum())
+    snr = d.sum()/np.sqrt((d > 0.0).sum())
     if values.snr:
         mfactor=mxsnr/snr
         frbconvolvemap=frbconvolvemap*mfactor

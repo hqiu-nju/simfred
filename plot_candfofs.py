@@ -145,6 +145,8 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
     ###detection Rate
     plrange=len(a)
     pylab.figure()
+    pylab.xlabel('Truth '+units[x])
+    pylab.ylabel('Fredda '+units[y])
     for i in range(plrange):
         tru=np.loadtxt(a[i][:-1],dtype=float)
         lt=len(tru.T[0])
@@ -156,10 +158,10 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
             fred=np.loadtxt(fname,dtype=float)
             lf=len(fred.flatten())/12
             #print(fred)
+            #print(lf)
+            fa=np.zeros((lf),dtype=float)
+            bfa= np.zeros((lf),dtype=bool) ### false acquistion
             if lf >1:
-                #print(lf)
-                fa=np.zeros((lf),dtype=float)
-                bfa= np.zeros((lf),dtype=bool) ### false acquistion
                 for i in range(lt):
                     dcheck=tru.T[5][i]
                     tcheck=tru.T[2][i]
@@ -210,12 +212,13 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                 print (bfa,bpd)
                 pdx.append(1.-float(sum(bfa))/len(bfa))
                 pdy.append(float(sum(bpd))/len(bpd))
+            pylab.scatter(tru.T[x],pd,color='darkblue')
+            pylab.scatter(fa,fred.T[x],color='darkblue')
         else:
             #print('no match file')
             pdx.append(0.)
             pdy.append(0.)
-        pylab.scatter(tru.T[x],pd,color='darkblue')
-        pylab.scatter(fa,fred.T[x],color='darkblue')
+            pylab.scatter(tru.T[x],pd,color='darkblue')
     pylab.savefig(values.output+"compare.png")
     if values.show:
         pylab.show()

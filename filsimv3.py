@@ -17,9 +17,7 @@ import time
 __author__ = "Harry Qiu"
 
 
-def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,amplitude,flu,w2,nsamp,offset):
-    nodm=np.zeros((nchan, nsamp))
-    nodmcon=np.zeros((nchan,nsamp+99))
+def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,amplitude,flu,w2,offset,diffsamp):
     toffset=int(tstart)+offset
     for c in xrange(nchan):
         ceil = froof + (c)*foff
@@ -43,29 +41,22 @@ def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,ampli
             start_block=int(roof_dispersion_delay_samp)
             start_cut = roof_dispersion_delay_samp-int(roof_dispersion_delay_samp)
             frb[c,start_block] += abs(1-start_cut)*amplitude
-            nodm[c,int(toffset)] += abs(1-start_cut)*amplitude
             end_block=int(bott_dispersion_delay_samp)
             ###hence the full signal part is start_block+1 to end_block-1
             frb[c,start_block+1:end_block] += 1*amplitude
-            nodm[c,int(toffset+1):int(toffset+length_scale)]+= 1*amplitude
             end_cut = abs(bott_dispersion_delay_samp-int(bott_dispersion_delay_samp))
             frb[c,end_block] += (end_cut)*amplitude
-            nodm[c,int(toffset+length_scale)] += (end_cut)*amplitude
         else:
             assert int(roof_dispersion_delay_samp)==int(bott_dispersion_delay_samp)
             frb[c,int(roof_dispersion_delay_samp)]=abs(roof_dispersion_delay_samp-bott_dispersion_delay_samp)
-            nodm[c,int(toffset)]+= abs(roof_dispersion_delay_samp-bott_dispersion_delay_samp)
         if w2:
             convolved=np.convolve(x,frb[c])
-            ndcon=np.convolve(x,nodm[c])
         else:
-            convolved=np.append(frb[c],np.zeros(99))
-            ndcon=np.append(nodm[c],np.zeros(99))
+            convolved=np.append(frb[c],np.zeros(diffsamp))
         normfac=np.sum(convolved)
         normmap[c]+=convolved/normfac
         frbconvolvemap[c]+=normmap[c]*flu
-        nodmcon[c]+=ndcon/normfac * flu
-    return frbconvolvemap,normmap,nodmcon
+    return frbconvolvemap,normmap
 
 
 date=time.strftime('%Y_%m_%d',time.localtime())
@@ -109,8 +100,8 @@ mkout.seek_data()
 readin.seek_data()
 #datastring=np.fromfile(readin.fin,dtype=np.uint8)
 #dataset=datastring.reshape(len(datastring)/336,1,336)
-mkout.seek_data()
-readin.seek_data()
+#mkout.seek_data()
+#readin.seek_data()
 #### these are system/constant parameters
 nchan = readin.header['nchans']# channels
 fch1 = 1.464 # GHz
@@ -126,10 +117,10 @@ nsamp = int(t*1000/tsamp)
 if values.dm >2000:
     t=7
     nsamp = int(t*1000/tsamp)
-dataset = (np.random.randn(nchan, nsamp+99)*18 + 128).astype(np.uint8)
-frb = np.zeros((nchan, nsamp))
-frbconvolvemap=np.zeros((nchan,nsamp+99))
-tblock=nsamp+99
+dataset = (np.random.randn(nchan, nsamp)*18 + 128).astype(np.uint8)
+#frb = np.zeros((nchan, nsamp))
+#frbconvolvemap=np.zeros((nchan,nsamp))
+tblock=nsamp
 
 ##### these are model specific parameters
 
@@ -184,20 +175,22 @@ print nsamp,flu,tblock
 dataset.T.tofile(mkout.fin)  #### print first timeset of noise
 #snr=50.0
 xoff=values.offset
+realsamp=nsamp+int(widthsamp)*6
+diffsamp=int(widthsamp)*6
 #if values.menu == 0:
 for i in xrange(2):
-    dataset = (np.random.randn(nchan, nsamp+int(widthsamp)*6) + 0)  #reset noise
+    dataset = (np.random.randn(nchan, realsamp) + 0)  #reset noise
     snr=0.
     snr_sig=0.
     snr_sig=336.*flu/np.sqrt(nchan)
     snr_bkg=0.
     sampn=0
     frb = np.zeros((nchan, nsamp))
-    frbconvolvemap=np.zeros((nchan,nsamp+99))
-    normmap=np.zeros((nchan,nsamp+99))
+    frbconvolvemap=np.zeros((nchan,realsamp))
+    normmap=np.zeros((nchan,realsamp))
     #x=np.array([0,50,100,50,0])
     idt = abs(4.15*dm*(froof**-2 - (froof+336*foff)**-2)/tsamp)
-    frbconvolvemap, normmap,dedisp = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,nsamp,xoff)
+    frbconvolvemap, normmap = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,xoff,diffsamp)
     #print i,t,toffset*tsamp,widthms,dm,flu
     d = frbconvolvemap.flatten()
     #print('nosquare')
@@ -221,7 +214,7 @@ for i in xrange(2):
 
     #print (d>0.0).sum()
     a=np.where(pulse[-1])
-    tend=tblock*(i+1)+a[0][len(a[0])/2]
+    tend=nsamp+realsamp*i+a[0][len(a[0])/2]
     print snr,tend
     #print snr_cal(dataset,normmap,frbconvolvemap,336)
     #print sn,np.sqrt(nchan)

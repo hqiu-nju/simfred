@@ -91,7 +91,7 @@ if values.mode==0:  ######### for simply comparing truth and fredda for one para
         dcheck=tru.T[5][i]
         tcheck=tru.T[2][i]
         dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
-        tpos=np.intersect1d(np.where(fred.T[2]<tcheck+2.5),np.where(fred.T[2]>tcheck-2.5))
+        tpos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
         pos=np.intersect1d(dpos,tpos)
         if len(pos) >0:
             sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
@@ -103,7 +103,7 @@ if values.mode==0:  ######### for simply comparing truth and fredda for one para
         dcheck=fred.T[5][i]
         tcheck=fred.T[2][i]
         dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
-        tpos=np.intersect1d(np.where(tru.T[2]<tcheck+2.5),np.where(tru.T[2]>tcheck-2.5))
+        tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
         pos=np.intersect1d(dpos,tpos)
         if len(pos) >0:
             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
@@ -168,7 +168,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                     dcheck=tru.T[5][i]
                     tcheck=tru.T[2][i]
                     dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
-                    tpos=np.intersect1d(np.where(fred.T[2]<tcheck+2.5),np.where(fred.T[2]>tcheck-2.5))
+                    tpos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                     pos=np.intersect1d(dpos,tpos)
                     if len(pos) >0:
                         sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
@@ -179,7 +179,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                     dcheck=fred.T[5][i]
                     tcheck=fred.T[2][i]
                     dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
-                    tpos=np.intersect1d(np.where(tru.T[2]<tcheck+2.5),np.where(tru.T[2]>tcheck-2.5))
+                    tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
                     pos=np.intersect1d(dpos,tpos)
                     if len(pos) >0:
                         sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
@@ -195,7 +195,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                     dcheck=tru.T[5][i]
                     tcheck=tru.T[2][i]
                     dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
-                    tpos=np.intersect1d(np.where(fred.T[2]<tcheck+2.5),np.where(fred.T[2]>tcheck-2.5))
+                    tpos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                     pos=np.intersect1d(dpos,tpos)
                     if len(pos) > 0:
                         pd[i]= fred.T[x]
@@ -204,7 +204,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                 dcheck=fred.T[5]
                 tcheck=fred.T[2]
                 dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
-                tpos=np.intersect1d(np.where(tru.T[2]<tcheck+2.5),np.where(tru.T[2]>tcheck-2.5))
+                tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
                 pos=np.intersect1d(dpos,tpos)
                 if len(pos) >0:
                     sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))

@@ -89,7 +89,7 @@ if values.mode == 1:
         dcheck=tru.T[5][i]
         tcheck=tru.T[2][i]
         dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
-        tpos=np.intersect1d(np.where(fred.T[2]<tcheck+2.5),np.where(fred.T[2]>tcheck-2.5))
+        tpos=np.intersect1d(np.where(fred.T[2]<tcheck+2),np.where(fred.T[2]>tcheck-2))
         pos=np.intersect1d(dpos,tpos)
         if len(pos) >0:
             sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
@@ -101,7 +101,7 @@ if values.mode == 1:
         dcheck=fred.T[5][i]
         tcheck=fred.T[2][i]
         dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
-        tpos=np.intersect1d(np.where(tru.T[2]<tcheck+2.5),np.where(tru.T[2]>tcheck-2.5))
+        tpos=np.intersect1d(np.where(tru.T[2]<tcheck+2),np.where(tru.T[2]>tcheck-2))
         pos=np.intersect1d(dpos,tpos)
         if len(pos) >0:
             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
@@ -167,7 +167,7 @@ elif values.mode == 0:
             for i in range(lt):
                 check=tru.T[2][i]
                 if len(np.intersect1d(np.where(fred.T[2]<check+2),np.where(fred.T[2]>check-2))):
-                    box=fred.T[2][np.intersect1d(np.where(fred.T[2]<check+2.5),np.where(fred.T[2]>check-2.5))] ### time values
+                    box=fred.T[2][np.intersect1d(np.where(fred.T[2]<check+2),np.where(fred.T[2]>check-2))] ### time values
                     #print (box)
                     if len(box) !=1:
                         match=box[np.where((box-check)==np.min(box-check))] ##### find
@@ -180,7 +180,7 @@ elif values.mode == 0:
             for j in range(lf):
                 check=fred.T[2][j]
                 if len(np.intersect1d(np.where(tru.T[2]<check+2),np.where(tru.T[2]>check-2))):
-                    box=tru.T[2][np.intersect1d(np.where(tru.T[2]<check+2.5),np.where(tru.T[2]>check-2.5))]  ### time values
+                    box=tru.T[2][np.intersect1d(np.where(tru.T[2]<check+2),np.where(tru.T[2]>check-2))]  ### time values
                     if len(box) !=1:
                         match=box[np.where((box-check)==np.min(box-check))] ##### find
                     else:
@@ -190,7 +190,7 @@ elif values.mode == 0:
         elif lf ==1:
             for i in range(lt):
                 check = fred.T[2]
-                if check <= tru.T[2][i]+2.5 and check >= tru.T[2][i]-2.5:
+                if check <= tru.T[2][i]+2 and check >= tru.T[2][i]-2:
                     fa[0]= tru.T[x][i]
                     bfa[0]=1
                     pd[i]= fred.T[x]
@@ -220,14 +220,11 @@ elif values.mode == 0:
     plt.savefig(values.output+name[x]+name[y]+".png")
     plt.close()
 elif values.mode ==2:
-    #t=open(values.truth,'r')
-    f=open(values.file,'r')
-    #t.seek(0)
-    f.seek(0)
-    #a=t.readlines() ### truth
-    b=f.readlines() #### fredda
-    plrange=len(b)
-    print len(b)
+    t=open(values.truth,'r')
+    t.seek(0)
+    a=t.readlines() ### truth
+    ###detection Rate
+    plrange=len(a)
     #assert len(a)== len(b)
     fig, ax = plt.subplots(figsize=(14,9))
     ax.set_xlabel('Truth '+units[x])
@@ -241,50 +238,53 @@ elif values.mode ==2:
         tru=np.loadtxt(b[i][:-14]+'.candlist',dtype=float)
         fred=np.loadtxt(b[i][:-1],dtype=float)
         lt=len(tru)
-        if len(fred)==12:
-            lf=1
-        else:
-            lf=len(fred)
-        #print tru
-        #print fred
 
         pd=np.zeros((len(tru)),dtype=float)
         bpd= np.zeros((len(tru)),dtype=bool) ### probability of detection
-        fa=np.zeros((lf),dtype=float)
-        bfa= np.zeros((lf),dtype=bool) ### false acquistion
-        if lf !=1:
-            for i in range(len(tru.T[2])):
-                check=tru.T[2][i]
-                if len(np.intersect1d(np.where(fred.T[2]<check+2),np.where(fred.T[2]>check-2))):
-                    box=fred.T[2][np.intersect1d(np.where(fred.T[2]<check+2.5),np.where(fred.T[2]>check-2.5))] ### time values
-                    #print (box)
-                    if len(box) !=1:
-                        match=box[np.where((box-check)==np.min(box-check))] ##### find
-                    else:
-                        match=box
-                    #print (type(match))
-                    #pd[i]= match
-                    pd[i]= fred.T[x][np.where(fred.T[2]==float(match))]
-                    bpd[i]=1
-            for j in range(lf):
-                check=fred.T[2][j]
-                if len(np.intersect1d(np.where(tru.T[2]<check+2),np.where(tru.T[2]>check-2))):
-                    box=tru.T[2][np.intersect1d(np.where(tru.T[2]<check+2.5),np.where(tru.T[2]>check-2.5))]  ### time values
-                    if len(box) !=1:
-                        match=box[np.where((box-check)==np.min(box-check))] ##### find
-                    else:
-                        match=box
-                    fa[j]= tru.T[x][np.where(tru.T[2]==float(match))]
-                    bfa[j]=1
-        elif lf ==1:
-            for i in range(lt):
-                check = fred.T[2]
-                if check <= tru.T[2][i]+2.5 and check >= tru.T[2][i]-2.5:
-                    fa[0]= tru.T[x][i]
-                    bfa[0]=1
-                    pd[i]= fred.T[x]
-                    bpd[i]=1
-                    break
+        fname=a[i][:-9]+'fil.cand.fof'
+        #print(fname,a[i])
+        if os.path.exists(fname):
+            fred=np.loadtxt(fname,dtype=float)
+            lf=len(fred.flatten())/12
+            fa=np.zeros((lf),dtype=float)
+            bfa= np.zeros((lf),dtype=bool)
+            #print(fred)
+            if lf >1:
+                #print(lf)
+                fa=np.zeros((lf),dtype=float)
+                bfa= np.zeros((lf),dtype=bool)
+                for i in range(len(tru.T[2])):
+                    check=tru.T[2][i]
+                    if len(np.intersect1d(np.where(fred.T[2]<check+2),np.where(fred.T[2]>check-2))):
+                        box=fred.T[2][np.intersect1d(np.where(fred.T[2]<check+2),np.where(fred.T[2]>check-2))] ### time values
+                        #print (box)
+                        if len(box) !=1:
+                            match=box[np.where((box-check)==np.min(box-check))] ##### find
+                        else:
+                            match=box
+                        #print (type(match))
+                        #pd[i]= match
+                        pd[i]= fred.T[x][np.where(fred.T[2]==float(match))]
+                        bpd[i]=1
+                for j in range(lf):
+                    check=fred.T[2][j]
+                    if len(np.intersect1d(np.where(tru.T[2]<check+2),np.where(tru.T[2]>check-2))):
+                        box=tru.T[2][np.intersect1d(np.where(tru.T[2]<check+2),np.where(tru.T[2]>check-2))]  ### time values
+                        if len(box) !=1:
+                            match=box[np.where((box-check)==np.min(box-check))] ##### find
+                        else:
+                            match=box
+                        fa[j]= tru.T[x][np.where(tru.T[2]==float(match))]
+                        bfa[j]=1
+            elif lf ==1:
+                for i in range(lt):
+                    check = fred.T[2]
+                    if check <= tru.T[2][i]+2 and check >= tru.T[2][i]-2:
+                        fa[0]= tru.T[x][i]
+                        bfa[0]=1
+                        pd[i]= fred.T[x]
+                        bpd[i]=1
+                        break
 
         #print ('results found detected/accurate')
         #print (sum(bpd),len(bpd),sum(bfa))

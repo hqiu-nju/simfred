@@ -82,6 +82,8 @@ parser.add_argument('-b', '--base',type=str, default='cut.fil')
 parser.add_argument('-o', '--output',type=str, default='set_'+date)
 parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('--nchan',type=int,default=336)
+parser.add_argument('-a', '-snr',action='store_true', help='vary snr')
+parser.add_argument('-A', '--snfac',type=float, default=10)
 parser.add_argument('-x','--offset',type=float,default=0.5, help='Offset within sample')
 #parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
@@ -215,7 +217,7 @@ for i in xrange(2):
     npos=a*pulse > 137
     #print(np.mean(abs(v1)),np.std(v1))
 
-    snr = d.sum()/np.sqrt((d > 0.5/(0.0073531156713352403/np.mean(d))).sum())
+    snr = d.sum()/np.sqrt((d > 0.0).sum())
     print (d>0.0).sum()
     a=np.where(pulse[-1])
     tend=tblock*(i+1)+a[0][len(a[0])/2]
@@ -296,8 +298,8 @@ mkout.fin.flush()
 mkout.fin.close()
 if values.show:
     pylab.figure()
-    pylab.imshow(frbconvolvemap)
+    pylab.imshow(frbconvolvemap,aspect='auto')
     pylab.figure()
-    pylab.imshow(datasetsum)
+    pylab.imshow(datasetsum,aspect='auto')
     pylab.show()
     pylab.close()

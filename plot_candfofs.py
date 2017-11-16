@@ -146,7 +146,9 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
     plrange=len(a)
     pylab.figure()
     pylab.xlabel('Truth '+units[x])
+    pylab.xlim(xmin=-0.01)
     pylab.ylabel('Fredda '+units[y])
+    pylab.ylim(ymin=-0.01)
     for i in range(plrange):
         tru=np.loadtxt(a[i][:-1],dtype=float)
         lt=len(tru.T[0])
@@ -212,6 +214,8 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                 print (bfa,bpd)
                 pdx.append(1.-float(sum(bfa))/len(bfa))
                 pdy.append(float(sum(bpd))/len(bpd))
+            meanie=np.arange(int(np.max(fa))+1)
+            ax.plot(meanie,meanie,color='orange')
             pylab.scatter(tru.T[x],pd,color='darkblue')
             pylab.scatter(fa,fred.T[x],color='darkblue')
         else:

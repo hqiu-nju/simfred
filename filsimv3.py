@@ -178,7 +178,7 @@ xoff=values.offset
 realsamp=nsamp+int(widthsamp)*6
 diffsamp=int(widthsamp)*6
 #if values.menu == 0:
-for i in xrange(2):
+for i in xrange(10):
     dataset = (np.random.randn(nchan, realsamp) + 0)  #reset noise
     snr=0.
     snr_sig=0.

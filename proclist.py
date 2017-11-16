@@ -36,7 +36,7 @@ def _main():
     parser.add_argument('--stepw',type=float, default=0.5)
     parser.add_argument('--fchange',action='store_true')
     parser.add_argument('--wchange',action='store_true')
-    parser.add_argument('-l','--lmode',action='store_true')
+    parser.add_argument('-l','--lmode',action='store_true',help='list command dm,width,flu')
     parser.add_argument('--list',type=str,default='list')
     parser.add_argument('-f', '--fmax',type=float, default=10.)
     parser.add_argument('--fmin',type=float, default=0.5)
@@ -69,7 +69,7 @@ def _main():
         print('run list')
         exc=np.loadtxt(values.list,delimiter=',')
         for i in range(len(exc)):
-            run_filsim(ident,exc[i][1],exc[i][0],exc[i][2],off)
+            run_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off)
 
 
     else:

@@ -235,8 +235,7 @@ elif values.mode ==2:
     #tru=np.loadtxt(a[0][:-1],dtype=float)
     #fred=np.loadtxt(b[0][:-1],dtype=float)
     for i in range(0,plrange):
-        tru=np.loadtxt(b[i][:-14]+'.candlist',dtype=float)
-        fred=np.loadtxt(b[i][:-1],dtype=float)
+        tru=np.loadtxt(a[i][:-1],dtype=float)
         lt=len(tru)
 
         pd=np.zeros((len(tru)),dtype=float)

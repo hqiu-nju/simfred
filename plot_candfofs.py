@@ -144,6 +144,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
     a=t.readlines() ### truth
     ###detection Rate
     plrange=len(a)
+    pylab.figure()
     for i in range(plrange):
         tru=np.loadtxt(a[i][:-1],dtype=float)
         lt=len(tru.T[0])
@@ -213,6 +214,15 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
             #print('no match file')
             pdx.append(0.)
             pdy.append(0.)
+        pylab.scatter(tru.T[x],pd,color='darkblue')
+        pylab.scatter(fa,fred.T[x],color='darkblue')
+    pylab.savefig(values.output+"compare.png")
+    if values.show:
+        pylab.show()
+    plt.xlabel("False Acquistion Rate")
+    plt.ylabel("Detection Rate")
+    plt.xlim(-0.01,1.01)
+    plt.ylim(-0.01,1.01)
     plt.scatter(pdx,pdy)
     if values.show:
         plt.show()

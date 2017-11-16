@@ -214,8 +214,6 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                 print (bfa,bpd)
                 pdx.append(1.-float(sum(bfa))/len(bfa))
                 pdy.append(float(sum(bpd))/len(bpd))
-            meanie=np.arange(int(np.max(fa))+1)
-            pylab.plot(meanie,meanie,color='orange')
             if xamax < int(np.max(fa))+1:
                 xamax=int(np.max(fa))+5
             if yamax < int(np.max(pd))+1:
@@ -227,11 +225,14 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
             pdx.append(0.)
             pdy.append(0.)
             pylab.scatter(tru.T[x],pd,color='darkblue')
+    meanie=np.arange(xamax)
+    pylab.plot(meanie,meanie,color='orange')
     pylab.xlim(-0.1,xamax)
     pylab.ylim(-0.1,yamax)
-    pylab.savefig(values.output+"compare.png")
     if values.show:
         pylab.show()
+    pylab.savefig(values.output+"compare.png")
+    pylab.close()
     plt.xlabel("False Acquistion Rate")
     plt.ylabel("Detection Rate")
     plt.xlim(-0.01,1.01)

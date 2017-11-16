@@ -128,7 +128,6 @@ if values.dm >2000:
     nsamp = int(t*1000/tsamp)
 dataset = (np.random.randn(nchan, nsamp+99)*18 + 128).astype(np.uint8)
 frb = np.zeros((nchan, nsamp))
-times = np.arange(100)
 frbconvolvemap=np.zeros((nchan,nsamp+99))
 tblock=nsamp+99
 
@@ -145,6 +144,7 @@ beamno=-1 ##########fake beam identity signature
 #widthms=1.0
 widthms=values.width
 widthsamp = widthms/tsamp
+times = np.arange(int(widthsamp)*6+1)
 #fluence= np.random.rand()*40 +10
 #flu=fluence*fluence_fac
 #toffset=50
@@ -175,6 +175,10 @@ x = gauss_amp*np.exp(-(times-50)**2/(2*width2))
 #pylab.plot(x)
 #pylab.show()
 '''
+if width2:
+    x = gauss_amp*np.exp(-(times-int(widthsamp)*3)**2/(2*width2))
+else:
+    x =1
 print 'start'
 print nsamp,flu,tblock
 dataset.T.tofile(mkout.fin)  #### print first timeset of noise
@@ -182,7 +186,7 @@ dataset.T.tofile(mkout.fin)  #### print first timeset of noise
 xoff=values.offset
 #if values.menu == 0:
 for i in xrange(2):
-    dataset = (np.random.randn(nchan, nsamp+99) + 0)  #reset noise
+    dataset = (np.random.randn(nchan, nsamp+int(widthsamp)*6) + 0)  #reset noise
     snr=0.
     snr_sig=0.
     snr_sig=336.*flu/np.sqrt(nchan)
@@ -192,14 +196,9 @@ for i in xrange(2):
     frbconvolvemap=np.zeros((nchan,nsamp+99))
     normmap=np.zeros((nchan,nsamp+99))
     #x=np.array([0,50,100,50,0])
-    if width2:
-        x = gauss_amp*np.exp(-(times-50)**2/(2*width2))
-    else:
-        x =1
     idt = abs(4.15*dm*(froof**-2 - (froof+336*foff)**-2)/tsamp)
     frbconvolvemap, normmap,dedisp = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,nsamp,xoff)
     #print i,t,toffset*tsamp,widthms,dm,flu
-
     d = frbconvolvemap.flatten()
     #print('nosquare')
     #### snr calculation

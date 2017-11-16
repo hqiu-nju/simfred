@@ -82,12 +82,14 @@ parser.add_argument('-b', '--base',type=str, default='cut.fil')
 parser.add_argument('-o', '--output',type=str, default='set_'+date)
 parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('--nchan',type=int,default=336)
-parser.add_argument('-a', '-snr',action='store_true', help='vary snr')
+parser.add_argument('-a', '--snr',action='store_true', help='vary snr')
 parser.add_argument('-A', '--snfac',type=float, default=10)
 parser.add_argument('-x','--offset',type=float,default=0.5, help='Offset within sample')
 #parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
 values = parser.parse_args()
+if values.snr:
+    mxsnr=values.snfac
 if values.verbose:
     logging.basicConfig(level=logging.DEBUG)
 else:
@@ -197,6 +199,18 @@ for i in xrange(2):
     idt = abs(4.15*dm*(froof**-2 - (froof+336*foff)**-2)/tsamp)
     frbconvolvemap, normmap,dedisp = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,nsamp,xoff)
     #print i,t,toffset*tsamp,widthms,dm,flu
+
+    d = frbconvolvemap.flatten()
+    #print('nosquare')
+    #### snr calculation
+    pulse=normmap>0
+    snr = d.sum()/np.sqrt((d > 0.5).sum())
+    if values.snr:
+        mfactor=mxsnr/snr
+        frbconvolvemap=frbconvolvemap*mfactor
+
+    #print(np.mean(abs(v1)),np.std(v1))
+
      # positions mask of burst on normmap
     datasetsum=(dataset.astype(float)+frbconvolvemap)*18+128
     #print dataset
@@ -204,21 +218,9 @@ for i in xrange(2):
     datasetsum[sat_mask]=255
     dataset1= datasetsum.astype(np.uint8)
     dataset1.T.tofile(mkout.fin)
-    #d=dedisp
-    d = frbconvolvemap.flatten()
-    #print('nosquare')
-    #### snr calculation
-    mask=(d>0.5)
 
 
-    a=datasetsum
-    pulse=normmap>0
-
-    npos=a*pulse > 137
-    #print(np.mean(abs(v1)),np.std(v1))
-
-    snr = d.sum()/np.sqrt((d > 0.0).sum())
-    print (d>0.0).sum()
+    #print (d>0.0).sum()
     a=np.where(pulse[-1])
     tend=tblock*(i+1)+a[0][len(a[0])/2]
     print snr,tend
@@ -232,67 +234,6 @@ for i in xrange(2):
     f.write("%f %d %f %d %d %f %d\n"%(snr,tend,tend*tsamp/1000,boxcar,idt,dm,beamno))
     if fprint:
         print("%d fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f \n"%(i,fluence,snr,tend,tend*tsamp/1000,idt,dm,widthsamp))
-
-'''
-if values.menu ==1 :
-    for i in range(1000):
-        dataset = (np.random.randn(nchan, nsamp+99)*18 + 128).astype(np.uint8)  #reset noise
-        snr=0
-        snr_sig=0
-        snr_sig=336*flu/np.sqrt(nchan)
-        snr_bkg=0
-        frb = np.zeros((nchan, nsamp))
-        frbconvolvemap=np.zeros((nchan,nsamp+99))
-        normmap=np.zeros((nchan,nsamp+99))
-        #dm = np.random.uniform()*2000 + 100
-        widthms = np.random.rand()*1 + 0.064 +1
-        #widthms=1.0
-        widthms=tsamp
-        widthsamp = widthms/tsamp
-        #fluence= np.random.rand()*40 +10
-        #flu=fluence*fluence_fac
-        #toffset=50
-        #tinsert=(200/tsamp)
-        toffset=100/tsamp  ###500 time sample
-        ###real sample time=(1+i)*nsamp+toffset
-        #d = file.readthismeanyseconds(t)
-        #print t,toffset/tsamp,widthms,dm
-        width2=widthsamp**2
-        #print times
-        boxcar=int(widthsamp)+1
-
-        #x=np.array([0,50,100,50,0])
-        x = gauss_amp*np.exp(-(times-50)**2/(2*width2))
-        idt = abs(4.15*dm*(froof**-2 - (froof+336*foff)**-2)/tsamp)
-        injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2)
-        #print i,t,toffset*tsamp,widthms,dm,flu
-         # positions mask of burst on normmap
-        datasetsum=dataset.astype(float)+frbconvolvemap
-        sat_mask=(datasetsum >= 255)
-        datasetsum[sat_mask]=255
-        dataset1= datasetsum.astype(np.uint8)
-        dataset1.T.tofile(mkout.fin)
-
-        #### snr calculation
-        for j in range(336):
-            pulse=frbconvolvemap[j] >0
-            a=(dataset+frbconvolvemap)[j]
-            npos=a[pulse] > 137
-            snr_sig+=sum(frbconvolvemap[j][pulse])
-            snr_bkg+=sum((dataset[j][pulse]*npos))
-
-
-        snr = snr_sig/np.sqrt(snr_bkg)
-        print snr
-        #print snr_cal(dataset,normmap,frbconvolvemap,336)
-        #print sn,np.sqrt(nchan)
-
-        #print np.max(frbconvolvemap[0])
-        # S/N, sampno, secs from file start, boxcar, idt, dm, beamno
-        f.write("%f %d %f %d %d %f %d\n"%(snr,toffset+(i+1)*nsamp+idt,(toffset+(i+1)*nsamp+idt)*tsamp/1000,boxcar,idt,dm,beamno))
-        print("fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f \n"%(fluence,snr,toffset+(i+1)*nsamp+idt,(toffset+(i+1)*nsamp+idt)*tsamp/1000,idt,dm,widthsamp))
-'''
-
 f.close()
 mkout.fin.flush()
 mkout.fin.close()

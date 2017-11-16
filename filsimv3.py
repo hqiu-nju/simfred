@@ -196,7 +196,7 @@ for i in xrange(2):
     #print('nosquare')
     #### snr calculation
     pulse=normmap>0
-    snr = d.sum()/np.sqrt((d > 0.5).sum())
+    snr = d.sum()/np.sqrt((d > 0.0).sum())
     if values.snr:
         mfactor=mxsnr/snr
         frbconvolvemap=frbconvolvemap*mfactor

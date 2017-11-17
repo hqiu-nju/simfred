@@ -173,7 +173,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                     if len(pos) >0:
                         sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
                         match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                        pd[i]= fred.T[x][pos][match][0]
+                        pd[i]= fred.T[y][pos][match][0]
                         bpd[i]=1
                 for i in range(lf):
                     dcheck=fred.T[5][i]
@@ -198,7 +198,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                     tpos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                     pos=np.intersect1d(dpos,tpos)
                     if len(pos) > 0:
-                        pd[i]= fred.T[x]
+                        pd[i]= fred.T[y]
                         bpd[i]=1
 
                 dcheck=fred.T[5]
@@ -209,8 +209,8 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                 if len(pos) >0:
                     sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
                     match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
-                    fa[i]= tru.T[x][pos][match][0]
-                    bfa[i]=1
+                    fa[0]= tru.T[x][pos][match][0]
+                    bfa[0]=1
                 print (bfa,bpd)
                 pdx.append(1.-float(sum(bfa))/len(bfa))
                 pdy.append(float(sum(bpd))/len(bpd))
@@ -219,14 +219,15 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
             if yamax < int(np.max(pd))+1:
                 yamax=int(np.max(pd))+5
             pylab.scatter(tru.T[x],pd,color='darkblue')
-            pylab.scatter(fa,fred.T[x],color='darkblue')
+            pylab.scatter(fa,fred.T[y],color='darkblue')
         else:
             #print('no match file')
             pdx.append(0.)
             pdy.append(0.)
             pylab.scatter(tru.T[x],pd,color='darkblue')
     meanie=np.arange(xamax)
-    pylab.plot(meanie,meanie,color='orange')
+    if x==y:
+        pylab.plot(meanie,meanie,color='orange')
     pylab.xlim(-0.1,xamax)
     pylab.ylim(-0.1,yamax)
     if values.show:

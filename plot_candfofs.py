@@ -234,6 +234,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
     meanie=np.arange(xamax)
     if x==y:
         pylab.plot(meanie,meanie,color='orange')
+    plt.legend()
     pylab.xlim(-0.1,xamax)
     pylab.ylim(-0.1,yamax)
     if values.show:

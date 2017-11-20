@@ -149,6 +149,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
     pylab.ylabel('Fredda '+units[y])
     xamax=10
     yamax=10
+    dmlegend=0
     for i in range(plrange):
         tru=np.loadtxt(a[i][:-1],dtype=float)
         lt=len(tru.T[0])
@@ -218,8 +219,13 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                 xamax=int(np.max(fa))+5
             if yamax < int(np.max(pd))+1:
                 yamax=int(np.max(pd))+5
-            pylab.scatter(tru.T[x],pd,color='darkblue',label=str(tru.T[5][0]))
-            pylab.scatter(fa,fred.T[y],color='darkblue',label=str(tru.T[5][0]))
+            if tru.T[5][0]== dmlegend:
+                pylab.scatter(tru.T[x],pd,color='darkblue')
+                pylab.scatter(fa,fred.T[y],color='darkblue')
+            else:
+                pylab.scatter(tru.T[x],pd,color='darkblue',label=str(tru.T[5][0]))
+                pylab.scatter(fa,fred.T[y],color='darkblue',label=str(tru.T[5][0]))
+                dmlegend==tru.T[5][0]
         else:
             #print('no match file')
             pdx.append(0.)

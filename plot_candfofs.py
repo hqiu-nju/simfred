@@ -257,6 +257,9 @@ if values.mode==2:   ### mixed data open fof files with different flu dm and wid
     t=np.loadtxt(values.truth,dtype=float)
     dmlist=np.unique(t.T[5])
     flulist=np.unique(t.T[7])
-    boxlist=np.unique(t.T[3])
+    ####boxcar= t.T[3]
     a=len(dmlist)
     b=len(flulist)
+    for i in range(a):
+        for j in range(b):
+

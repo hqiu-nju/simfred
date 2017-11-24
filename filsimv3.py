@@ -223,7 +223,7 @@ for i in xrange(10):
     # S/N, sampno, secs from file start, boxcar, idt, dm, beamno
     #f.write("%f %d %f %d %d %f %d\n"%(snr,toffset+(i+1)*(tblock)+idt,(toffset+(i+1)*nsamp+idt)*tsamp/1000,boxcar,idt,dm,beamno))
     #print("%d fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f \n"%(i,fluence,snr,toffset+(i+1)*tblock+idt,(toffset+(i+1)*nsamp+idt)*tsamp/1000,idt,dm,widthsamp))
-    f.write("%f %d %f %d %d %f %d %f\n"%(snr,tend,tend*tsamp/1000,boxcar,idt,dm,beamno,fluence))
+    f.write("%f %d %f %d %d %f %d %f %f\n"%(snr,tend,tend*tsamp/1000,boxcar,idt,dm,beamno,fluence,widthms))
     if fprint:
         print("%d fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f \n"%(i,fluence,snr,tend,tend*tsamp/1000,idt,dm,widthsamp))
 f.close()

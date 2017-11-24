@@ -34,7 +34,9 @@ parser.add_argument('-m','--mode',type=int,default=0,help='0 parameter compariso
 parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('-x','--xaxis',type=int,default=0)
 parser.add_argument('-y','--yaxis',type=int,default=0)
-parser.add_argument('-o','--output',type=str,default='freddacheck')
+parser.add_argument('-n','--name',type=str,default='freddacheck')
+parser.add_argument('-d','--set',type=str,default='testset_')
+#parser.add_argument('-l','--label',type=int,default='',help='this is for mode 2, 1 for dm label, 2 for fluence label, 3 for width label')
 #parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
 values = parser.parse_args()
@@ -68,8 +70,22 @@ name[3]='_boxcar'
 name[4]='_idt'
 name[5]='_dm'
 name[6]='_beam'
+label={}
+label[1]=' (pc cm$^{-3}$)'
+label[2]=' (Jy)'
+label[3]=' (ms)'
+mark={}
+mark[0]='^'
+mark[1]='o'
+mark[2]='D'
+col={}
+col[0]='purple'
+col[1]='red'
+col[2]='green'
 x=values.xaxis
 y=values.yaxis
+ident=values.set
+#plabel=values.label
 if values.mode==0:  ######### for simply comparing truth and fredda for one parameter
     fig, ax = plt.subplots(figsize=(14,9))
     tru=np.loadtxt(values.truth,dtype=float)
@@ -248,18 +264,118 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
     plt.savefig(values.output+"pdpfa.png")
     plt.close()
 
-if values.mode==2:   ### mixed data open fof files with different flu dm and width as indicator to match each set
+if values.mode==2:   ### mixed data open fof files with different flu dm and width as indicator to match each set dm divide
     plt.xlabel("False Acquistion Rate")
     plt.ylabel("Detection Rate")
     plt.xlim(-0.01,1.01)
     plt.ylim(-0.01,1.01)
     ###
+    pylab.figure()
+    pylab.xlabel('Truth '+units[x])
+    pylab.ylabel('Fredda '+units[y])
+    #####
     t=np.loadtxt(values.truth,dtype=float)
     dmlist=np.unique(t.T[5])
     flulist=np.unique(t.T[7])
-    ####boxcar= t.T[3]
+    widthlist=np.unique(t.T[8])
+    ####boxcar= t.T[3] idt=
     a=len(dmlist)
     b=len(flulist)
-    for i in range(a):
-        for j in range(b):
+    c=len(widthlist)
+    yamax=10.
+    xamax=10.
+    dmax = (np.max(dmlist))
+    ddf = int(dmax)/3 +1
 
+    for i in range(a):
+        pluck=int(dmax)/int(ddf)
+        for j in range(b):
+            for k in range(c):
+                dp=dmlist[i]
+                fp=flulist[j]
+                wp=widthlist[k]
+                depo_dm=np.where(t.T[5]==dp)
+                depo_fl=np.where(t.T[7]==fp)
+                depo_wd=np.where(t.T[8]==wp)
+                mix=np.intersect1d(depo_dm,depo_fl)
+                mix=np.intersect1d(mix,depo_wd)
+                tru=t[mix]
+                fredfile=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(flu)+'_fixed.fil.cand.fof'
+                if os.path.exists(fredfile):
+                    fred=np.loadtxt(fredfile,dtype=float)
+                    lt=len(mix)
+                    lf=len(fred.flatten())/12
+                    pd=np.zeros(lt,dtype=float)
+                    fa=np.zeros(lf,dtype=float)
+                    bpd=np.zeros(lt,dtype=bool)
+                    bfa=np.zeros(lf,dtype=bool)
+                    if lf >1:
+                        for i in range(lt):
+                            tcheck=tru.T[2][i]
+                            pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
+                            if len(pos) >0:
+                                sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
+                                match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
+                                pd[i]= fred.T[y][pos][match][0]
+                                bpd[i]=1
+                        for i in range(lf):
+                            tcheck=fred.T[2][i]
+                            pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
+                            if len(pos) >0:
+                                sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
+                                match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                                fa[i]= tru.T[x][pos][match][0]
+                                bfa[i]=1
+                        print (bfa,bpd)
+                        pdx=(1.-float(sum(bfa))/len(bfa))
+                        pdy=(float(sum(bpd))/len(bpd))
+                    else:
+                        #print('single fredda')
+                        for i in range(lt):
+                            tcheck=tru.T[2][i]
+                            pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
+                            if len(pos) > 0:
+                                pd[i]= fred.T[y]
+                                bpd[i]=1
+                        dcheck=fred.T[5]
+                        tcheck=fred.T[2]
+                        dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
+                        tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
+                        pos=np.intersect1d(dpos,tpos)
+                        if len(pos) >0:
+                            sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
+                            match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
+                            fa[0]= tru.T[x][pos][match][0]
+                            bfa[0]=1
+                        print (bfa,bpd)
+                        pdx=(1.-float(sum(bfa))/len(bfa))
+                        pdy=(float(sum(bpd))/len(bpd))
+                    if xamax < int(np.max(fa))+1:
+                        xamax=int(np.max(fa))+5
+                    if yamax < int(np.max(pd))+1:
+                        yamax=int(np.max(pd))+5
+                    pylab.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck])
+                    pylab.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck])
+                else:
+                    pdx=0
+                    pdy=0
+                plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck])
+        if int(dp)%1000 == 0:
+            pylab.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1])
+            plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1])
+    meanie=np.arange(xamax)
+    if x==y:
+        pylab.plot(meanie,meanie,color='orange')
+    pylab.legend()
+    pylab.xlim(-0.1,xamax)
+    pylab.ylim(-0.1,yamax)
+    if values.show:
+        pylab.show()
+    pylab.savefig(values.output+"compare.png")
+    pylab.close()
+
+    if values.show:
+        plt.show()
+
+    plt.savefig(values.output+"pdpfa.png")
+    plt.close()

@@ -300,7 +300,7 @@ if values.mode==2:   ### mixed data open fof files with different flu dm and wid
                 mix=np.intersect1d(depo_dm,depo_fl)
                 mix=np.intersect1d(mix,depo_wd)
                 tru=t[mix]
-                fredfile=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(flu)+'_fixed.fil.cand.fof'
+                fredfile=ident+"{0:04}".format(int(dp))+'_'+"{0:03}".format(wp)+'_'+"{0:03}".format(fp)+'_fixed.fil.cand.fof'
                 if os.path.exists(fredfile):
                     fred=np.loadtxt(fredfile,dtype=float)
                     lt=len(mix)

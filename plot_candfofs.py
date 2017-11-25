@@ -287,11 +287,11 @@ if values.mode==2:   ### mixed data open fof files with different flu dm and wid
     dmax = (np.max(dmlist))
     ddf = int(dmax)/3 +1
 
-    for i in range(a):
+    for d in range(a):
         pluck=int(dmax)/int(ddf)
         for j in range(b):
             for k in range(c):
-                dp=dmlist[i]
+                dp=dmlist[d]
                 fp=flulist[j]
                 wp=widthlist[k]
                 depo_dm=np.where(t.T[5]==dp)

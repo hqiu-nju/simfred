@@ -34,7 +34,7 @@ parser.add_argument('-m','--mode',type=int,default=0,help='0 parameter compariso
 parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('-x','--xaxis',type=int,default=0)
 parser.add_argument('-y','--yaxis',type=int,default=0)
-parser.add_argument('-n','--name',type=str,default='freddacheck')
+parser.add_argument('-o','--output',type=str,default='freddacheck')
 parser.add_argument('-d','--set',type=str,default='testset_')
 #parser.add_argument('-l','--label',type=int,default='',help='this is for mode 2, 1 for dm label, 2 for fluence label, 3 for width label')
 #parser.add_argument(dest='files', nargs='+')
@@ -264,15 +264,16 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
     plt.savefig(values.output+"pdpfa.png")
     plt.close()
 
-if values.mode==2:   ### mixed data open fof files with different flu dm and width as indicator to match each set dm divide
+if values.mode==2:
+    plt.figure(1)  ### mixed data open fof files with different flu dm and width as indicator to match each set dm divide
     plt.xlabel("False Acquistion Rate")
     plt.ylabel("Detection Rate")
     plt.xlim(-0.01,1.01)
     plt.ylim(-0.01,1.01)
     ###
-    pylab.figure()
-    pylab.xlabel('Truth '+units[x])
-    pylab.ylabel('Fredda '+units[y])
+    plt.figure(2)
+    plt.xlabel('Truth '+units[x])
+    plt.ylabel('Fredda '+units[y])
     #####
     t=np.loadtxt(values.truth,dtype=float)
     dmlist=np.unique(t.T[5])
@@ -354,25 +355,29 @@ if values.mode==2:   ### mixed data open fof files with different flu dm and wid
                         xamax=int(np.max(fa))+5
                     if yamax < int(np.max(pd))+1:
                         yamax=int(np.max(pd))+5
-                    pylab.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck])
-                    pylab.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck])
+                    plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck])
+                    plt.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck])
                 else:
                     pdx=0
                     pdy=0
                 plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck])
         if int(dp)%1000 == 0:
-            pylab.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1])
+            plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1])
+            plt.figure(1)
             plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1])
     meanie=np.arange(xamax)
+    plt.figure(2)
     if x==y:
-        pylab.plot(meanie,meanie,color='orange')
-    pylab.legend()
-    pylab.xlim(-0.1,xamax)
-    pylab.ylim(-0.1,yamax)
+        plt.plot(meanie,meanie,color='orange')
+    plt.legend()
+    plt.xlim(-0.1,xamax)
+    plt.ylim(-0.1,yamax)
     if values.show:
-        pylab.show()
-    pylab.savefig(values.output+"compare.png")
-    pylab.close()
+        plt.show()
+    plt.savefig(values.output+"compare.png")
+    plt.close()
+    plt.figure(1)
+    plt.legend()
 
     if values.show:
         plt.show()

@@ -77,11 +77,11 @@ label[3]=' (ms)'
 mark={}
 mark[0]='^'
 mark[1]='o'
-mark[2]='D'
+mark[2]='d'
 col={}
 col[0]='purple'
-col[1]='red'
-col[2]='green'
+col[1]='skyblue'
+col[2]='orange'
 x=values.xaxis
 y=values.yaxis
 ident=values.set
@@ -286,13 +286,34 @@ if values.mode==2:
     yamax=10.
     xamax=10.
     dmax = (np.max(dmlist))
-    ddf = int(dmax)/3 +1
-
+    #ddf = int(dmax)/3 +1
+    pluck = 0
+    cluck = 0
     for d in range(a):
-        pluck=int(dmax)/int(ddf)
+        dp=dmlist[d]
+        if dp < dmax/3:
+            pluck = 0
+            if dmlist[d+1] > dmax/3:
+                cluck = 1
+            else:
+                cluck=0
+        elif dp < dmax/3*2:
+            pluck = 1
+            if dmlist[d+1] > dmax/3*2:
+                cluck = 1
+            else:
+                cluck=0
+        else:
+            pluck = 2
+            if dmlist[d] == dmax:
+                cluck = 1
+            else:
+                cluck=0
+        print (pluck,dp)
+        #if
         for j in range(b):
             for k in range(c):
-                dp=dmlist[d]
+
                 fp=flulist[j]
                 wp=widthlist[k]
                 depo_dm=np.where(t.T[5]==dp)
@@ -305,7 +326,7 @@ if values.mode==2:
                 if os.path.exists(fredfile):
                     fred=np.loadtxt(fredfile,dtype=float)
                     lt=len(mix)
-                    lf=len(fred.flatten())/12
+                    lf=int(len(fred.flatten())/12)
                     pd=np.zeros(lt,dtype=float)
                     fa=np.zeros(lf,dtype=float)
                     bpd=np.zeros(lt,dtype=bool)
@@ -327,7 +348,7 @@ if values.mode==2:
                                 match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
                                 fa[i]= tru.T[x][pos][match][0]
                                 bfa[i]=1
-                        print (bfa,bpd)
+                        #print (bfa,bpd)
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
                     else:
@@ -348,7 +369,7 @@ if values.mode==2:
                             match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
                             fa[0]= tru.T[x][pos][match][0]
                             bfa[0]=1
-                        print (bfa,bpd)
+                        #print (bfa,bpd)
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
                     if xamax < int(np.max(fa))+1:
@@ -360,13 +381,15 @@ if values.mode==2:
                 else:
                     pdx=0
                     pdy=0
+                plt.figure(1)
                 plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck])
-        if int(dp)%1000 == 0:
+                plt.figure(2)
+        if cluck:
             plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1])
             plt.figure(1)
             plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1])
+            plt.figure(2)
     meanie=np.arange(xamax)
-    plt.figure(2)
     if x==y:
         plt.plot(meanie,meanie,color='orange')
     plt.legend()
@@ -377,10 +400,8 @@ if values.mode==2:
     plt.savefig(values.output+"compare.png")
     plt.close()
     plt.figure(1)
-    plt.legend()
+    #plt.legend()
 
-    if values.show:
-        plt.show()
 
     plt.savefig(values.output+"pdpfa.png")
     plt.close()

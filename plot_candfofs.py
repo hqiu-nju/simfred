@@ -400,7 +400,7 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
     plt.savefig(values.output+"compare.png")
     plt.close()
     plt.figure(1)
-    #plt.legend()
+    plt.legend()
 
 
     plt.savefig(values.output+"pdpfa.png")
@@ -542,7 +542,7 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
     plt.savefig(values.output+"compare.png")
     plt.close()
     plt.figure(1)
-    #plt.legend()
+    plt.legend()
 
 
     plt.savefig(values.output+"pdpfa.png")
@@ -680,7 +680,7 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
     plt.savefig(values.output+"compare.png")
     plt.close()
     plt.figure(1)
-    #plt.legend()
+    plt.legend()
 
 
     plt.savefig(values.output+"pdpfa.png")

@@ -227,6 +227,8 @@ for i in xrange(10):
     if fprint:
         print("%d fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f \n"%(i,fluence,snr,tend,tend*tsamp/1000,idt,dm,widthsamp))
 f.close()
+dataset = (np.random.randn(nchan, nsamp)*18 + 128).astype(np.uint8)
+dataset.T.tofile(mkout.fin)
 mkout.fin.flush()
 mkout.fin.close()
 if values.show:

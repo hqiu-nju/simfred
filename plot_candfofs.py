@@ -36,6 +36,7 @@ parser.add_argument('-x','--xaxis',type=int,default=0)
 parser.add_argument('-y','--yaxis',type=int,default=0)
 parser.add_argument('-o','--output',type=str,default='freddacheck')
 parser.add_argument('-d','--set',type=str,default='testset_')
+parser.add_argument('--sncut',type=float,default=50.0)
 #parser.add_argument('-l','--label',type=int,default='',help='this is for mode 2, 1 for dm label, 2 for fluence label, 3 for width label')
 #parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
@@ -265,17 +266,21 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
     plt.close()
 
 if values.mode==2:  ### mixed data open fof files with different flu dm and width as indicator to match each set dm divide
-    plt.figure(1)
+    plt.figure(1,figsize=(12, 9))
     plt.xlabel("False Acquistion Rate")
     plt.ylabel("Detection Rate")
     plt.xlim(-0.01,1.01)
     plt.ylim(-0.01,1.01)
     ###
-    plt.figure(2)
+    #ol=open(ident+".ol.dat","w")
+    ####
+    plt.figure(2,figsize=(12, 9))
     plt.xlabel('Truth '+units[x])
     plt.ylabel('Fredda '+units[y])
     #####
-    t=np.loadtxt(values.truth,dtype=float)
+    tom=np.loadtxt(values.truth,dtype=float)
+    dil=np.where(tom.T[0]<=values.sncut)
+    t=tom[dil]
     dmlist=np.unique(t.T[5])
     flulist=np.unique(t.T[7])
     widthlist=np.unique(t.T[8])
@@ -309,11 +314,10 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                 cluck = 1
             else:
                 cluck=0
-        print (pluck,dp)
+        #print (pluck,dp)
         #if
         for j in range(b):
             for k in range(c):
-
                 fp=flulist[j]
                 wp=widthlist[k]
                 depo_dm=np.where(t.T[5]==dp)
@@ -321,6 +325,8 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                 depo_wd=np.where(t.T[8]==wp)
                 mix=np.intersect1d(depo_dm,depo_fl)
                 mix=np.intersect1d(mix,depo_wd)
+                if len(mix) == 0:
+                    continue
                 tru=t[mix]
                 fredfile=ident+"{0:04}".format(int(dp))+'_'+"{0:03}".format(wp)+'_'+"{0:03}".format(fp)+'_fixed.fil.cand.fof'
                 if os.path.exists(fredfile):
@@ -340,6 +346,14 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                                 match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
                                 pd[i]= fred.T[y][pos][match][0]
                                 bpd[i]=1
+                                '''
+                                if fred.T[0][pos][match][0]<15 and (tru.T[0][i] > 25):
+                                    print (fredfile)
+                                    print ('s/n samp time boxcar idt')
+                                    print (fred[pos][match][0])
+                                    print ("------------------")
+                                    ol.write(fredfile+" "+str(fred.T[2][pos][match][0])+" "+str(fred.T[0][pos][match][0])+" "+str(tru.T[0][i])+"\n")
+                                    '''
                         for i in range(lf):
                             tcheck=fred.T[2][i]
                             pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
@@ -348,7 +362,15 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                                 match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
                                 fa[i]= tru.T[x][pos][match][0]
                                 bfa[i]=1
+                                '''
+                                if tru.T[0][pos][match][0]<15 and (fred.T[0][i] > 25):
+                                    print (fredfile)
+                                    print ('s/n samp time boxcar idt')
+                                    print (fred[pos][match][0])
+                                    print ("------------------")
+                                    ol.write(fredfile+" bb "+str(tru.T[2][pos][match][0])+" "+str(tru.T[0][pos][match][0])+" "+str(fred.T[0][i])+"\n")
                         #print (bfa,bpd)
+                        '''
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
                     else:
@@ -359,6 +381,8 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                             if len(pos) > 0:
                                 pd[i]= fred.T[y]
                                 bpd[i]=1
+                                #if fred.T[0] < 15 and (tru.T[0][i]>25):
+                                #     ol.write(fredfile+" "+str(fred.T[2])+" "+str(fred.T[0])+" "+str(tru.T[0][i])+"\n")
                         dcheck=fred.T[5]
                         tcheck=fred.T[2]
                         dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
@@ -369,6 +393,8 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                             match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
                             fa[0]= tru.T[x][pos][match][0]
                             bfa[0]=1
+                            #if tru.T[0][pos][match][0] < 15 and (fred.T[0]>25):
+                            #    ol.write(fredfile+" bb "+str(tru.T[2][pos][match][0])+" "+str(tru.T[0][pos][match][0])+" "+str(fred.T[0])+"\n")
                         #print (bfa,bpd)
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
@@ -376,18 +402,23 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                         xamax=int(np.max(fa))+5
                     if yamax < int(np.max(pd))+1:
                         yamax=int(np.max(pd))+5
-                    plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck])
-                    plt.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck])
+                    #if (sum((tru.T[x]-pd)>20)) > 0:
+                        #print(tru.T[x]-pd)
+                        #print(dp,wp,fp)
+
+                    #print(fa-fred.T[y])
+                    plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
+                    plt.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
                 else:
                     pdx=0
                     pdy=0
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck])
+                plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
                 plt.figure(2)
         if cluck:
-            plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1])
+            plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1],alpha=0.5,s=2)
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1])
+            plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1],alpha=0.5,s=2)
             plt.figure(2)
     meanie=np.arange(xamax)
     if x==y:
@@ -405,6 +436,7 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
 
     plt.savefig(values.output+"pdpfa.png")
     plt.close()
+    #ol.close()
 
 
 if values.mode==3:  ### mixed data open fof files with different flu dm and width as indicator to match each set fluence divide
@@ -418,7 +450,9 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
     plt.xlabel('Truth '+units[x])
     plt.ylabel('Fredda '+units[y])
     #####
-    t=np.loadtxt(values.truth,dtype=float)
+    tom=np.loadtxt(values.truth,dtype=float)
+    dil=np.where(tom.T[0]<=values.sncut)
+    t=tom[dil]
     dmlist=np.unique(t.T[5])
     flulist=np.unique(t.T[7])
     widthlist=np.unique(t.T[8])
@@ -463,6 +497,8 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
                 depo_wd=np.where(t.T[8]==wp)
                 mix=np.intersect1d(depo_dm,depo_fl)
                 mix=np.intersect1d(mix,depo_wd)
+                if len(mix) == 0:
+                    continue
                 tru=t[mix]
                 fredfile=ident+"{0:04}".format(int(dp))+'_'+"{0:03}".format(wp)+'_'+"{0:03}".format(fp)+'_fixed.fil.cand.fof'
                 if os.path.exists(fredfile):
@@ -518,18 +554,18 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
                         xamax=int(np.max(fa))+5
                     if yamax < int(np.max(pd))+1:
                         yamax=int(np.max(pd))+5
-                    plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck])
-                    plt.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck])
+                    plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
+                    plt.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
                 else:
                     pdx=0
                     pdy=0
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck])
+                plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
                 plt.figure(2)
         if cluck:
-            plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='Fluence <'+str(fp)+label[2])
+            plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='Fluence <'+str(fp)+label[2],alpha=0.5,s=2)
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='Fluence <'+str(fp)+label[2])
+            plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='Fluence <'+str(fp)+label[2],alpha=0.5,s=2)
             plt.figure(2)
     meanie=np.arange(xamax)
     if x==y:
@@ -560,7 +596,9 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
     plt.xlabel('Truth '+units[x])
     plt.ylabel('Fredda '+units[y])
     #####
-    t=np.loadtxt(values.truth,dtype=float)
+    tom=np.loadtxt(values.truth,dtype=float)
+    dil=np.where(tom.T[0]<=values.sncut)
+    t=tom[dil]
     dmlist=np.unique(t.T[5])
     flulist=np.unique(t.T[7])
     widthlist=np.unique(t.T[8])
@@ -601,6 +639,8 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                 depo_wd=np.where(t.T[8]==wp)
                 mix=np.intersect1d(depo_dm,depo_fl)
                 mix=np.intersect1d(mix,depo_wd)
+                if len(mix) == 0:
+                    continue
                 tru=t[mix]
                 fredfile=ident+"{0:04}".format(int(dp))+'_'+"{0:03}".format(wp)+'_'+"{0:03}".format(fp)+'_fixed.fil.cand.fof'
                 if os.path.exists(fredfile):
@@ -656,18 +696,18 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                         xamax=int(np.max(fa))+5
                     if yamax < int(np.max(pd))+1:
                         yamax=int(np.max(pd))+5
-                    plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck])
-                    plt.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck])
+                    plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
+                    plt.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
                 else:
                     pdx=0
                     pdy=0
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck])
+                plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
                 plt.figure(2)
         if cluck:
-            plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='Width <'+str(wp)+label[3])
+            plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='Width <'+str(wp)+label[3],alpha=0.5,s=2)
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='Width <'+str(wp)+label[3])
+            plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='Width <'+str(wp)+label[3],alpha=0.5,s=2)
             plt.figure(2)
     meanie=np.arange(xamax)
     if x==y:

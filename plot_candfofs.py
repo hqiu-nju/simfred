@@ -81,7 +81,7 @@ mark[1]='o'
 mark[2]='d'
 col={}
 col[0]='purple'
-col[1]='skyblue'
+col[1]='green'
 col[2]='orange'
 x=values.xaxis
 y=values.yaxis
@@ -264,7 +264,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
 
     plt.savefig(values.output+"pdpfa.png")
     plt.close()
-
+pd=0
 if values.mode==2:  ### mixed data open fof files with different flu dm and width as indicator to match each set dm divide
     plt.figure(1,figsize=(12, 9))
     plt.xlabel("False Acquistion Rate")
@@ -293,28 +293,33 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
     dmax = (np.max(dmlist))
     #ddf = int(dmax)/3 +1
     pluck = 0
-    cluck = 0
+    cluck = 1
+    kluck = 0
     for d in range(a):
         dp=dmlist[d]
+        kk=kluck
         if dp < dmax/3:
             pluck = 0
             if dmlist[d+1] > dmax/3:
-                cluck = 1
-            else:
-                cluck=0
+                #cluck = 1
+                kluck = -1
+            #else:
+                #cluck=0
         elif dp < dmax/3*2:
             pluck = 1
             if dmlist[d+1] > dmax/3*2:
-                cluck = 1
-            else:
-                cluck=0
+                #cluck = 1
+                kluck = -1
+            #else:
+                #cluck=0
         else:
             pluck = 2
             if dmlist[d] == dmax:
-                cluck = 1
-            else:
-                cluck=0
-        #print (pluck,dp)
+                #cluck = 1
+                kluck = -1
+            #else:
+                #cluck=0
+        print (pluck,dp)
         #if
         for j in range(b):
             for k in range(c):
@@ -402,24 +407,25 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                         xamax=int(np.max(fa))+5
                     if yamax < int(np.max(pd))+1:
                         yamax=int(np.max(pd))+5
-                    #if (sum((tru.T[x]-pd)>20)) > 0:
-                        #print(tru.T[x]-pd)
-                        #print(dp,wp,fp)
+                    if (sum((tru.T[x]-pd)>20)) > 0:
+                        print(tru.T[x]-pd)
+                        print(dp,wp,fp)
 
                     #print(fa-fred.T[y])
-                    plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
-                    plt.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
+                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=2)
+                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=2)
                 else:
                     pdx=0
                     pdy=0
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
+                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=2)
                 plt.figure(2)
         if cluck:
-            plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1],alpha=0.5,s=2)
+            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=2)
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='DM <'+str(dp)+label[1],alpha=0.5,s=2)
+            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=2)
             plt.figure(2)
+        kluck+=1
     meanie=np.arange(xamax)
     if x==y:
         plt.plot(meanie,meanie,color='orange')

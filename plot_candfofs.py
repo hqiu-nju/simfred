@@ -304,14 +304,14 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
     for d in range(a):
         dp=dmlist[d]
         kk=kluck
-        if dp < dmax/3:
+        if dp <= dmax/3:
             pluck = 0
             if dmlist[d+1] > dmax/3:
                 #cluck = 1
                 kluck = -1
             #else:
                 #cluck=0
-        elif dp < dmax/3*2:
+        elif dp <= dmax/3*2:
             pluck = 1
             if dmlist[d+1] > dmax/3*2:
                 #cluck = 1
@@ -485,12 +485,12 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
     for j in range(b):
         fp=flulist[j]
         kk=kluck
-        if fp < fmax/3:
+        if fp <= fmax/3:
             pluck = 0
             if flulist[j+1] > fmax/3:
                 kluck = -1
 
-        elif fp < fmax/3*2:
+        elif fp <= fmax/3*2:
             pluck = 1
             if flulist[j+1] > fmax/3*2:
                 kluck = -1
@@ -634,12 +634,12 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
     for k in range(c):
         wp=widthlist[k]
         kk=kluck
-        if wp < wmax/3:
+        if wp <= wmax/3:
             pluck = 0
             if widthlist[k+1] > wmax/3:
                 kluck += 1
                 print (kluck,kk)
-        elif wp < wmax/3*2:
+        elif wp <= wmax/3*2:
             pluck = 1
             if widthlist[k+1] > wmax/3*2:
                 #cluck = 1
@@ -655,7 +655,7 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                 print (kluck,kk)
             #else:
                 #cluck=0
-        print (wp,pluck,kk)
+        print (wp,kk)
         #if
         for d in range(a):
             for j in range(b):

@@ -417,18 +417,18 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                         #print(dp,wp,fp)
 
                     #print(fa-fred.T[y])
-                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=2)
-                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=2)
+                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
+                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 else:
                     pdx=0
                     pdy=0
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=2)
+                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)
         if cluck:
-            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=2)
+            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=5)
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=2)
+            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=5)
             plt.figure(2)
         kluck+=1
     meanie=np.arange(xamax)
@@ -474,29 +474,25 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
     yamax=10.
     xamax=10.
     fmax = (np.max(flulist))
-    #ddf = int(dmax)/3 +1
     pluck = 0
-    cluck = 0
+    cluck = 1
+    kluck = 0
     for j in range(b):
         fp=flulist[j]
+        kk=kluck
         if fp < fmax/3:
             pluck = 0
             if flulist[j+1] > fmax/3:
-                cluck = 1
-            else:
-                cluck=0
+                kluck = -1
+
         elif fp < fmax/3*2:
             pluck = 1
             if flulist[j+1] > fmax/3*2:
-                cluck = 1
-            else:
-                cluck=0
+                kluck = -1
         else:
             pluck = 2
             if flulist[j] == fmax:
-                cluck = 1
-            else:
-                cluck=0
+                kluck = -1
         print (pluck,fp)
         #if
         for d in range(a):
@@ -527,16 +523,18 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
                             if len(pos) >0:
                                 sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
                                 match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                                pd[i]= fred.T[y][pos][match][0]
-                                bpd[i]=1
+                                if sigcheck < 10:
+                                    pd[i]= fred.T[y][pos][match][0]
+                                    bpd[i]=1
                         for i in range(lf):
                             tcheck=fred.T[2][i]
                             pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
                             if len(pos) >0:
                                 sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
                                 match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
-                                fa[i]= tru.T[x][pos][match][0]
-                                bfa[i]=1
+                                if sigcheck < 10:
+                                    fa[i]= tru.T[x][pos][match][0]
+                                    bfa[i]=1
                         #print (bfa,bpd)
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
@@ -546,8 +544,10 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
                             tcheck=tru.T[2][i]
                             pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                             if len(pos) > 0:
-                                pd[i]= fred.T[y]
-                                bpd[i]=1
+                                sigcheck=abs(tru.T[0][i]-fred.T[0])
+                                if sigcheck < 10:
+                                    pd[i]= fred.T[y]
+                                    bpd[i]=1
                         dcheck=fred.T[5]
                         tcheck=fred.T[2]
                         dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
@@ -556,8 +556,9 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
                         if len(pos) >0:
                             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
                             match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
-                            fa[0]= tru.T[x][pos][match][0]
-                            bfa[0]=1
+                            if sigcheck < 10:
+                                fa[0]= tru.T[x][pos][match][0]
+                                bfa[0]=1
                         #print (bfa,bpd)
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
@@ -565,19 +566,20 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
                         xamax=int(np.max(fa))+5
                     if yamax < int(np.max(pd))+1:
                         yamax=int(np.max(pd))+5
-                    plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
-                    plt.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
+                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
+                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 else:
                     pdx=0
                     pdy=0
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
+                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)
         if cluck:
-            plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='Fluence <'+str(fp)+label[2],alpha=0.5,s=2)
+            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Fluence <'+str(fp)+label[2],alpha=0.5,s=5)
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='Fluence <'+str(fp)+label[2],alpha=0.5,s=2)
+            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Fluence <'+str(fp)+label[2],alpha=0.5,s=5)
             plt.figure(2)
+        kluck+=1
     meanie=np.arange(xamax)
     if x==y:
         plt.plot(meanie,meanie,color='orange')
@@ -622,24 +624,30 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
     wmax = (np.max(widthlist))
     #ddf = int(dmax)/3 +1
     pluck = 0
-    cluck = 0
-    m = 1
+    cluck = 1
+    kluck = 0
     for k in range(c):
         wp=widthlist[k]
-        if wp <= wmax/3*m:
-            pluck = m - 1
-            if widthlist[k] == wmax:
-                cluck = 1
-                print('max')
-            else:
-                cluck=0
-            if cluck != 1:
-                if widthlist[k+1] > wmax/3*m:
-                    cluck = 1
-                    m += 1
-                else:
-                    cluck=0
-        print (pluck,cluck,wp)
+        kk=kluck
+        if wp < wmax/3:
+            pluck = 0
+            if widthlist[k+1] > wmax/3:
+                kluck = -1
+        elif wp < wmax/3*2:
+            pluck = 1
+            if widthlist[k+1] > wmax/3*2:
+                #cluck = 1
+                kluck = -1
+            #else:
+                #cluck=0
+        else:
+            pluck = 2
+            if widthlist[d] == wmax:
+                #cluck = 1
+                kluck = -1
+            #else:
+                #cluck=0
+        print (pluck,wp)
         #if
         for d in range(a):
             for j in range(b):
@@ -668,17 +676,19 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                             pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                             if len(pos) >0:
                                 sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
-                                match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                                pd[i]= fred.T[y][pos][match][0]
-                                bpd[i]=1
+                                if sigcheck < 10:
+                                    match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
+                                    pd[i]= fred.T[y][pos][match][0]
+                                    bpd[i]=1
                         for i in range(lf):
                             tcheck=fred.T[2][i]
                             pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
                             if len(pos) >0:
                                 sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
-                                match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
-                                fa[i]= tru.T[x][pos][match][0]
-                                bfa[i]=1
+                                if sigcheck < 10:
+                                    match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                                    fa[i]= tru.T[x][pos][match][0]
+                                    bfa[i]=1
                         #print (bfa,bpd)
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
@@ -688,8 +698,10 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                             tcheck=tru.T[2][i]
                             pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                             if len(pos) > 0:
-                                pd[i]= fred.T[y]
-                                bpd[i]=1
+                                sigcheck=abs(tru.T[0][i]-fred.T[0])
+                                if sigcheck < 10:
+                                    pd[i]= fred.T[y]
+                                    bpd[i]=1
                         dcheck=fred.T[5]
                         tcheck=fred.T[2]
                         dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
@@ -698,8 +710,9 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                         if len(pos) >0:
                             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
                             match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
-                            fa[0]= tru.T[x][pos][match][0]
-                            bfa[0]=1
+                            if sigcheck < 10:
+                                fa[0]= tru.T[x][pos][match][0]
+                                bfa[0]=1
                         #print (bfa,bpd)
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
@@ -707,18 +720,18 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                         xamax=int(np.max(fa))+5
                     if yamax < int(np.max(pd))+1:
                         yamax=int(np.max(pd))+5
-                    plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
-                    plt.scatter(fa,fred.T[y],color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
+                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
+                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 else:
                     pdx=0
                     pdy=0
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],alpha=0.5,s=2)
+                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)
         if cluck:
-            plt.scatter(tru.T[x],pd,color=col[pluck],marker=mark[pluck],label='Width <'+str(wp)+label[3],alpha=0.5,s=2)
+            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Width <'+str(wp)+label[3],alpha=0.5,s=5)
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[pluck],marker=mark[pluck],label='Width <'+str(wp)+label[3],alpha=0.5,s=2)
+            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Width <'+str(wp)+label[3],alpha=0.5,s=5)
             plt.figure(2)
     meanie=np.arange(xamax)
     if x==y:

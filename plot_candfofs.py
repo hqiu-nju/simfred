@@ -81,11 +81,14 @@ mark[1]='o'
 mark[2]='d'
 col={}
 col[0]='red'
-col[1]='green'
+col[1]='#3e82fc'
 col[2]='orange'
-col[3]='skyblue'
+col[3]='green' ###dodger blue
 col[4]='black'
-col[5]='deepseablue'
+col[5]='#9a0eea'  ###violet
+col[6]='#d90166'  ###dark hot pink
+col[7]='black'
+
 x=values.xaxis
 y=values.yaxis
 ident=values.set
@@ -428,11 +431,10 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                 plt.figure(1)
                 plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)
-        if cluck:
-            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=5)
-            plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=5)
-            plt.figure(2)
+        plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=5)
+        plt.figure(1)
+        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=5)
+        plt.figure(2)
         kluck+=1
     meanie=np.arange(xamax)
     if x==y:
@@ -577,11 +579,11 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
                 plt.figure(1)
                 plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)
-        if cluck:
-            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Fluence <'+str(fp)+label[2],alpha=0.5,s=5)
-            plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Fluence <'+str(fp)+label[2],alpha=0.5,s=5)
-            plt.figure(2)
+
+        plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Fluence ='+str(fp)+label[2],alpha=0.5,s=5)
+        plt.figure(1)
+        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Fluence ='+str(fp)+label[2],alpha=0.5,s=5)
+        plt.figure(2)
         kluck+=1
     meanie=np.arange(xamax)
     if x==y:
@@ -627,30 +629,33 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
     wmax = (np.max(widthlist))
     #ddf = int(dmax)/3 +1
     pluck = 0
-    cluck = 1
     kluck = 0
+    mem=widthlist[0]
     for k in range(c):
         wp=widthlist[k]
         kk=kluck
         if wp < wmax/3:
             pluck = 0
             if widthlist[k+1] > wmax/3:
-                kluck = -1
+                kluck += 1
+                #print (kluck,kk)
         elif wp < wmax/3*2:
             pluck = 1
             if widthlist[k+1] > wmax/3*2:
                 #cluck = 1
-                kluck = -1
+                kluck += 1
+                #print (kluck,kk)
             #else:
                 #cluck=0
         else:
             pluck = 2
-            if widthlist[d] == wmax:
+            if widthlist[k] == wmax:
                 #cluck = 1
-                kluck = -1
+                kluck += 1
+                #print (kluck,kk)
             #else:
                 #cluck=0
-        print (pluck,wp)
+        print ('plotting: width= '+str(wp))
         #if
         for d in range(a):
             for j in range(b):
@@ -731,11 +736,13 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                 plt.figure(1)
                 plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)
-        if cluck:
-            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Width <'+str(wp)+label[3],alpha=0.5,s=5)
+        if kk != kluck:
+            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Width '+str(mem)+" - "+str(wp)+label[3],alpha=0.5,s=5)
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Width <'+str(wp)+label[3],alpha=0.5,s=5)
+            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Width '+str(mem)+" - "+str(wp)+label[3],alpha=0.5,s=5)
             plt.figure(2)
+            if wp!=wmax:
+                mem=widthlist[k+1]
     meanie=np.arange(xamax)
     if x==y:
         plt.plot(meanie,meanie,color='orange')

@@ -247,7 +247,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
     meanie=np.arange(xamax)
     if x==y:
         pylab.plot(meanie,meanie,color='orange')
-    plt.legend()
+    plt.legend(loc=0)
     pylab.xlim(-0.1,xamax)
     pylab.ylim(-0.1,yamax)
     if values.show:
@@ -434,7 +434,7 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
     meanie=np.arange(xamax)
     if x==y:
         plt.plot(meanie,meanie,color='orange')
-    plt.legend()
+    plt.legend(loc=0)
     plt.xlim(-0.1,xamax)
     plt.ylim(-0.1,yamax)
     if values.show:
@@ -442,7 +442,7 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
     plt.savefig(values.output+"compare.png")
     plt.close()
     plt.figure(1)
-    plt.legend()
+    plt.legend(loc=0)
 
 
     plt.savefig(values.output+"pdpfa.png")
@@ -583,7 +583,7 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
     meanie=np.arange(xamax)
     if x==y:
         plt.plot(meanie,meanie,color='orange')
-    plt.legend()
+    plt.legend(loc=0)
     plt.xlim(-0.1,xamax)
     plt.ylim(-0.1,yamax)
     if values.show:
@@ -591,7 +591,7 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
     plt.savefig(values.output+"compare.png")
     plt.close()
     plt.figure(1)
-    plt.legend()
+    plt.legend(loc=0)
 
 
     plt.savefig(values.output+"pdpfa.png")
@@ -736,7 +736,7 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
     meanie=np.arange(xamax)
     if x==y:
         plt.plot(meanie,meanie,color='orange')
-    plt.legend()
+    plt.legend(loc=0)
     plt.xlim(-0.1,xamax)
     plt.ylim(-0.1,yamax)
     if values.show:
@@ -744,7 +744,7 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
     plt.savefig(values.output+"compare.png")
     plt.close()
     plt.figure(1)
-    plt.legend()
+    plt.legend(loc=0)
 
 
     plt.savefig(values.output+"pdpfa.png")

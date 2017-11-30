@@ -638,13 +638,13 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
             pluck = 0
             if widthlist[k+1] > wmax/3:
                 kluck += 1
-                #print (kluck,kk)
+                print (kluck,kk)
         elif wp < wmax/3*2:
             pluck = 1
             if widthlist[k+1] > wmax/3*2:
                 #cluck = 1
                 kluck += 1
-                #print (kluck,kk)
+                print (kluck,kk)
             #else:
                 #cluck=0
         else:
@@ -652,7 +652,7 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
             if widthlist[k] == wmax:
                 #cluck = 1
                 kluck += 1
-                #print (kluck,kk)
+                print (kluck,kk)
             #else:
                 #cluck=0
         print ('plotting: width= '+str(wp))

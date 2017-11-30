@@ -655,7 +655,7 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                 print (kluck,kk)
             #else:
                 #cluck=0
-        print ('plotting: width= '+str(wp))
+        print (wp,pluck,kk)
         #if
         for d in range(a):
             for j in range(b):

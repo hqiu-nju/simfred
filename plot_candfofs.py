@@ -348,9 +348,10 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                             pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                             if len(pos) >0:
                                 sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
-                                match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                                pd[i]= fred.T[y][pos][match][0]
-                                bpd[i]=1
+                                if sigcheck < 10:
+                                    match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
+                                    pd[i]= fred.T[y][pos][match][0]
+                                    bpd[i]=1
                                 '''
                                 if fred.T[0][pos][match][0]<15 and (tru.T[0][i] > 25):
                                     print (fredfile)
@@ -364,9 +365,10 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                             pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
                             if len(pos) >0:
                                 sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
-                                match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
-                                fa[i]= tru.T[x][pos][match][0]
-                                bfa[i]=1
+                                if sigcheck < 10:
+                                    match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                                    fa[i]= tru.T[x][pos][match][0]
+                                    bfa[i]=1
                                 '''
                                 if tru.T[0][pos][match][0]<15 and (fred.T[0][i] > 25):
                                     print (fredfile)
@@ -384,8 +386,10 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                             tcheck=tru.T[2][i]
                             pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                             if len(pos) > 0:
-                                pd[i]= fred.T[y]
-                                bpd[i]=1
+                                sigcheck=abs(tru.T[0][i]-fred.T[0])
+                                if sigcheck < 10:
+                                    pd[i]= fred.T[y]
+                                    bpd[i]=1
                                 #if fred.T[0] < 15 and (tru.T[0][i]>25):
                                 #     ol.write(fredfile+" "+str(fred.T[2])+" "+str(fred.T[0])+" "+str(tru.T[0][i])+"\n")
                         dcheck=fred.T[5]
@@ -396,8 +400,9 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                         if len(pos) >0:
                             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
                             match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
-                            fa[0]= tru.T[x][pos][match][0]
-                            bfa[0]=1
+                            if sigcheck < 10:
+                                fa[0]= tru.T[x][pos][match][0]
+                                bfa[0]=1
                             #if tru.T[0][pos][match][0] < 15 and (fred.T[0]>25):
                             #    ol.write(fredfile+" bb "+str(tru.T[2][pos][match][0])+" "+str(tru.T[0][pos][match][0])+" "+str(fred.T[0])+"\n")
                         #print (bfa,bpd)
@@ -407,9 +412,9 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                         xamax=int(np.max(fa))+5
                     if yamax < int(np.max(pd))+1:
                         yamax=int(np.max(pd))+5
-                    if (sum((tru.T[x]-pd)>20)) > 0:
-                        print(tru.T[x]-pd)
-                        print(dp,wp,fp)
+                    #if (sum((tru.T[x]-pd)>20)) > 0:
+                        #print(tru.T[x]-pd)
+                        #print(dp,wp,fp)
 
                     #print(fa-fred.T[y])
                     plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=2)

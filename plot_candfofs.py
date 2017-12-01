@@ -734,9 +734,9 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                     pdx=0
                     pdy=0
                 if pdx < 0.5:
-                    ol.write("pd "+fredfile)
+                    ol.write("pd "+fredfile+" "+str(pdx)+"\n")
                 if pdy > 0.5:
-                    ol.write("fa "+fredfile)
+                    ol.write("fa "+fredfile+" "+str(pdy)+"\n")
                 plt.figure(1)
                 plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)

@@ -88,7 +88,7 @@ col[4]='black'
 col[5]='#9a0eea'  ###violet
 col[6]='#d90166'  ###dark hot pink
 col[7]='black'
-
+ol=open('outlier.txt','w')
 x=values.xaxis
 y=values.yaxis
 ident=values.set
@@ -733,6 +733,10 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                 else:
                     pdx=0
                     pdy=0
+                if pdx < 0.5:
+                    ol.write("pd "+fredfile)
+                if pdy > 0.5:
+                    ol.write("fa "+fredfile)
                 plt.figure(1)
                 plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)
@@ -759,3 +763,4 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
 
     plt.savefig(values.output+"pdpfa.png")
     plt.close()
+ol.close()

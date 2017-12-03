@@ -88,7 +88,7 @@ col[4]='black'
 col[5]='#9a0eea'  ###violet
 col[6]='#d90166'  ###dark hot pink
 col[7]='black'
-ol=open('outlier.txt','w')
+ol=open(values.output+'_outlier.txt','w')
 x=values.xaxis
 y=values.yaxis
 ident=values.set
@@ -236,6 +236,10 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                     fa[0]= tru.T[x][pos][match][0]
                     bfa[0]=1
                 print (bfa,bpd)
+                if bpd < 0.9:
+                    ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(bpd)+"\n")
+                if bfa > 0.1:
+                    ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(bfa)+"\n")
                 pdx.append(1.-float(sum(bfa))/len(bfa))
                 pdy.append(float(sum(bpd))/len(bpd))
             if xamax < int(np.max(fa))+1:
@@ -428,6 +432,10 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                 else:
                     pdx=0
                     pdy=0
+                if pdx < 0.9:
+                    ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
+                if pdy > 0.1:
+                    ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
                 plt.figure(1)
                 plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)
@@ -576,6 +584,10 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
                 else:
                     pdx=0
                     pdy=0
+                if pdx < 0.9:
+                    ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
+                if pdy > 0.1:
+                    ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
                 plt.figure(1)
                 plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)
@@ -733,10 +745,10 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                 else:
                     pdx=0
                     pdy=0
-                if pdx < 0.5:
-                    ol.write("pd "+fredfile+" "+str(pdx)+"\n")
-                if pdy > 0.5:
-                    ol.write("fa "+fredfile+" "+str(pdy)+"\n")
+                if pdx < 0.9:
+                    ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
+                if pdy > 0.1:
+                    ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
                 plt.figure(1)
                 plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
                 plt.figure(2)

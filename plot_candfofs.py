@@ -274,7 +274,7 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
 
     plt.savefig(values.output+"pdpfa.png")
     plt.close()
-pd=0
+
 if values.mode==2:  ### mixed data open fof files with different flu dm and width as indicator to match each set dm divide
     plt.figure(1,figsize=(12, 9))
     plt.xlabel("False Acquistion Rate")

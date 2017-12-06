@@ -45,6 +45,9 @@ if values.verbose:
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.INFO)
+
+limit=10
+dlim=5
 ###number links just in case you forget
 '''
 sn=0
@@ -114,26 +117,26 @@ if values.mode==0:  ######### for simply comparing truth and fredda for one para
     bfa= np.zeros((lf),dtype=bool) ### false acquistion
     for i in range(lt):
         dcheck=tru.T[5][i]
-        tcheck=tru.T[2][i]
-        dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
-        tpos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
+        tcheck=tru.T[1][i]
+        dpos=np.intersect1d(np.where(fred.T[5]<dcheck+dlim),np.where(fred.T[5]>dcheck-dlim))
+        tpos=np.intersect1d(np.where(fred.T[1]<tcheck+limit),np.where(fred.T[1]>tcheck-limit))
         pos=np.intersect1d(dpos,tpos)
         if len(pos) >0:
-            sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
+            sigcheck=np.min(abs(fred.T[5][pos]-tru.T[5][i]))
             if sigcheck <= 4:
-                match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
+                match=np.where(abs(fred.T[5][pos]-tru.T[5][i])==sigcheck)
                 pd[i]= fred.T[x][pos][match][0]
                 bpd[i]=1
     for i in range(lf):
         dcheck=fred.T[5][i]
-        tcheck=fred.T[2][i]
+        tcheck=fred.T[1][i]
         dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
-        tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
+        tpos=np.intersect1d(np.where(tru.T[1]<tcheck+limit),np.where(tru.T[1]>tcheck-limit))
         pos=np.intersect1d(dpos,tpos)
         if len(pos) >0:
             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
             if sigcheck <= 4:
-                match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                match=np.where(abs(tru.T[5][pos]-fred.T[5][i])==sigcheck)
                 fa[i]= tru.T[x][pos][match][0]
                 bfa[i]=1
     print ('detection rate')
@@ -192,24 +195,24 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
             if lf >1:
                 for i in range(lt):
                     dcheck=tru.T[5][i]
-                    tcheck=tru.T[2][i]
-                    dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
-                    tpos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
+                    tcheck=tru.T[1][i]
+                    dpos=np.intersect1d(np.where(fred.T[5]<dcheck+dlim),np.where(fred.T[5]>dcheck-dlim))
+                    tpos=np.intersect1d(np.where(fred.T[1]<tcheck+limit),np.where(fred.T[1]>tcheck-limit))
                     pos=np.intersect1d(dpos,tpos)
                     if len(pos) >0:
-                        sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
-                        match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
+                        sigcheck=np.min(abs(fred.T[5][pos]-tru.T[5][i]))
+                        match=np.where(abs(fred.T[5][pos]-tru.T[5][i])==sigcheck)
                         pd[i]= fred.T[y][pos][match][0]
                         bpd[i]=1
                 for i in range(lf):
                     dcheck=fred.T[5][i]
-                    tcheck=fred.T[2][i]
+                    tcheck=fred.T[1][i]
                     dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
-                    tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
+                    tpos=np.intersect1d(np.where(tru.T[1]<tcheck+limit),np.where(tru.T[1]>tcheck-limit))
                     pos=np.intersect1d(dpos,tpos)
                     if len(pos) >0:
                         sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
-                        match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                        match=np.where(abs(tru.T[5][pos]-fred.T[5][i])==sigcheck)
                         fa[i]= tru.T[x][pos][match][0]
                         bfa[i]=1
                 print (bfa,bpd)
@@ -219,22 +222,22 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
                 #print('single fredda')
                 for i in range(lt):
                     dcheck=tru.T[5][i]
-                    tcheck=tru.T[2][i]
-                    dpos=np.intersect1d(np.where(fred.T[5]<dcheck+10),np.where(fred.T[5]>dcheck-10))
-                    tpos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
+                    tcheck=tru.T[1][i]
+                    dpos=np.intersect1d(np.where(fred.T[5]<dcheck+dlim),np.where(fred.T[5]>dcheck-dlim))
+                    tpos=np.intersect1d(np.where(fred.T[1]<tcheck+limit),np.where(fred.T[1]>tcheck-limit))
                     pos=np.intersect1d(dpos,tpos)
                     if len(pos) > 0:
                         pd[i]= fred.T[y]
                         bpd[i]=1
 
                 dcheck=fred.T[5]
-                tcheck=fred.T[2]
+                tcheck=fred.T[1]
                 dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
-                tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
+                tpos=np.intersect1d(np.where(tru.T[1]<tcheck+limit),np.where(tru.T[1]>tcheck-limit))
                 pos=np.intersect1d(dpos,tpos)
                 if len(pos) >0:
                     sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
-                    match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
+                    match=np.where(abs(tru.T[5][pos]-fred.T[5])==sigcheck)
                     fa[0]= tru.T[x][pos][match][0]
                     bfa[0]=1
                 print (bfa,bpd)
@@ -279,16 +282,16 @@ if values.mode==1:   ### drawing the probability of detected versus false acquis
 
 if values.mode==2:  ### mixed data open fof files with different flu dm and width as indicator to match each set dm divide
     plt.figure(1,figsize=(12, 9))
-    plt.xlabel("False Acquistion Rate")
-    plt.ylabel("Detection Rate")
+    plt.xlabel("False Acquistion Rate",fontsize=15)
+    plt.ylabel("Detection Rate",fontsize=15)
     plt.xlim(-0.01,1.01)
     plt.ylim(-0.01,1.01)
     ###
     #ol=open(ident+".ol.dat","w")
     ####
     plt.figure(2,figsize=(12, 9))
-    plt.xlabel('Truth '+units[x])
-    plt.ylabel('Fredda '+units[y])
+    plt.xlabel('Truth '+units[x],fontsize=15)
+    plt.ylabel('Fredda '+units[y],fontsize=15)
     #####
     tom=np.loadtxt(values.truth,dtype=float)
     dil=np.where(tom.T[0]<=values.sncut)
@@ -313,24 +316,15 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
         if dp <= dmax/3:
             pluck = 0
             if dmlist[d+1] > dmax/3:
-                #cluck = 1
                 kluck = -1
-            #else:
-                #cluck=0
         elif dp <= dmax/3*2:
             pluck = 1
             if dmlist[d+1] > dmax/3*2:
-                #cluck = 1
                 kluck = -1
-            #else:
-                #cluck=0
         else:
             pluck = 2
             if dmlist[d] == dmax:
-                #cluck = 1
                 kluck = -1
-            #else:
-                #cluck=0
         print (pluck,dp)
         #if
         for j in range(b):
@@ -342,6 +336,7 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                 depo_wd=np.where(t.T[8]==wp)
                 mix=np.intersect1d(depo_dm,depo_fl)
                 mix=np.intersect1d(mix,depo_wd)
+                limit=wp/1.2
                 if len(mix) == 0:
                     continue
                 tru=t[mix]
@@ -356,60 +351,56 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                     bfa=np.zeros(lf,dtype=bool)
                     if lf >1:
                         for i in range(lt):
-                            tcheck=tru.T[2][i]
-                            pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
+                            dcheck=tru.T[5][i]
+                            tcheck=tru.T[1][i]
+                            dpos=np.intersect1d(np.where(fred.T[5]<dcheck+dlim),np.where(fred.T[5]>dcheck-dlim))
+                            tpos=np.intersect1d(np.where(fred.T[1]<tcheck+limit),np.where(fred.T[1]>tcheck-limit))
+                            pos=np.intersect1d(tpos,dpos)
                             if len(pos) >0:
                                 sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
                                 match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
                                 pd[i]= fred.T[y][pos][match][0]
                                 bpd[i]=1
-                                '''
-                                if fred.T[0][pos][match][0]<15 and (tru.T[0][i] > 25):
-                                    print (fredfile)
-                                    print ('s/n samp time boxcar idt')
-                                    print (fred[pos][match][0])
-                                    print ("------------------")
-                                    ol.write(fredfile+" "+str(fred.T[2][pos][match][0])+" "+str(fred.T[0][pos][match][0])+" "+str(tru.T[0][i])+"\n")
-                                    '''
                         for i in range(lf):
-                            tcheck=fred.T[2][i]
-                            pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
+                            tcheck=fred.T[1][i]
+                            dcheck=fred.T[5][i]
+                            tpos=np.intersect1d(np.where(tru.T[1]<tcheck+limit),np.where(tru.T[1]>tcheck-limit))
+                            dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
+                            pos=np.intersect1d(tpos,dpos)
                             if len(pos) >0:
                                 sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
                                 match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
                                 fa[i]= tru.T[x][pos][match][0]
                                 bfa[i]=1
+                                #print(tcheck,dcheck,tru.T[5][pos][match][0])
                                 histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
-                                '''
-                                if tru.T[0][pos][match][0]<15 and (fred.T[0][i] > 25):
-                                    print (fredfile)
-                                    print ('s/n samp time boxcar idt')
-                                    print (fred[pos][match][0])
-                                    print ("------------------")
-                                    ol.write(fredfile+" bb "+str(tru.T[2][pos][match][0])+" "+str(tru.T[0][pos][match][0])+" "+str(fred.T[0][i])+"\n")
-                        #print (bfa,bpd)
-                        '''
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
                     else:
                         #print('single fredda')
                         for i in range(lt):
-                            tcheck=tru.T[2][i]
-                            pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
+                            tcheck=tru.T[1][i]
+                            dcheck=tru.T[5][i]
+                            dpos=np.intersect1d(np.where(fred.T[5]<dcheck+dlim),np.where(fred.T[5]>dcheck-dlim))
+                            tpos=np.intersect1d(np.where(fred.T[1]<tcheck+limit),np.where(fred.T[1]>tcheck-limit))
+                            pos=np.intersect1d(tpos,dpos)
                             if len(pos) > 0:
                                 sigcheck=abs(tru.T[0][i]-fred.T[0])
                                 pd[i]= fred.T[y]
                                 bpd[i]=1
                                 #if fred.T[0] < 15 and (tru.T[0][i]>25):
                                 #     ol.write(fredfile+" "+str(fred.T[2])+" "+str(fred.T[0])+" "+str(tru.T[0][i])+"\n")
-                        tcheck=fred.T[2]
-                        tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
-                        pos=tpos
+                        tcheck=fred.T[1]
+                        dcheck=fred.T[5]
+                        tpos=np.intersect1d(np.where(tru.T[1]<tcheck+limit),np.where(tru.T[1]>tcheck-limit))
+                        dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
+                        pos=np.intersect1d(tpos,dpos)
                         if len(pos) >0:
                             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
                             match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
                             fa[0]= tru.T[x][pos][match][0]
                             bfa[0]=1
+                            #print(tcheck,dcheck,tru.T[5][pos][match][0])
                             #histo.write("#### time error, s/n truth, s/n fredda, dm, dm fredda, boxcar, boxcar fredda \n")
                             histo.write("%d %f %f %f %f %d %d\n"%((fred.T[1]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0],tru.T[5][pos][match][0],fred.T[5],tru.T[3][pos][match][0],fred.T[3]))
                         pdx=(1.-float(sum(bfa))/len(bfa))
@@ -423,15 +414,15 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                         #print(dp,wp,fp)
 
                     #print(fa-fred.T[y])
-                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
-                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
+                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
+                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
                 else:
                     pdx=0.0
                     pdy=0.0
                 ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
                 ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
+                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
                 plt.figure(2)
         plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=7)
         plt.figure(1)
@@ -441,7 +432,7 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
     meanie=np.arange(xamax)
     if x==y:
         plt.plot(meanie,meanie,color='orange')
-    plt.legend(loc=0)
+    plt.legend(loc=0,fontsize=15)
     plt.xlim(-0.1,xamax)
     plt.ylim(-0.1,yamax)
     if values.show:
@@ -449,314 +440,11 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
     plt.savefig(values.output+"compare.png")
     plt.close()
     plt.figure(1)
-    plt.legend(loc=0)
-
-
-    plt.savefig(values.output+"pdpfa.png")
-    plt.close()
-    #ol.close()
-
-
-if values.mode==3:  ### mixed data open fof files with different flu dm and width as indicator to match each set fluence divide
-    plt.figure(1)
-    plt.xlabel("False Acquistion Rate")
-    plt.ylabel("Detection Rate")
-    plt.xlim(-0.01,1.01)
-    plt.ylim(-0.01,1.01)
-    ###
-    plt.figure(2)
-    plt.xlabel('Truth '+units[x])
-    plt.ylabel('Fredda '+units[y])
-    #####
-    tom=np.loadtxt(values.truth,dtype=float)
-    dil=np.where(tom.T[0]<=values.sncut)
-    t=tom[dil]
-    dmlist=np.unique(t.T[5])
-    flulist=np.unique(t.T[7])
-    widthlist=np.unique(t.T[8])
-    ####boxcar= t.T[3] idt=
-    a=len(dmlist)
-    b=len(flulist)
-    c=len(widthlist)
-    yamax=10.
-    xamax=10.
-    fmax = (np.max(flulist))
-    pluck = 0
-    cluck = 1
-    kluck = 0
-    for j in range(b):
-        fp=flulist[j]
-        kk=kluck
-        if fp <= fmax/3:
-            pluck = 0
-            if flulist[j+1] > fmax/3:
-                kluck = -1
-
-        elif fp <= fmax/3*2:
-            pluck = 1
-            if flulist[j+1] > fmax/3*2:
-                kluck = -1
-        else:
-            pluck = 2
-            if flulist[j] == fmax:
-                kluck = -1
-        print (pluck,fp)
-        #if
-        for d in range(a):
-            for k in range(c):
-                dp=dmlist[d]
-                wp=widthlist[k]
-                depo_dm=np.where(t.T[5]==dp)
-                depo_fl=np.where(t.T[7]==fp)
-                depo_wd=np.where(t.T[8]==wp)
-                mix=np.intersect1d(depo_dm,depo_fl)
-                mix=np.intersect1d(mix,depo_wd)
-                if len(mix) == 0:
-                    continue
-                tru=t[mix]
-                fredfile=ident+"{0:04}".format(int(dp))+'_'+"{0:03}".format(wp)+'_'+"{0:03}".format(fp)+'_fixed.fil.cand.fof'
-                if os.path.exists(fredfile):
-                    fred=np.loadtxt(fredfile,dtype=float)
-                    lt=len(mix)
-                    lf=int(len(fred.flatten())/12)
-                    pd=np.zeros(lt,dtype=float)
-                    fa=np.zeros(lf,dtype=float)
-                    bpd=np.zeros(lt,dtype=bool)
-                    bfa=np.zeros(lf,dtype=bool)
-                    if lf >1:
-                        for i in range(lt):
-                            tcheck=tru.T[2][i]
-                            pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
-                            if len(pos) >0:
-                                sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
-                                match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                                pd[i]= fred.T[y][pos][match][0]
-                                bpd[i]=1
-                        for i in range(lf):
-                            tcheck=fred.T[2][i]
-                            pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
-                            if len(pos) >0:
-                                sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
-                                match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
-                                fa[i]= tru.T[x][pos][match][0]
-                                bfa[i]=1
-                                histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
-                        #print (bfa,bpd)
-                        pdx=(1.-float(sum(bfa))/len(bfa))
-                        pdy=(float(sum(bpd))/len(bpd))
-                    else:
-                        #print('single fredda')
-                        for i in range(lt):
-                            tcheck=tru.T[2][i]
-                            pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
-                            if len(pos) > 0:
-                                sigcheck=abs(tru.T[0][i]-fred.T[0])
-                                pd[i]= fred.T[y]
-                                bpd[i]=1
-                        tcheck=fred.T[2]
-                        tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
-                        pos=tpos
-                        if len(pos) >0:
-                            sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
-                            match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
-                            fa[0]= tru.T[x][pos][match][0]
-                            bfa[0]=1
-                            histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
-                        pdx=(1.-float(sum(bfa))/len(bfa))
-                        pdy=(float(sum(bpd))/len(bpd))
-                    if xamax < int(np.max(fa))+1:
-                        xamax=int(np.max(fa))+5
-                    if yamax < int(np.max(pd))+1:
-                        yamax=int(np.max(pd))+5
-                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
-                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
-                else:
-                    pdx=0.0
-                    pdy=0.0
-                ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
-                ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
-                plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
-                plt.figure(2)
-
-        plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Fluence ='+str(fp)+label[2],alpha=0.5,s=7)
-        plt.figure(1)
-        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Fluence ='+str(fp)+label[2],alpha=0.5,s=7)
-        plt.figure(2)
-        kluck+=1
-    meanie=np.arange(xamax)
-    if x==y:
-        plt.plot(meanie,meanie,color='orange')
-    plt.legend(loc=0)
-    plt.xlim(-0.1,xamax)
-    plt.ylim(-0.1,yamax)
-    if values.show:
-        plt.show()
-    plt.savefig(values.output+"compare.png")
-    plt.close()
-    plt.figure(1)
-    plt.legend(loc=0)
+    plt.legend(loc=0,fontsize=15)
 
 
     plt.savefig(values.output+"pdpfa.png")
     plt.close()
 
-
-if values.mode==4:  ### mixed data open fof files with different flu dm and width as indicator to match each set width divide
-    plt.figure(1)
-    plt.xlabel("False Acquistion Rate")
-    plt.ylabel("Detection Rate")
-    plt.xlim(-0.01,1.01)
-    plt.ylim(-0.01,1.01)
-    ###
-    plt.figure(2)
-    plt.xlabel('Truth '+units[x])
-    plt.ylabel('Fredda '+units[y])
-    #####
-    tom=np.loadtxt(values.truth,dtype=float)
-    dil=np.where(tom.T[0]<=values.sncut)
-    t=tom[dil]
-    dmlist=np.unique(t.T[5])
-    flulist=np.unique(t.T[7])
-    widthlist=np.unique(t.T[8])
-    ####boxcar= t.T[3] idt=
-    a=len(dmlist)
-    b=len(flulist)
-    c=len(widthlist)
-    yamax=10.
-    xamax=10.
-    wmax = (np.max(widthlist))
-    #ddf = int(dmax)/3 +1
-    pluck = 0
-    kluck = 0
-    mem=widthlist[0]
-    for k in range(c):
-        wp=widthlist[k]
-        kk=kluck
-        if wp <= wmax/3:
-            pluck = 0
-            if widthlist[k+1] > wmax/3:
-                kluck += 1
-                print (kluck,kk)
-        elif wp <= wmax/3*2:
-            pluck = 1
-            if widthlist[k+1] > wmax/3*2:
-                #cluck = 1
-                kluck += 1
-                print (kluck,kk)
-            #else:
-                #cluck=0
-        else:
-            pluck = 2
-            if widthlist[k] == wmax:
-                #cluck = 1
-                kluck += 1
-                print (kluck,kk)
-            #else:
-                #cluck=0
-        print (wp,kk)
-        #if
-        for d in range(a):
-            for j in range(b):
-                dp=dmlist[d]
-                fp=flulist[j]
-                depo_dm=np.where(t.T[5]==dp)
-                depo_fl=np.where(t.T[7]==fp)
-                depo_wd=np.where(t.T[8]==wp)
-                mix=np.intersect1d(depo_dm,depo_fl)
-                mix=np.intersect1d(mix,depo_wd)
-                if len(mix) == 0:
-                    continue
-                tru=t[mix]
-                fredfile=ident+"{0:04}".format(int(dp))+'_'+"{0:03}".format(wp)+'_'+"{0:03}".format(fp)+'_fixed.fil.cand.fof'
-                if os.path.exists(fredfile):
-                    fred=np.loadtxt(fredfile,dtype=float)
-                    lt=len(mix)
-                    lf=int(len(fred.flatten())/12)
-                    pd=np.zeros(lt,dtype=float)
-                    fa=np.zeros(lf,dtype=float)
-                    bpd=np.zeros(lt,dtype=bool)
-                    bfa=np.zeros(lf,dtype=bool)
-                    if lf >1:
-                        for i in range(lt):
-                            tcheck=tru.T[2][i]
-                            pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
-                            if len(pos) >0:
-                                sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
-                                match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                                pd[i]= fred.T[y][pos][match][0]
-                                bpd[i]=1
-                        for i in range(lf):
-                            tcheck=fred.T[2][i]
-                            pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
-                            if len(pos) >0:
-                                sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
-                                match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
-                                fa[i]= tru.T[x][pos][match][0]
-                                bfa[i]=1
-                                histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
-                        #print (bfa,bpd)
-                        pdx=(1.-float(sum(bfa))/len(bfa))
-                        pdy=(float(sum(bpd))/len(bpd))
-                    else:
-                        #print('single fredda')
-                        for i in range(lt):
-                            tcheck=tru.T[2][i]
-                            pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
-                            if len(pos) > 0:
-                                sigcheck=abs(tru.T[0][i]-fred.T[0])
-                                pd[i]= fred.T[y]
-                                bpd[i]=1
-                        tcheck=fred.T[2]
-                        tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
-                        pos=tpos
-                        if len(pos) >0:
-                            sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
-                            match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
-                            fa[0]= tru.T[x][pos][match][0]
-                            bfa[0]=1
-                            histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
-                        #print (bfa,bpd)
-                        pdx=(1.-float(sum(bfa))/len(bfa))
-                        pdy=(float(sum(bpd))/len(bpd))
-                    if xamax < int(np.max(fa))+1:
-                        xamax=int(np.max(fa))+5
-                    if yamax < int(np.max(pd))+1:
-                        yamax=int(np.max(pd))+5
-                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
-                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
-                else:
-                    pdx=0.0
-                    pdy=0.0
-                if pdx > 0.1:
-                    ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
-                if pdy < 0.9:
-                    ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
-                plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
-                plt.figure(2)
-        if kk != kluck:
-            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Width '+str(mem)+" - "+str(wp)+label[3],alpha=0.5,s=7)
-            plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Width '+str(mem)+" - "+str(wp)+label[3],alpha=0.5,s=7)
-            plt.figure(2)
-            if wp!=wmax:
-                mem=widthlist[k+1]
-    meanie=np.arange(xamax)
-    if x==y:
-        plt.plot(meanie,meanie,color='orange')
-    plt.legend(loc=0)
-    plt.xlim(-0.1,xamax)
-    plt.ylim(-0.1,yamax)
-    if values.show:
-        plt.show()
-    plt.savefig(values.output+"compare.png")
-    plt.close()
-    plt.figure(1)
-    plt.legend(loc=0)
-
-
-    plt.savefig(values.output+"pdpfa.png")
-    plt.close()
 ol.close()
 histo.close()

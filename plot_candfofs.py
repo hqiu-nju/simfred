@@ -88,7 +88,9 @@ col[4]='black'
 col[5]='#9a0eea'  ###violet
 col[6]='#d90166'  ###dark hot pink
 col[7]='black'
-ol=open(values.output+'_outlier.txt','w')
+ol=open(values.output+'outlier.txt','w')
+histo=open(values.output+"histodata.txt",'w')
+histo.write("#### time error, s/n truth, s/n fredda, dm, dm_fredda, width_intrinsic, boxcar_fredda \n")
 x=values.xaxis
 y=values.yaxis
 ident=values.set
@@ -358,10 +360,9 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                             pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                             if len(pos) >0:
                                 sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
-                                if sigcheck < 10:
-                                    match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                                    pd[i]= fred.T[y][pos][match][0]
-                                    bpd[i]=1
+                                match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
+                                pd[i]= fred.T[y][pos][match][0]
+                                bpd[i]=1
                                 '''
                                 if fred.T[0][pos][match][0]<15 and (tru.T[0][i] > 25):
                                     print (fredfile)
@@ -375,10 +376,10 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                             pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
                             if len(pos) >0:
                                 sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
-                                if sigcheck < 10:
-                                    match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
-                                    fa[i]= tru.T[x][pos][match][0]
-                                    bfa[i]=1
+                                match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                                fa[i]= tru.T[x][pos][match][0]
+                                bfa[i]=1
+                                histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
                                 '''
                                 if tru.T[0][pos][match][0]<15 and (fred.T[0][i] > 25):
                                     print (fredfile)
@@ -397,25 +398,20 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                             pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                             if len(pos) > 0:
                                 sigcheck=abs(tru.T[0][i]-fred.T[0])
-                                if sigcheck < 10:
-                                    pd[i]= fred.T[y]
-                                    bpd[i]=1
+                                pd[i]= fred.T[y]
+                                bpd[i]=1
                                 #if fred.T[0] < 15 and (tru.T[0][i]>25):
                                 #     ol.write(fredfile+" "+str(fred.T[2])+" "+str(fred.T[0])+" "+str(tru.T[0][i])+"\n")
-                        dcheck=fred.T[5]
                         tcheck=fred.T[2]
-                        dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
                         tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
-                        pos=np.intersect1d(dpos,tpos)
+                        pos=tpos
                         if len(pos) >0:
                             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
                             match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
-                            if sigcheck < 10:
-                                fa[0]= tru.T[x][pos][match][0]
-                                bfa[0]=1
-                            #if tru.T[0][pos][match][0] < 15 and (fred.T[0]>25):
-                            #    ol.write(fredfile+" bb "+str(tru.T[2][pos][match][0])+" "+str(tru.T[0][pos][match][0])+" "+str(fred.T[0])+"\n")
-                        #print (bfa,bpd)
+                            fa[0]= tru.T[x][pos][match][0]
+                            bfa[0]=1
+                            #histo.write("#### time error, s/n truth, s/n fredda, dm, dm fredda, boxcar, boxcar fredda \n")
+                            histo.write("%d %f %f %f %f %d %d\n"%((fred.T[1]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0],tru.T[5][pos][match][0],fred.T[5],tru.T[3][pos][match][0],fred.T[3]))
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
                     if xamax < int(np.max(fa))+1:
@@ -427,21 +423,19 @@ if values.mode==2:  ### mixed data open fof files with different flu dm and widt
                         #print(dp,wp,fp)
 
                     #print(fa-fred.T[y])
-                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
-                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
+                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
+                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
                 else:
-                    pdx=0
-                    pdy=0
-                if pdx < 0.9:
-                    ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
-                if pdy > 0.1:
-                    ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
+                    pdx=0.0
+                    pdy=0.0
+                ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
+                ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
+                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
                 plt.figure(2)
-        plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=5)
+        plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=7)
         plt.figure(1)
-        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=5)
+        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='DM ='+str(dp)+label[1],alpha=0.5,s=7)
         plt.figure(2)
         kluck+=1
     meanie=np.arange(xamax)
@@ -536,18 +530,17 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
                             if len(pos) >0:
                                 sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
                                 match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                                if sigcheck < 10:
-                                    pd[i]= fred.T[y][pos][match][0]
-                                    bpd[i]=1
+                                pd[i]= fred.T[y][pos][match][0]
+                                bpd[i]=1
                         for i in range(lf):
                             tcheck=fred.T[2][i]
                             pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
                             if len(pos) >0:
                                 sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
                                 match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
-                                if sigcheck < 10:
-                                    fa[i]= tru.T[x][pos][match][0]
-                                    bfa[i]=1
+                                fa[i]= tru.T[x][pos][match][0]
+                                bfa[i]=1
+                                histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
                         #print (bfa,bpd)
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
@@ -558,43 +551,37 @@ if values.mode==3:  ### mixed data open fof files with different flu dm and widt
                             pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                             if len(pos) > 0:
                                 sigcheck=abs(tru.T[0][i]-fred.T[0])
-                                if sigcheck < 10:
-                                    pd[i]= fred.T[y]
-                                    bpd[i]=1
-                        dcheck=fred.T[5]
+                                pd[i]= fred.T[y]
+                                bpd[i]=1
                         tcheck=fred.T[2]
-                        dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
                         tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
-                        pos=np.intersect1d(dpos,tpos)
+                        pos=tpos
                         if len(pos) >0:
                             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
                             match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
-                            if sigcheck < 10:
-                                fa[0]= tru.T[x][pos][match][0]
-                                bfa[0]=1
-                        #print (bfa,bpd)
+                            fa[0]= tru.T[x][pos][match][0]
+                            bfa[0]=1
+                            histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
                     if xamax < int(np.max(fa))+1:
                         xamax=int(np.max(fa))+5
                     if yamax < int(np.max(pd))+1:
                         yamax=int(np.max(pd))+5
-                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
-                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
+                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
+                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
                 else:
-                    pdx=0
-                    pdy=0
-                if pdx < 0.9:
-                    ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
-                if pdy > 0.1:
-                    ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
+                    pdx=0.0
+                    pdy=0.0
+                ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
+                ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
+                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
                 plt.figure(2)
 
-        plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Fluence ='+str(fp)+label[2],alpha=0.5,s=5)
+        plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Fluence ='+str(fp)+label[2],alpha=0.5,s=7)
         plt.figure(1)
-        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Fluence ='+str(fp)+label[2],alpha=0.5,s=5)
+        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Fluence ='+str(fp)+label[2],alpha=0.5,s=7)
         plt.figure(2)
         kluck+=1
     meanie=np.arange(xamax)
@@ -696,19 +683,18 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                             pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                             if len(pos) >0:
                                 sigcheck=np.min(abs(fred.T[0][pos]-tru.T[0][i]))
-                                if sigcheck < 10:
-                                    match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
-                                    pd[i]= fred.T[y][pos][match][0]
-                                    bpd[i]=1
+                                match=np.where(abs(fred.T[0][pos]-tru.T[0][i])==sigcheck)
+                                pd[i]= fred.T[y][pos][match][0]
+                                bpd[i]=1
                         for i in range(lf):
                             tcheck=fred.T[2][i]
                             pos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
                             if len(pos) >0:
                                 sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
-                                if sigcheck < 10:
-                                    match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
-                                    fa[i]= tru.T[x][pos][match][0]
-                                    bfa[i]=1
+                                match=np.where(abs(tru.T[0][pos]-fred.T[0][i])==sigcheck)
+                                fa[i]= tru.T[x][pos][match][0]
+                                bfa[i]=1
+                                histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
                         #print (bfa,bpd)
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
@@ -719,20 +705,17 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                             pos=np.intersect1d(np.where(fred.T[2]<tcheck+1),np.where(fred.T[2]>tcheck-1))
                             if len(pos) > 0:
                                 sigcheck=abs(tru.T[0][i]-fred.T[0])
-                                if sigcheck < 10:
-                                    pd[i]= fred.T[y]
-                                    bpd[i]=1
-                        dcheck=fred.T[5]
+                                pd[i]= fred.T[y]
+                                bpd[i]=1
                         tcheck=fred.T[2]
-                        dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
                         tpos=np.intersect1d(np.where(tru.T[2]<tcheck+1),np.where(tru.T[2]>tcheck-1))
-                        pos=np.intersect1d(dpos,tpos)
+                        pos=tpos
                         if len(pos) >0:
                             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
                             match=np.where(abs(tru.T[0][pos]-fred.T[0])==sigcheck)
-                            if sigcheck < 10:
-                                fa[0]= tru.T[x][pos][match][0]
-                                bfa[0]=1
+                            fa[0]= tru.T[x][pos][match][0]
+                            bfa[0]=1
+                            histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
                         #print (bfa,bpd)
                         pdx=(1.-float(sum(bfa))/len(bfa))
                         pdy=(float(sum(bpd))/len(bpd))
@@ -740,22 +723,22 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
                         xamax=int(np.max(fa))+5
                     if yamax < int(np.max(pd))+1:
                         yamax=int(np.max(pd))+5
-                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
-                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
+                    plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
+                    plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
                 else:
-                    pdx=0
-                    pdy=0
-                if pdx < 0.9:
-                    ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
-                if pdy > 0.1:
-                    ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
+                    pdx=0.0
+                    pdy=0.0
+                if pdx > 0.1:
+                    ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
+                if pdy < 0.9:
+                    ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
                 plt.figure(1)
-                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=5)
+                plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=7)
                 plt.figure(2)
         if kk != kluck:
-            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Width '+str(mem)+" - "+str(wp)+label[3],alpha=0.5,s=5)
+            plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],label='Width '+str(mem)+" - "+str(wp)+label[3],alpha=0.5,s=7)
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Width '+str(mem)+" - "+str(wp)+label[3],alpha=0.5,s=5)
+            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label='Width '+str(mem)+" - "+str(wp)+label[3],alpha=0.5,s=7)
             plt.figure(2)
             if wp!=wmax:
                 mem=widthlist[k+1]
@@ -776,3 +759,4 @@ if values.mode==4:  ### mixed data open fof files with different flu dm and widt
     plt.savefig(values.output+"pdpfa.png")
     plt.close()
 ol.close()
+histo.close()

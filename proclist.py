@@ -23,6 +23,13 @@ def run_filsim(ident,dm,width,flu,x):
     print ('process file:'+name+' \n')
     os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x))
 
+def sn_sim(ident,dm,width,sn,x):
+    name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(sn)+'_fixed'
+    print ('width, fluence, dm')
+    print (width,flu,dm)
+    print ('process file:'+name+' \n')
+    os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -a -A '+str(sn)+' -o '+name+' -x '+str(x))
+
 def _main():
     date=time.strftime('%Y_%m_%d',time.localtime())
 
@@ -37,6 +44,7 @@ def _main():
     parser.add_argument('--fchange',action='store_true')
     parser.add_argument('--wchange',action='store_true')
     parser.add_argument('-l','--lmode',action='store_true',help='list command dm,width,flu')
+    parser.add_argument('-a','--snmode',action='store_true',help='fix sn')
     parser.add_argument('--list',type=str,default='list')
     parser.add_argument('-f', '--fmax',type=float, default=10.)
     parser.add_argument('--fmin',type=float, default=0.5)
@@ -70,6 +78,35 @@ def _main():
         exc=np.loadtxt(values.list,delimiter=',')
         for i in range(len(exc)):
             run_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off)
+    elif values.snmode:
+        ###flu is sn
+        print ("snr fix mode")
+        if wswitch != True:
+            print("fix width")
+            if fswitch:
+                for j in range(int((fmax-fmin)/fstep)+1):
+                    flu=fmin+j*fstep
+                    for i in range(int((dmax-dmin)/dstep)+1):
+                        dm=i*dstep+dmin
+                        sn_sim(ident,dm,width,flu,off)
+            else:
+                for i in xrange(int((dmax-dmin)/dstep)+1):
+                    dm=i*dstep+dmin
+                    sn_sim(ident,dm,width,flu,off)
+        else:
+            for k in range(int((wmax-wmin)/wstep)+1):
+                width=wmin+k*wstep
+                if fswitch:
+                    for j in range(int((fmax-fmin)/fstep)+1):
+                        flu=fmin+j*fstep
+                        for i in range(int((dmax-dmin)/dstep)+1):
+                            dm=i*dstep+dmin
+                            sn_sim(ident,dm,width,flu,off)
+                else:
+                    for i in xrange(int((dmax-dmin)/dstep)+1):
+                        dm=i*dstep+dmin
+                        sn_sim(ident,dm,width,flu,off)
+
 
 
     else:

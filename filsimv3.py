@@ -56,7 +56,8 @@ def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,ampli
         normfac=np.sum(convolved)
         normmap[c]+=convolved/normfac
         frbconvolvemap[c]+=normmap[c]*flu
-    return frbconvolvemap,normmap
+        boxcar=np.sqrt(total_width2)
+    return frbconvolvemap,normmap,boxcar
 
 
 date=time.strftime('%Y_%m_%d',time.localtime())
@@ -190,16 +191,26 @@ for i in xrange(10):
     normmap=np.zeros((nchan,realsamp))
     #x=np.array([0,50,100,50,0])
     idt = abs(4.15*dm*(froof**-2 - (froof+336*foff)**-2)/tsamp)
-    frbconvolvemap, normmap = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,xoff,diffsamp)
+    frbconvolvemap, normmap,boxcar = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,xoff,diffsamp)
     #print i,t,toffset*tsamp,widthms,dm,flu
-    d = frbconvolvemap.flatten()
-    #print('nosquare')
-    #### snr calculation
-    pulse=normmap>0
-    snr = d.sum()/np.sqrt((d > 0.0).sum())
     if values.snr:
-        mfactor=mxsnr/snr
-        frbconvolvemap=frbconvolvemap*mfactor
+        d = normmap.flatten()
+        #print('nosquare')
+        #### snr calculation
+        pulse=normmap>0
+        snr1 = d.sum()/np.sqrt((d > 0.0).sum())
+        mfactor=mxsnr/snr1
+        frbconvolvemap=normmap*mfactor
+        d2 = frbconvolvemap.flatten()
+        #print('nosquare')
+        #### snr calculation
+        snr = d2.sum()/np.sqrt((d2 > 0.0).sum())
+    else:
+        d = frbconvolvemap.flatten()
+        #print('nosquare')
+        #### snr calculation
+        pulse=normmap>0
+        snr = d.sum()/np.sqrt((d > 0.0).sum())
 
     #print(np.mean(abs(v1)),np.std(v1))
 

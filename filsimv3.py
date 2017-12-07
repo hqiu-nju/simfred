@@ -109,7 +109,7 @@ fch1 = 1.464 # GHz
 foff =  -1/1e3 # GHz
 froof = fch1 # GHz need change to upper limit
 tsamp = float(readin.header['tsamp'])*1000
-print (tsamp)# milliseconds
+#print (tsamp)# milliseconds
 amplitude=1.
 gauss_amp=amplitude # this has to be the same to achieve norm maximum?
 t = 5 # random seconds between 5 and 10 set at 5, currently 5 seconds
@@ -171,8 +171,8 @@ if width2:
     x = gauss_amp*np.exp(-(times-int(widthsamp)*3)**2/(2*width2))
 else:
     x =1
-print 'start'
-print nsamp,flu,tblock
+#print 'start'
+#print nsamp,flu,tblock
 dataset.T.tofile(mkout.fin)  #### print first timeset of noise
 #snr=50.0
 xoff=values.offset
@@ -226,7 +226,7 @@ for i in xrange(10):
     #print (d>0.0).sum()
     a=np.where(pulse[-1])
     tend=nsamp+realsamp*i+a[0][len(a[0])/2]
-    print snr,tend
+    #print snr,tend
     #print snr_cal(dataset,normmap,frbconvolvemap,336)
     #print sn,np.sqrt(nchan)
 

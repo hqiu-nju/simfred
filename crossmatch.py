@@ -282,8 +282,8 @@ for d in range(a):
             plt.figure(1)
             plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
             plt.figure(2)
-    pd_std, bin_edges, binnumber=stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='std', bins=len(pdx_array)/100)
-    pd_mean =stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='mean', bins=len(pdx_array)/100)[0]
+    pd_std, bin_edges, binnumber=stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='std', bins=int(len(pdx_array)/100)+1)
+    pd_mean =stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='mean', bins=(len(pdx_array)/100)+1)[0]
     bin_width = (bin_edges[1] - bin_edges[0])
     xbinned=bin_edges[:-1]+ bin_width
     ybinned=pd_mean

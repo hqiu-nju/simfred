@@ -25,8 +25,8 @@ def run_filsim(ident,dm,width,flu,x):
 
 def sn_sim(ident,dm,width,sn,x):
     name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(sn)+'_fixed'
-    print ('width, fluence, dm')
-    print (width,flu,dm)
+    print ('width, S/N, dm')
+    print (width,sn,dm)
     print ('process file:'+name+' \n')
     os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -a -A '+str(sn)+' -o '+name+' -x '+str(x))
 

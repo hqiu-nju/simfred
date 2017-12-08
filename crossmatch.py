@@ -189,7 +189,7 @@ for d in range(a):
             dmp=t.T[5][depo_dm][0]
             flp=t.T[0][depo_fl][0]
             wdp=t.T[8][depo_wd][0]
-            limit=wdp/1.2
+            limit=wdp/1.2*10
             fredfile=ident+"{0:04}".format(int(dmp))+'_'+"{0:03}".format(wdp)+'_'+"{0:03}".format(flp)+'_fixed.fil.cand.fof'
             if os.path.exists(fredfile):
                 fred=np.loadtxt(fredfile,dtype=float)

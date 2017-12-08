@@ -115,16 +115,16 @@ dil=np.where(tom.T[0]<=values.sncut)
 t=tom[dil]
 if values.label == 1:
     alist=np.unique(t.T[5]) #dm
-    blist=np.unique(t.T[7]) #fluence
+    blist=np.unique(t.T[0]) #fluence
     clist=np.unique(t.T[8]) #width
 if values.label == 2:
-    alist=np.unique(t.T[7])
+    alist=np.unique(t.T[0])
     blist=np.unique(t.T[5])
     clist=np.unique(t.T[8])
 if values.label == 3:
     alist=np.unique(t.T[8])
     blist=np.unique(t.T[5])
-    clist=np.unique(t.T[7])
+    clist=np.unique(t.T[0])
 ltag=values.label
 ####boxcar= t.T[3] idt=
 a=len(alist)
@@ -161,7 +161,7 @@ for d in range(a):
     else:
         pluck = 2
     kk=pluck
-    print (pluck,dp)
+    print (pluck,plabel,dp)
     #if
     for j in range(b):
         for k in range(c):
@@ -170,15 +170,15 @@ for d in range(a):
             ######## dp- alist fp - blist wp -clist
             if ltag ==1 :  ########  a -dp- dm  b-fp-fl c -wp-wd
                 depo_dm=np.where(t.T[5]==dp)
-                depo_fl=np.where(t.T[7]==fp)
+                depo_fl=np.where(t.T[0]==fp)
                 depo_wd=np.where(t.T[8]==wp)
             if ltag ==2 : ########  a -dp- fl  b-fp-dm c -wp-wd
                 depo_dm=np.where(t.T[5]==fp)
-                depo_fl=np.where(t.T[7]==dp)
+                depo_fl=np.where(t.T[0]==dp)
                 depo_wd=np.where(t.T[8]==wp)
             if ltag ==3 : ########  a -dp- wd  b-fp-dm c -wp-fl
                 depo_dm=np.where(t.T[5]==fp)
-                depo_fl=np.where(t.T[7]==wp)
+                depo_fl=np.where(t.T[0]==wp)
                 depo_wd=np.where(t.T[8]==dp)
             mix=np.intersect1d(depo_dm,depo_fl)
             mix=np.intersect1d(mix,depo_wd)
@@ -187,7 +187,7 @@ for d in range(a):
                 continue
             tru=t[mix]
             dmp=t.T[5][depo_dm][0]
-            flp=t.T[7][depo_fl][0]
+            flp=t.T[0][depo_fl][0]
             wdp=t.T[8][depo_wd][0]
             limit=wdp/1.2
             fredfile=ident+"{0:04}".format(int(dmp))+'_'+"{0:03}".format(wdp)+'_'+"{0:03}".format(flp)+'_fixed.fil.cand.fof'
@@ -267,12 +267,25 @@ for d in range(a):
                 #plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
                 #plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
                 #print(dmp,flp,wdp,len(pd),len(tru.T[x]),len(pdx_array),len(pdy_array))
-                pdx_array=np.append(pdx_array,tru.T[x])
-                pdy_array=np.append(pdy_array,pd)
-                fax_array=np.append(fax_array,fa[fa==0])
-                fay_array=np.append(fay_array,fred.T[y][fa==0])
+                if lf >1:
+                    pdx_array=np.append(pdx_array,tru.T[x])
+                    pdy_array=np.append(pdy_array,pd)
+                    fax_array=np.append(fax_array,fa[fa==0])
+                    fay_array=np.append(fay_array,fred.T[y][fa==0])
+                    if len(fax_array)!= len(fay_array):
+                        print('-----bad fred')
+                        print(dmp,flp,wdp,len(fa),len(fred.T[y]),len(fax_array),len(fay_array))
+                else:
+                    pdx_array=np.append(pdx_array,tru.T[x])
+                    pdy_array=np.append(pdy_array,pd)
+                    if sum(fa==0):
+                        fax_array=np.append(fax_array,fa[fa==0])
+                        fay_array=np.append(fay_array,fred.T[y])
+                    if len(fax_array)!= len(fay_array):
+                        print('-----bad fred')
+                        print(dmp,flp,wdp,len(fa),len(fred.T[y]),len(fax_array),len(fay_array))
                 if len(pdx_array)!= len(pdy_array):
-                    print('-----bad')
+                    print('-----bad true')
                     print(dmp,flp,wdp,len(pd),len(tru.T[x]),len(pdx_array),len(pdy_array))
             else:
                 pdx=0.0
@@ -282,24 +295,25 @@ for d in range(a):
             plt.figure(1)
             plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
             plt.figure(2)
-    pd_std, bin_edges, binnumber=stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='std', bins=int(len(pdx_array)/100)+1)
-    pd_mean =stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='mean', bins=(len(pdx_array)/100)+1)[0]
-    bin_width = (bin_edges[1] - bin_edges[0])
-    xbinned=bin_edges[:-1]+ bin_width
-    ybinned=pd_mean
-    if pscat:
-        plt.scatter(pdx_array,pdy_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
-    else:
-        plt.scatter(pdx_array[pdy_array==0],pdy_array[pdy_array==0],color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
-    plt.scatter(fax_array,fay_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
-    if pguide:
-        binmark=mark[pluck]+"--"
-    else:
-        binmark=mark[pluck]
-    plt.errorbar(xbinned,ybinned,yerr=pd_std,color=col[kk],fmt=binmark,alpha=0.5,ms=15,label=plabel+str(dp)+punit)
-    plt.figure(1)
-    plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label=plabel+str(dp)+punit,alpha=0.5,s=15)
-    plt.figure(2)
+    if len(pdx_array):
+        if pscat:
+            plt.scatter(pdx_array,pdy_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
+        else:
+            plt.scatter(pdx_array[pdy_array==0],pdy_array[pdy_array==0],color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
+            pd_std, bin_edges, binnumber=stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='std', bins=int(len(pdx_array)/100)+1)
+            pd_mean =stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='mean', bins=(len(pdx_array)/100)+1)[0]
+            bin_width = (bin_edges[1] - bin_edges[0])
+            xbinned=bin_edges[:-1]+ bin_width
+            ybinned=pd_mean
+            if pguide:
+                binmark=mark[pluck]+"--"
+            else:
+                binmark=mark[pluck]
+            plt.errorbar(xbinned,ybinned,yerr=pd_std,color=col[kk],fmt=binmark,alpha=0.5,ms=15,label=plabel+str(dp)+punit)
+        plt.scatter(fax_array,fay_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
+        plt.figure(1)
+        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label=plabel+str(dp)+punit,alpha=0.5,s=15)
+        plt.figure(2)
 meanie=np.arange(xamax)
 if x==y:
     plt.plot(meanie,meanie,color='orange')

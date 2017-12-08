@@ -144,28 +144,31 @@ pdy_array=np.array([])
 fax_array=np.array([])
 fay_array=np.array([])
 for d in range(a):
-    if ltag== 1:
-        plabel = 'DM = '
-        punit=label[1]
-    if ltag== 2:
-        plabel = 'Fluence = '
-        punit=label[2]
-    if ltag== 3:
-        plabel = 'Width = '
-        punit=label[3]
-    dp=alist[d]
+    if a >6:
+        if ltag== 1:
+            plabel = 'DM = '
+            punit=label[1]
+        if ltag== 2:
+            plabel = 'Fluence = '
+            punit=label[2]
+        if ltag== 3:
+            plabel = 'Width = '
+            punit=label[3]
+        dp=alist[d]
 
-    if dp <= dmax/3:
-        pluck = 0
+        if dp <= dmax/3:
+            pluck = 0
 
-    elif dp <= dmax/3*2:
-        pluck = 1
+        elif dp <= dmax/3*2:
+            pluck = 1
 
+        else:
+            pluck = 2
+        kk=pluck
+        print (pluck,plabel,dp)
     else:
-        pluck = 2
-    kk=pluck
-    print (pluck,plabel,dp)
-    #if
+        pluck=d
+        #if
     for j in range(b):
         for k in range(c):
             fp=blist[j]

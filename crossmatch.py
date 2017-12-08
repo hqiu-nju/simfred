@@ -47,7 +47,7 @@ else:
 pscat=values.scatter
 pguide=values.line
 limit=10
-dlim=5
+dlim=50
 ###number links just in case you forget
 '''
 sn=0

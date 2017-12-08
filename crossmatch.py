@@ -36,7 +36,9 @@ parser.add_argument('-d','--set',type=str,default='testset_')
 parser.add_argument('--sncut',type=float,default=50.0)
 parser.add_argument('--scatter', action='store_true', help='Show')
 parser.add_argument('--line', action='store_true', help='Show')
+parser.add_argument('--stdnone', action='store_true', help='Show')
 parser.add_argument('-l','--label',type=int,default=1,help=' 1 for dm label, 2 for fluence label, 3 for width label')
+parser.add_argument('--binmode', type=str,default='mean',help='Show')
 parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
 values = parser.parse_args()
@@ -48,6 +50,7 @@ pscat=values.scatter
 pguide=values.line
 limit=10
 dlim=50
+dbin=values.binmode
 ###number links just in case you forget
 '''
 sn=0
@@ -301,7 +304,7 @@ for d in range(a):
         else:
             plt.scatter(pdx_array[pdy_array==0],pdy_array[pdy_array==0],color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
             pd_std, bin_edges, binnumber=stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='std', bins=int(len(pdx_array)/100)+1)
-            pd_mean =stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='mean', bins=(len(pdx_array)/100)+1)[0]
+            pd_mean =stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic=dbin, bins=(len(pdx_array)/100)+1)[0]
             bin_width = (bin_edges[1] - bin_edges[0])
             xbinned=bin_edges[:-1]+ bin_width
             ybinned=pd_mean
@@ -309,6 +312,8 @@ for d in range(a):
                 binmark=mark[pluck]+"--"
             else:
                 binmark=mark[pluck]
+            if values.stdnone:
+                pd_std=0
             plt.errorbar(xbinned,ybinned,yerr=pd_std,color=col[kk],fmt=binmark,alpha=0.5,ms=15,label=plabel+str(dp)+punit)
         plt.scatter(fax_array,fay_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
         plt.figure(1)

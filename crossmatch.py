@@ -84,9 +84,9 @@ mark[1]='o'
 mark[2]='d'
 col={}
 col[0]='red'
-col[1]='#3e82fc'
-col[2]='orange'
-col[3]='green' ###dodger blue
+col[1]='green'
+col[2]='#3e82fc'
+col[3]='orange' ###dodger blue
 col[4]='black'
 col[5]='#9a0eea'  ###violet
 col[6]='#d90166'  ###dark hot pink
@@ -264,8 +264,8 @@ for d in range(a):
                     #print(dp,wp,fp)
 
                 #print(fa-fred.T[y])
-                #plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
-                #plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
+                #plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
+                #plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
                 #print(dmp,flp,wdp,len(pd),len(tru.T[x]),len(pdx_array),len(pdy_array))
                 if lf >1:
                     pdx_array=np.append(pdx_array,tru.T[x])
@@ -293,13 +293,13 @@ for d in range(a):
             ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
             ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
+            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
             plt.figure(2)
     if len(pdx_array):
         if pscat:
-            plt.scatter(pdx_array,pdy_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
+            plt.scatter(pdx_array,pdy_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=20,label=plabel+str(dp)+punit)
         else:
-            plt.scatter(pdx_array[pdy_array==0],pdy_array[pdy_array==0],color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
+            plt.scatter(pdx_array[pdy_array==0],pdy_array[pdy_array==0],color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
             pd_std, bin_edges, binnumber=stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='std', bins=int(len(pdx_array)/100)+1)
             pd_mean =stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='mean', bins=(len(pdx_array)/100)+1)[0]
             bin_width = (bin_edges[1] - bin_edges[0])
@@ -310,9 +310,9 @@ for d in range(a):
             else:
                 binmark=mark[pluck]
             plt.errorbar(xbinned,ybinned,yerr=pd_std,color=col[kk],fmt=binmark,alpha=0.5,ms=15,label=plabel+str(dp)+punit)
-        plt.scatter(fax_array,fay_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=15)
+        plt.scatter(fax_array,fay_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
         plt.figure(1)
-        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label=plabel+str(dp)+punit,alpha=0.5,s=15)
+        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label=plabel+str(dp)+punit,alpha=0.5,s=20)
         plt.figure(2)
 meanie=np.arange(xamax)
 if x==y:

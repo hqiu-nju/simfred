@@ -145,16 +145,16 @@ fax_array=np.array([])
 fay_array=np.array([])
 for d in range(a):
     dp=alist[d]
+    if ltag== 1:
+        plabel = 'DM = '
+        punit=label[1]
+    if ltag== 2:
+        plabel = 'Fluence = '
+        punit=label[2]
+    if ltag== 3:
+        plabel = 'Width = '
+        punit=label[3]
     if a >6:
-        if ltag== 1:
-            plabel = 'DM = '
-            punit=label[1]
-        if ltag== 2:
-            plabel = 'Fluence = '
-            punit=label[2]
-        if ltag== 3:
-            plabel = 'Width = '
-            punit=label[3]
 
 
         if dp <= dmax/3:

@@ -87,10 +87,10 @@ mark[1]='o'
 mark[2]='d'
 col={}
 col[0]='red'
-col[1]='green'
+col[1]='black'
 col[2]='#3e82fc'
 col[3]='orange' ###dodger blue
-col[4]='black'
+col[4]='green'
 col[5]='#9a0eea'  ###violet
 col[6]='#d90166'  ###dark hot pink
 col[7]='black'
@@ -300,7 +300,7 @@ for d in range(a):
             plt.figure(2)
     if len(pdx_array):
         if pscat:
-            plt.scatter(pdx_array,pdy_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=20,label=plabel+str(dp)+punit)
+            plt.scatter(pdx_array,pdy_array,color=col[kk],marker=mark[pluck],alpha=0.7,s=20,label=plabel+str(dp)+punit)
         else:
             plt.scatter(pdx_array[pdy_array==0],pdy_array[pdy_array==0],color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
             pd_std, bin_edges, binnumber=stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='std', bins=int(len(pdx_array)/100)+1)

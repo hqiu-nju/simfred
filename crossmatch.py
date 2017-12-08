@@ -144,6 +144,7 @@ pdy_array=np.array([])
 fax_array=np.array([])
 fay_array=np.array([])
 for d in range(a):
+    dp=alist[d]
     if a >6:
         if ltag== 1:
             plabel = 'DM = '
@@ -154,7 +155,7 @@ for d in range(a):
         if ltag== 3:
             plabel = 'Width = '
             punit=label[3]
-        dp=alist[d]
+
 
         if dp <= dmax/3:
             pluck = 0

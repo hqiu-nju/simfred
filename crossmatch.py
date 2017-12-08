@@ -169,6 +169,7 @@ for d in range(a):
         print (pluck,plabel,dp)
     else:
         pluck=d
+        kk=pluck
         #if
     for j in range(b):
         for k in range(c):

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Template for making scripts to run from the command line
 
@@ -36,7 +36,8 @@ parser.add_argument('-d','--set',type=str,default='testset_')
 parser.add_argument('--sncut',type=float,default=50.0)
 parser.add_argument('--scatter', action='store_true', help='Show')
 parser.add_argument('--line', action='store_true', help='Show')
-parser.add_argument('--stdnone', action='store_true', help='Show')
+parser.add_argument('--errornone', action='store_true', help='Show')
+parser.add_argument('--errorbar', default='std',type=str, help='Show')
 parser.add_argument('-l','--label',type=int,default=1,help=' 1 for dm label, 2 for fluence label, 3 for width label')
 parser.add_argument('--binmode', type=str,default='mean',help='Show')
 parser.add_argument(dest='files', nargs='+')
@@ -48,9 +49,10 @@ else:
     logging.basicConfig(level=logging.INFO)
 pscat=values.scatter
 pguide=values.line
-limit=10
-dlim=50
+limit=2000/1.2
+dlim=100
 dbin=values.binmode
+derr=values.errorbar
 ###number links just in case you forget
 '''
 sn=0
@@ -69,6 +71,7 @@ units[3]='Boxcar Width (tsamps)'
 units[4]='idt (tsamps)'
 units[5]='DM (pc cm$^{-3}$)'
 units[6]='Beam No.'
+units[8]='Intrinsic Width (ms)'
 name={}
 name[0]='_sn'
 name[1]='_Samp'
@@ -82,9 +85,10 @@ label[1]=' (pc cm$^{-3}$)'
 label[2]=' (Jy)'
 label[3]=' (ms)'
 mark={}
-mark[0]='^'
+mark[0]='v'
 mark[1]='o'
 mark[2]='d'
+mark[3]='s'
 col={}
 col[0]='red'
 col[1]='black'
@@ -106,6 +110,8 @@ plt.xlabel("False Acquistion Rate",fontsize=15)
 plt.ylabel("Detection Rate",fontsize=15)
 plt.xlim(-0.01,1.01)
 plt.ylim(-0.01,1.01)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
 ###
 #ol=open(ident+".ol.dat","w")
 ####
@@ -138,12 +144,19 @@ xamax=10.
 dmax = (np.max(alist))
 #ddf = int(dmax)/3 +1
 pluck = 0
-
+pdx=[]
+pdy=[]
 pdx_array=np.array([])
 pdy_array=np.array([])
 fax_array=np.array([])
 fay_array=np.array([])
 for d in range(a):
+    pdx=[]
+    pdy=[]
+    pdx_array=np.array([])
+    pdy_array=np.array([])
+    fax_array=np.array([])
+    fay_array=np.array([])
     dp=alist[d]
     if ltag== 1:
         plabel = 'DM = '
@@ -170,6 +183,7 @@ for d in range(a):
     else:
         pluck=d
         kk=pluck
+    markersize=15
         #if
     for j in range(b):
         for k in range(c):
@@ -197,6 +211,7 @@ for d in range(a):
             dmp=t.T[5][depo_dm][0]
             flp=t.T[0][depo_fl][0]
             wdp=t.T[8][depo_wd][0]
+            boxcar=tru.T[3]
             limit=wdp/1.2*10
             fredfile=ident+"{0:04}".format(int(dmp))+'_'+"{0:03}".format(wdp)+'_'+"{0:03}".format(flp)+'_fixed.fil.cand.fof'
             if os.path.exists(fredfile):
@@ -223,7 +238,7 @@ for d in range(a):
                         tcheck=fred.T[1][i]
                         dcheck=fred.T[5][i]
                         tpos=np.intersect1d(np.where(tru.T[1]<tcheck+limit),np.where(tru.T[1]>tcheck-limit))
-                        dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
+                        dpos=np.intersect1d(np.where(tru.T[5]<dcheck+dlim),np.where(tru.T[5]>dcheck-dlim))
                         pos=np.intersect1d(tpos,dpos)
                         if len(pos) >0:
                             sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0][i]))
@@ -232,8 +247,8 @@ for d in range(a):
                             bfa[i]=1
                             #print(tcheck,dcheck,tru.T[5][pos][match][0])
                             histo.write("%d %f %f %f %f %f %d\n"%((fred.T[1][i]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0][i],tru.T[5][pos][match][0],fred.T[5][i],tru.T[8][pos][match][0],fred.T[3][i]))
-                    pdx=(1.-float(sum(bfa))/len(bfa))
-                    pdy=(float(sum(bpd))/len(bpd))
+                    pdx.append((1.-float(sum(bfa))/len(bfa)))
+                    pdy.append(float(sum(bpd))/len(bpd))
                 else:
                     #print('single fredda')
                     for i in range(lt):
@@ -251,7 +266,7 @@ for d in range(a):
                     tcheck=fred.T[1]
                     dcheck=fred.T[5]
                     tpos=np.intersect1d(np.where(tru.T[1]<tcheck+limit),np.where(tru.T[1]>tcheck-limit))
-                    dpos=np.intersect1d(np.where(tru.T[5]<dcheck+10),np.where(tru.T[5]>dcheck-10))
+                    dpos=np.intersect1d(np.where(tru.T[5]<dcheck+dlim),np.where(tru.T[5]>dcheck-dlim))
                     pos=np.intersect1d(tpos,dpos)
                     if len(pos) >0:
                         sigcheck=np.min(abs(tru.T[0][pos]-fred.T[0]))
@@ -261,8 +276,8 @@ for d in range(a):
                         #print(tcheck,dcheck,tru.T[5][pos][match][0])
                         #histo.write("#### time error, s/n truth, s/n fredda, dm, dm fredda, boxcar, boxcar fredda \n")
                         histo.write("%d %f %f %f %f %d %d\n"%((fred.T[1]-tru.T[1][pos][match][0]),tru.T[0][pos][match][0],fred.T[0],tru.T[5][pos][match][0],fred.T[5],tru.T[3][pos][match][0],fred.T[3]))
-                    pdx=(1.-float(sum(bfa))/len(bfa))
-                    pdy=(float(sum(bpd))/len(bpd))
+                    pdx.append((1.-float(sum(bfa))/len(bfa)))
+                    pdy.append(float(sum(bpd))/len(bpd))
                 if xamax < int(np.max(fa))+1:
                     xamax=int(np.max(fa))+5
                 if yamax < int(np.max(pd))+1:
@@ -272,8 +287,8 @@ for d in range(a):
                     #print(dp,wp,fp)
 
                 #print(fa-fred.T[y])
-                #plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
-                #plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
+                #plt.scatter(tru.T[x],pd,color=col[kk],marker=mark[pluck],alpha=0.5,s=markersize)
+                #plt.scatter(fa,fred.T[y],color=col[kk],marker=mark[pluck],alpha=0.5,s=markersize)
                 #print(dmp,flp,wdp,len(pd),len(tru.T[x]),len(pdx_array),len(pdy_array))
                 if lf >1:
                     pdx_array=np.append(pdx_array,tru.T[x])
@@ -296,33 +311,33 @@ for d in range(a):
                     print('-----bad true')
                     print(dmp,flp,wdp,len(pd),len(tru.T[x]),len(pdx_array),len(pdy_array))
             else:
-                pdx=0.0
-                pdy=0.0
-            ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx)+"\n")
-            ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy)+"\n")
+                pdx.append(0.0)
+                pdy.append(0.0)
+            if lf >1 :
+                ol.write("fa "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdx[-1])+" "+str(fa[fa==0])+" "+str(fred.T[y][fa==0])+"\n")
+            #ol.write("pd "+fredfile+" "+str(dp)+" "+str(wp)+" "+str(fp)+" "+str(pdy[-1])+"\n")
             plt.figure(1)
-            plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
             plt.figure(2)
     if len(pdx_array):
-        if pscat:
-            plt.scatter(pdx_array,pdy_array,color=col[kk],marker=mark[pluck],alpha=0.7,s=20,label=plabel+str(dp)+punit)
+        if pguide:
+            binmark=mark[pluck]+"-"
         else:
-            plt.scatter(pdx_array[pdy_array==0],pdy_array[pdy_array==0],color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
-            pd_std, bin_edges, binnumber=stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic='std', bins=int(len(pdx_array)/100)+1)
-            pd_mean =stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic=dbin, bins=(len(pdx_array)/100)+1)[0]
+            binmark=mark[pluck]
+        if pscat:
+            plt.scatter(pdx_array,pdy_array,color=col[kk],marker=mark[pluck],alpha=0.7,s=markersize,label=plabel+str(dp)+punit)
+            plt.scatter(fax_array,fay_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=markersize)
+        else:
+            #plt.scatter(pdx_array[pdy_array==0],pdy_array[pdy_array==0],color=col[kk],marker=mark[pluck],alpha=0.5,s=markersize)
+            pd_std, bin_edges, binnumber=stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic=derr, bins=int(len(pdx_array)/25))
+            pd_mean =stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic=dbin, bins=(len(pdx_array)/25))[0]
             bin_width = (bin_edges[1] - bin_edges[0])
             xbinned=bin_edges[:-1]+ bin_width
             ybinned=pd_mean
-            if pguide:
-                binmark=mark[pluck]+"--"
-            else:
-                binmark=mark[pluck]
-            if values.stdnone:
+            if values.errornone:
                 pd_std=0
-            plt.errorbar(xbinned,ybinned,yerr=pd_std,color=col[kk],fmt=binmark,alpha=0.5,ms=15,label=plabel+str(dp)+punit)
-        plt.scatter(fax_array,fay_array,color=col[kk],marker=mark[pluck],alpha=0.5,s=20)
+            plt.errorbar(xbinned,ybinned,yerr=pd_std,color=col[kk],fmt=binmark,alpha=0.5,ms=markersize,label=plabel+str(dp)+punit)
         plt.figure(1)
-        plt.scatter(pdx,pdy,color=col[kk],marker=mark[pluck],label=plabel+str(dp)+punit,alpha=0.5,s=20)
+        plt.plot(pdx,pdy,binmark,color=col[kk],label=plabel+str(dp)+punit,alpha=0.5,ms=markersize/4)
         plt.figure(2)
 meanie=np.arange(xamax)
 if x==y:
@@ -330,6 +345,8 @@ if x==y:
 plt.legend(loc=0,fontsize=15)
 plt.xlim(-0.1,xamax)
 plt.ylim(-0.1,yamax)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
 if values.show:
     plt.show()
 plt.savefig(values.output+"compare.png")

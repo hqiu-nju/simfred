@@ -16,6 +16,29 @@ import time
 
 __author__ = "Harry Qiu"
 
+aaaheader={'az_start': 0.0,
+ 'barycentric': None,
+ 'data_type': 1,
+ 'fch1': 1464.0,
+ 'fchannel': None,
+ 'foff': -1.0,
+ 'machine_id': 0,
+ 'nbits': 8,
+ 'nchans': 336,
+ 'nifs': 1,
+ 'nsamples': None,
+ 'period': None,
+ 'pulsarcentric': None,
+ 'rawdatafile': None,
+ 'refdm': None,
+ 'source_name': 'None',
+ 'src_dej': -32441.084833752,
+ 'src_raj': 215344.63079648,
+ 'telescope_id': 7,
+ 'tsamp': 0.00126646875,
+ 'tstart': 57946.52703893818,
+ 'za_start': 0.0}
+
 
 def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,amplitude,flu,w2,offset,diffsamp):
     toffset=int(tstart)+offset
@@ -94,21 +117,24 @@ f=open(outputname[:-4]+'.candlist','w')
 f.write("##new file of truth of truth!!!!!"+outputname+"\n")
 f.write("# S/N, sampno, secs from file start, boxcar, idt, dm, beamno\n")
 fprint=values.printer
-readin=sgp.SigprocFile(inputname)
-readin.header['nchans']=values.nchan
-mkout=sgp.SigprocFile(outputname,'w',readin.header)
+
+#readin=sgp.SigprocFile(inputname)
+#readin.header['nchans']=values.nchan
+aaaheader['nchans']=values.nchan
+mkout=sgp.SigprocFile(outputname,'w',aaaheader)
 mkout.seek_data()
-readin.seek_data()
+#readin.seek_data()
 #datastring=np.fromfile(readin.fin,dtype=np.uint8)
 #dataset=datastring.reshape(len(datastring)/336,1,336)
 #mkout.seek_data()
 #readin.seek_data()
 #### these are system/constant parameters
-nchan = readin.header['nchans']# channels
+
+nchan = aaaheader['nchans']# channels
 fch1 = 1.464 # GHz
 foff =  -1/1e3 # GHz
 froof = fch1 # GHz need change to upper limit
-tsamp = float(readin.header['tsamp'])*1000
+tsamp = float(aaaheader['tsamp'])*1000
 #print (tsamp)# milliseconds
 amplitude=1.
 gauss_amp=amplitude # this has to be the same to achieve norm maximum?

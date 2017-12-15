@@ -82,7 +82,7 @@ name[5]='_dm'
 name[6]='_beam'
 label={}
 label[1]=' (pc cm$^{-3}$)'
-label[2]=' (Jy)'
+label[2]=""##' (Jy)'
 label[3]=' (ms)'
 mark={}
 mark[0]='v'
@@ -162,7 +162,7 @@ for d in range(a):
         plabel = 'DM = '
         punit=label[1]
     if ltag== 2:
-        plabel = 'Fluence = '
+        plabel = 'S/N = '
         punit=label[2]
     if ltag== 3:
         plabel = 'Width = '
@@ -341,7 +341,7 @@ for d in range(a):
         plt.figure(2)
 meanie=np.arange(xamax)
 if x==y:
-    plt.plot(meanie,meanie,color='orange')
+    plt.plot(meanie,meanie,color='Purple',linewidth=5)
 plt.legend(loc=0,fontsize=15)
 plt.xlim(-0.1,xamax)
 plt.ylim(-0.1,yamax)

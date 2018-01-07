@@ -16,7 +16,7 @@ import time
 
 __author__ = "Harry Qiu"
 
-aaaheader={'az_start': 0.0,
+autoheader={'az_start': 0.0,
  'barycentric': None,
  'data_type': 1,
  'fch1': 1464.0,
@@ -117,24 +117,25 @@ f=open(outputname[:-4]+'.candlist','w')
 f.write("##new file of truth of truth!!!!!"+outputname+"\n")
 f.write("# S/N, sampno, secs from file start, boxcar, idt, dm, beamno\n")
 fprint=values.printer
+if values.basefile:
+    readin=sgp.SigprocFile(inputname)
+    readin.header['nchans']=values.nchan
+else:
+    autoheader['nchans']=values.nchan
+    hdr_dic=autoheader
 
-#readin=sgp.SigprocFile(inputname)
-#readin.header['nchans']=values.nchan
-aaaheader['nchans']=values.nchan
-mkout=sgp.SigprocFile(outputname,'w',aaaheader)
+mkout=sgp.SigprocFile(outputname,'w',readin.header)
 mkout.seek_data()
-#readin.seek_data()
-#datastring=np.fromfile(readin.fin,dtype=np.uint8)
-#dataset=datastring.reshape(len(datastring)/336,1,336)
+readin.seek_data()
 #mkout.seek_data()
 #readin.seek_data()
 #### these are system/constant parameters
 
-nchan = aaaheader['nchans']# channels
+nchan = readin.header['nchans']# channels
 fch1 = 1.464 # GHz
 foff =  -1/1e3 # GHz
 froof = fch1 # GHz need change to upper limit
-tsamp = float(aaaheader['tsamp'])*1000
+tsamp = float(readin.header['tsamp'])*1000
 #print (tsamp)# milliseconds
 amplitude=1.
 gauss_amp=amplitude # this has to be the same to achieve norm maximum?

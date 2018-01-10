@@ -121,11 +121,12 @@ fprint=values.printer
 if values.basefile:
     readin=sgp.SigprocFile(inputname)
     readin.header['nchans']=values.nchan
+    hdr_dic=readin.header
 else:
     autoheader['nchans']=values.nchan
     hdr_dic=autoheader
 
-mkout=sgp.SigprocFile(outputname,'w',readin.header)
+mkout=sgp.SigprocFile(outputname,'w',hdr_dic)
 mkout.seek_data()
 readin.seek_data()
 #mkout.seek_data()
@@ -136,7 +137,7 @@ nchan = readin.header['nchans']# channels
 fch1 = 1.464 # GHz
 foff =  -1/1e3 # GHz
 froof = fch1 # GHz need change to upper limit
-tsamp = float(readin.header['tsamp'])*1000
+tsamp = float(hdr_dic['tsamp'])*1000
 #print (tsamp)# milliseconds
 amplitude=1.
 gauss_amp=amplitude # this has to be the same to achieve norm maximum?

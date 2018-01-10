@@ -122,13 +122,14 @@ if values.basefile:
     readin=sgp.SigprocFile(inputname)
     readin.header['nchans']=values.nchan
     hdr_dic=readin.header
+    readin.seek_data()
 else:
     autoheader['nchans']=values.nchan
     hdr_dic=autoheader
 
 mkout=sgp.SigprocFile(outputname,'w',hdr_dic)
 mkout.seek_data()
-readin.seek_data()
+
 #mkout.seek_data()
 #readin.seek_data()
 #### these are system/constant parameters

@@ -134,7 +134,7 @@ mkout.seek_data()
 #readin.seek_data()
 #### these are system/constant parameters
 
-nchan = readin.header['nchans']# channels
+nchan = hdr_dic['nchans']# channels
 fch1 = 1.464 # GHz
 foff =  -1/1e3 # GHz
 froof = fch1 # GHz need change to upper limit

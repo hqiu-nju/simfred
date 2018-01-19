@@ -171,7 +171,7 @@ times = np.arange(int(widthsamp)*6+1)
 #flu=fluence*fluence_fac
 #toffset=50
 #tinsert=(200/tsamp)
-toffset=100/tsamp  ###500 time sample
+toffset=100/tsamp  ###100 ms by timesample units
 ###real sample time=(1+i)*nsamp+toffset
 #d = file.readthismeanyseconds(t)
 #print t,toffset/tsamp,widthms,dm

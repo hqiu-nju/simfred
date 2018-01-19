@@ -36,9 +36,10 @@ parser.add_argument('-d','--set',type=str,default='testset_')
 parser.add_argument('--sncut',type=float,default=50.0)
 parser.add_argument('--scatter', action='store_true', help='Show')
 parser.add_argument('--line', action='store_true', help='Show')
+parser.add_argument('--offmode', action='store_true', help='Show')
 parser.add_argument('--errornone', action='store_true', help='Show')
 parser.add_argument('--errorbar', default='std',type=str, help='Show')
-parser.add_argument('-l','--label',type=int,default=1,help=' 1 for dm label, 2 for fluence(s/n) label, 3 for width label')
+parser.add_argument('-l','--label',type=int,default=1,help=' 1 for dm label, 2 for fluence label, 3 for width label')
 parser.add_argument('--binmode', type=str,default='mean',help='Show')
 parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
@@ -53,6 +54,7 @@ limit=2000/1.2
 dlim=100
 dbin=values.binmode
 derr=values.errorbar
+offmode=values.offmode
 ###number links just in case you forget
 '''
 sn=0
@@ -140,6 +142,9 @@ if values.label == 3:
     blist=np.unique(t.T[5])
     clist=np.unique(t.T[0])
 ltag=values.label
+
+
+
 ####boxcar= t.T[3] idt=
 a=len(alist)
 b=len(blist)
@@ -172,15 +177,14 @@ for d in range(a):
     if ltag== 3:
         plabel = 'Width = '
         punit=label[3]
+    if offmode:
+        plabel = 'Offset = '
+        punit=label[4]
     if a >6:
-
-
         if dp <= dmax/3:
             pluck = 0
-
         elif dp <= dmax/3*2:
             pluck = 1
-
         else:
             pluck = 2
         kk=pluck
@@ -216,6 +220,10 @@ for d in range(a):
             dmp=t.T[5][depo_dm][0]
             flp=t.T[0][depo_fl][0]
             wdp=t.T[8][depo_wd][0]
+            if offmode:
+                dmp=t.T[5][depo_dm][0]
+                flp=30.0
+                wdp=t.T[8][depo_wd][0]
             boxcar=tru.T[3]
             limit=wdp/1.2*10
             fredfile=ident+"{0:04}".format(int(dmp))+'_'+"{0:03}".format(wdp)+'_'+"{0:03}".format(flp)+'_fixed.fil.cand.fof'
@@ -298,16 +306,16 @@ for d in range(a):
                 if lf >1:
                     pdx_array=np.append(pdx_array,tru.T[x])
                     pdy_array=np.append(pdy_array,pd)
-                    fax_array=np.append(fax_array,fa[fa==0])
-                    fay_array=np.append(fay_array,fred.T[y][fa==0])
+                    fax_array=np.append(fax_array,fa[bfa==0])
+                    fay_array=np.append(fay_array,fred.T[y][bfa==0])
                     if len(fax_array)!= len(fay_array):
                         print('-----bad fred')
                         print(dmp,flp,wdp,len(fa),len(fred.T[y]),len(fax_array),len(fay_array))
                 else:
                     pdx_array=np.append(pdx_array,tru.T[x])
                     pdy_array=np.append(pdy_array,pd)
-                    if sum(fa==0):
-                        fax_array=np.append(fax_array,fa[fa==0])
+                    if sum(bfa==0):
+                        fax_array=np.append(fax_array,fa[bfa==0])
                         fay_array=np.append(fay_array,fred.T[y])
                     if len(fax_array)!= len(fay_array):
                         print('-----bad fred')
@@ -348,8 +356,13 @@ meanie=np.arange(xamax)
 if x==y:
     plt.plot(meanie,meanie,color='Purple',linewidth=5)
 plt.legend(loc=0,fontsize=15)
-plt.xlim(-0.1,xamax)
+
 plt.ylim(-0.1,yamax)
+
+if offmode:
+    plt.xlim(-0.1,2)
+else:
+    plt.xlim(-0.1,xamax)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
 if values.show:

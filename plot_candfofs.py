@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Template for making scripts to run from the command line
 
@@ -20,9 +20,9 @@ from matplotlib.ticker import  FormatStrFormatter
 '''
 dev:python3
 
-python2 will have int/float bugs in this code, plz see comments below
+python2 will have int/float bugs in this code, please see comments below
 '''
-__author__ = "CRAFT Harry Qiu <hqiu0129@physics.usyd.edu.au>"
+__author__ = "CRAFT Harry Qiu <hqiu0129@uni.sydney.edu.au>"
 
 #def _main():
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter

@@ -177,7 +177,7 @@ toffset=100/tsamp  ###100 ms by timesample units
 #print t,toffset/tsamp,widthms,dm
 width2=widthsamp**2
 #print times
-boxcar=int(widthsamp)+1
+boxcar=int(widthsamp)*2+1
 '''
 widthms = np.random.rand()*5 + 0.064
 widthms=20

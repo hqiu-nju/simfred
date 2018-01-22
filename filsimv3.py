@@ -79,7 +79,7 @@ def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,ampli
         normfac=np.sum(convolved)
         normmap[c]+=convolved/normfac
         frbconvolvemap[c]+=normmap[c]*flu
-        boxcar=np.sqrt(total_width2)
+        boxcar=np.sqrt(total_width2)*2
     return frbconvolvemap,normmap,boxcar
 
 
@@ -177,7 +177,7 @@ toffset=100/tsamp  ###100 ms by timesample units
 #print t,toffset/tsamp,widthms,dm
 width2=widthsamp**2
 #print times
-boxcar=int(widthsamp)*2+1
+boxcar=int(widthsamp*2)+1
 '''
 widthms = np.random.rand()*5 + 0.064
 widthms=20
@@ -264,9 +264,9 @@ for i in xrange(10):
     # S/N, sampno, secs from file start, boxcar, idt, dm, beamno
     #f.write("%f %d %f %d %d %f %d\n"%(snr,toffset+(i+1)*(tblock)+idt,(toffset+(i+1)*nsamp+idt)*tsamp/1000,boxcar,idt,dm,beamno))
     #print("%d fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f \n"%(i,fluence,snr,toffset+(i+1)*tblock+idt,(toffset+(i+1)*nsamp+idt)*tsamp/1000,idt,dm,widthsamp))
-    f.write("%f %d %f %d %d %f %d %f %f %f\n"%(snr,tend,tend*tsamp/1000,boxcar,idt,dm,beamno,fluence,widthms,xoff))
+    f.write("%f %d %f %d %d %f %d %f %f %f\n"%(snr,tend,tend*tsamp/1000,boxcar+1,idt,dm,beamno,fluence,widthms,xoff))
     if fprint:
-        print("%d fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f \n"%(i,fluence,snr,tend,tend*tsamp/1000,idt,dm,widthsamp))
+        print("%d fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f boxcar=%f \n"%(i,fluence,snr,tend,tend*tsamp/1000,idt,dm,widthsamp,boxcar))
 f.close()
 dataset = (np.random.randn(nchan, nsamp)*18 + 128).astype(np.uint8)
 dataset.T.tofile(mkout.fin)

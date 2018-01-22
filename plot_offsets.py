@@ -17,6 +17,7 @@ from matplotlib.ticker import  MultipleLocator
 from matplotlib.ticker import  FormatStrFormatter
 from scipy import stats
 
+
 '''
 dev:python3
 
@@ -129,9 +130,26 @@ plt.ylabel('Fredda '+units[y],fontsize=15)
 #####
 copies=open(values.files[0],'r')
 filelist=copies.readlines()
+
+
+###create array
+
+x_axis=np.array([])
+y_axis=np.array([])
+label_axis=np.array([])
+
+prob_pd=[]
+prob_fa=[]
+
+
 ### for all items in filelist remember to -1 for \n in string, -9 for .candlist  so that is -10 in total.
-for i in filelist:
-	cand_name= i[-1]
+for cd in filelist:
+	cand_name= cd[:-1]
+    fof_name=cd[:-9]+"fil.cand.fof"
+    cand_array=np.loadtxt()
+
+
+
 
 
 

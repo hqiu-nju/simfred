@@ -54,6 +54,10 @@ limit=2000/1.2
 dlim=100
 dbin=values.binmode
 derr=values.errorbar
+x=values.xaxis
+y=values.yaxis
+ident=values.set
+upbound=values.sncut
 
 ###number links just in case you forget
 '''
@@ -108,10 +112,27 @@ col[7]='black'
 ol=open(values.output+'outlier.txt','w')
 histo=open(values.output+"histodata.txt",'w')
 histo.write("#### time error, s/n truth, s/n fredda, dm, dm_fredda, width_intrinsic, boxcar_fredda \n")
-x=values.xaxis
-y=values.yaxis
-ident=values.set
-upbound=values.sncut
+
+
+plt.figure(1,figsize=(12, 9))
+plt.xlabel("False Acquistion Rate",fontsize=15)
+plt.ylabel("Detection Rate",fontsize=15)
+plt.xlim(-0.01,1.01)
+plt.ylim(-0.01,1.01)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+###
+####
+plt.figure(2,figsize=(12, 9))
+plt.xlabel('Truth '+units[x],fontsize=15)
+plt.ylabel('Fredda '+units[y],fontsize=15)
+#####
+copies=open(values.files[0],'r')
+filelist=copies.readlines()
+### for all items in filelist remember to -1 for \n in string, -9 for .candlist  so that is -10 in total.
+for i in filelist:
+	cand_name= i[-1]
+
 
 
 

@@ -79,7 +79,7 @@ def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,ampli
         normfac=np.sum(convolved)
         normmap[c]+=convolved/normfac
         frbconvolvemap[c]+=normmap[c]*flu
-        boxcar=np.sqrt(total_width2)
+        boxcar=np.sqrt(total_width2)+1
     return frbconvolvemap,normmap,boxcar
 
 
@@ -164,7 +164,7 @@ beamno=-1 ##########fake beam identity signature
 #dm = np.random.uniform()*2000 + 100
 #widthms = np.random.rand()*1 + 0.064 +1
 #widthms=1.0
-widthms=values.width*2
+widthms=values.width
 widthsamp = widthms/tsamp
 times = np.arange(int(widthsamp)*6+1)
 #fluence= np.random.rand()*40 +10

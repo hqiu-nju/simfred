@@ -159,7 +159,7 @@ tblock=nsamp
 dm = values.dm
 fluence = values.fluence  ###jy ms
 fluence_fac = 18./2.  ### jansky  to units of sigma? which is 18 digits(1sigma) per 2 jansky
-flu = fluence*fluence_fac/18.   ###fluence  units of jansky
+flu = fluence*fluence_fac/18.   ###fluence  units of sigma
 beamno=-1 ##########fake beam identity signature
 #dm = np.random.uniform()*2000 + 100
 #widthms = np.random.rand()*1 + 0.064 +1
@@ -177,7 +177,7 @@ toffset=100/tsamp  ###100 ms by timesample units
 #print t,toffset/tsamp,widthms,dm
 width2=widthsamp**2
 #print times
-boxcar=int(widthsamp)+1
+
 '''
 widthms = np.random.rand()*5 + 0.064
 widthms=20

@@ -51,10 +51,10 @@ def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,ampli
         bott_dispersion_delay_samp = abs(bott_dispersion_delay_ms/tsamp)+toffset # offset by a bit so the first few samples aren't off the end of the thing
         length_scale = abs(int(roof_dispersion_delay_samp)-int(bott_dispersion_delay_samp))
         smearing_width_samp = abs((roof_dispersion_delay_samp)-(bott_dispersion_delay_samp))
-        noise_start=np.round(roof_dispersion_delay_samp)
-        noise_end=np.round(bott_dispersion_delay_samp)
-        total_width2 = smearing_width_samp**2 + w2
-        ac = flu/np.sqrt(total_width2)
+        #noise_start=np.round(roof_dispersion_delay_samp)
+        #noise_end=np.round(bott_dispersion_delay_samp)
+        #total_width2 = smearing_width_samp**2 + w2
+        #ac = flu/np.sqrt(total_width2)
         #snr+=ac/np.sqrt(noise_end-noise_start)*np.sqrt(nchan)
         #print ac,snr
         #x = np.exp(-(times-4)**2/total_width2/2.)*gauss_amp
@@ -79,7 +79,7 @@ def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,ampli
         normfac=np.sum(convolved)
         normmap[c]+=convolved/normfac
         frbconvolvemap[c]+=normmap[c]*flu
-        boxcar=np.sqrt(total_width2)*2
+        boxcar=length_scale+1
     return frbconvolvemap,normmap,boxcar
 
 

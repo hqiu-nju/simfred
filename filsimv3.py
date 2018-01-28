@@ -116,7 +116,7 @@ inputname=values.base
 outputname=values.output+".fil"
 f=open(outputname[:-4]+'.candlist','w')
 f.write("##new file of truth of truth!!!!!"+outputname+"\n")
-f.write("# S/N, sampno, secs from file start, boxcar, idt, dm, beamno\n")
+f.write("# S/N, sampno, secs from file start, boxcar, idt, dm, beamno, fluence, width, offset\n")
 fprint=values.printer
 if values.basefile:
     readin=sgp.SigprocFile(inputname)
@@ -235,6 +235,7 @@ for i in xrange(10):
         #print('nosquare')
         #### snr calculation
         snr = d2.sum()/np.sqrt((d2 > 0.0).sum())
+        fluence=frbconvolvemap[1].sum()
     else:
         d = frbconvolvemap.flatten()
         #print('nosquare')

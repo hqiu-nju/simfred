@@ -99,6 +99,7 @@ parser.add_argument('-o', '--output',type=str, default='set_'+date)
 parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('--nchan',type=int,default=336)
 parser.add_argument('-a', '--snr',action='store_true', help='vary snr')
+parser.add_argument('-z', '--zero',action='store_true', help='zero noise')
 parser.add_argument('-A', '--snfac',type=float, default=10)
 parser.add_argument('-x','--offset',type=float,default=0.5, help='Offset within sample')
 #parser.add_argument(dest='files', nargs='+')
@@ -149,6 +150,8 @@ if values.dm >2000:
     t=7
     nsamp = int(t*1000/tsamp)
 dataset = (np.random.randn(nchan, nsamp)*18 + 128).astype(np.uint8)
+if values.zero:
+    dataset= (np.random.randn(nchan, nsamp)*0 + 128).astype(np.uint8)
 #frb = np.zeros((nchan, nsamp))
 #frbconvolvemap=np.zeros((nchan,nsamp))
 tblock=nsamp
@@ -245,8 +248,11 @@ for i in xrange(10):
 
     #print(np.mean(abs(v1)),np.std(v1))
 
-     # positions mask of burst on normmap
-    datasetsum=(dataset.astype(float)+frbconvolvemap)*18+128
+    # positions mask of burst on normmap
+    if values.zero:
+        datasetsum=(frbconvolvemap)*18+128
+    else:
+        datasetsum=(dataset.astype(float)+frbconvolvemap)*18+128
     #print dataset
     sat_mask=(datasetsum >= 255)
     datasetsum[sat_mask]=255

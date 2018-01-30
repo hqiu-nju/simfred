@@ -335,7 +335,7 @@ for d in range(a):
             #plt.scatter(pdx_array[pdy_array==0],pdy_array[pdy_array==0],color=col[kk],marker=mark[pluck],alpha=0.5,s=markersize)
             pd_std, bin_edges, binnumber=stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic=derr, bins=int(len(pdx_array)/25))
             pd_mean =stats.binned_statistic(pdx_array[pdy_array>0],pdy_array[pdy_array>0], statistic=dbin, bins=(len(pdx_array)/25))[0]
-            bin_width = (bin_edges[1] - bin_edges[0])
+            bin_width = (bin_edges[1] - bin_edges[0])/2
             xbinned=bin_edges[:-1]+ bin_width
             ybinned=pd_mean
             if values.errornone:

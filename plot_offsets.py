@@ -62,6 +62,7 @@ parser.add_argument('--errornone', action='store_true', help='Show')
 parser.add_argument('--errorbar', default='std',type=str, help='Show')
 parser.add_argument('-l','--label',type=int,default=5,help=' 5 for dm label, 1/7 for fluence/sn label, 3/8 for width label')
 parser.add_argument('--binmode', type=str,default='mean',help='Show')
+parser.add_argument('--prefix', type=str,default='',help='fof file prefix')
 parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
 values = parser.parse_args()
@@ -155,11 +156,12 @@ label_axis=np.array([])
 prob_pd=[]
 prob_fa=[]
 
+fof_pref=values.prefix
 
 ### for all items in filelist remember to -1 for \n in string, -9 for .candlist  so that is -10 in total.
 for cd in filelist:
     cand_name= cd[:-1]
-    fof_name=cd[:-9]+"fil.cand.fof"
+    fof_name=fof_pref+cd[:-9]+"fil.cand.fof"
     if os.path.exists(fof_name):
         cand_array=np.loadtxt(cand_name,dtype=float)
         fof_array=np.loadtxt(fof_name,dtype=float)

@@ -40,7 +40,7 @@ autoheader={'az_start': 0.0,
  'za_start': 0.0}
 
 
-def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,amplitude,flu,w2,offset,diffsamp):
+def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,amplitude,flu,w2,offset,diffsamp,index,ind_fac):
     toffset=int(tstart)+offset
     for c in xrange(nchan):
         ceil = froof + (c)*foff
@@ -78,7 +78,10 @@ def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,ampli
             convolved=np.append(frb[c],np.zeros(diffsamp))
         normfac=np.sum(convolved)
         normmap[c]+=convolved/normfac
-        frbconvolvemap[c]+=normmap[c]*flu
+        if index:
+            frbconvolvemap[c]+=normmap[c]*flu*((floor/ceil)**ind_fac)
+        else:
+            frbconvolvemap[c]+=normmap[c]*flu
         boxcar=np.sqrt(total_width2)+1
     return frbconvolvemap,normmap,boxcar
 
@@ -99,8 +102,10 @@ parser.add_argument('-o', '--output',type=str, default='set_'+date)
 parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('--nchan',type=int,default=336)
 parser.add_argument('-a', '--snr',action='store_true', help='vary snr')
+parser.add_argument('-i', '--index',action='store_true', help='spectral index option')
 parser.add_argument('-z', '--zero',action='store_true', help='zero noise')
 parser.add_argument('-A', '--snfac',type=float, default=10)
+parser.add_argument('-I', '--indexfac',type=float, default=0)
 parser.add_argument('-x','--offset',type=float,default=0.5, help='Offset within sample')
 #parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
@@ -111,6 +116,8 @@ if values.verbose:
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.INFO)
+ch_index=values.index
+ch_fac=values.indexfac
 #date=time.strftime('%Y_%m_%d_%H_%M',time.localtime())
 #date='2000'
 inputname=values.base
@@ -224,7 +231,7 @@ for i in xrange(10):
     normmap=np.zeros((nchan,realsamp))
     #x=np.array([0,50,100,50,0])
     idt = abs(4.15*dm*(froof**-2 - (froof+336*foff)**-2)/tsamp)
-    frbconvolvemap, normmap,boxcar = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,xoff,diffsamp)
+    frbconvolvemap, normmap,boxcar = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,xoff,diffsamp,ch_index,ch_fac)
     #print i,t,toffset*tsamp,widthms,dm,flu
     if values.snr:
         d = normmap.flatten()

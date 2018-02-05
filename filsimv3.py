@@ -124,7 +124,7 @@ inputname=values.base
 outputname=values.output+".fil"
 f=open(outputname[:-4]+'.candlist','w')
 f.write("##new file of truth of truth!!!!!"+outputname+"\n")
-f.write("# S/N, sampno, secs from file start, boxcar, idt, dm, beamno, fluence, width, offset\n")
+f.write("# S/N, sampno, secs from file start, boxcar, idt, dm, beamno, fluence, width, offset, spectral index\n")
 fprint=values.printer
 if values.basefile:
     readin=sgp.SigprocFile(inputname)
@@ -231,6 +231,10 @@ for i in xrange(10):
     normmap=np.zeros((nchan,realsamp))
     #x=np.array([0,50,100,50,0])
     idt = abs(4.15*dm*(froof**-2 - (froof+336*foff)**-2)/tsamp)
+    if ch_index:
+        wrt_index=ch_fac
+    else:
+        wrt_index='-'
     frbconvolvemap, normmap,boxcar = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,xoff,diffsamp,ch_index,ch_fac)
     #print i,t,toffset*tsamp,widthms,dm,flu
     if values.snr:
@@ -278,7 +282,7 @@ for i in xrange(10):
     # S/N, sampno, secs from file start, boxcar, idt, dm, beamno
     #f.write("%f %d %f %d %d %f %d\n"%(snr,toffset+(i+1)*(tblock)+idt,(toffset+(i+1)*nsamp+idt)*tsamp/1000,boxcar,idt,dm,beamno))
     #print("%d fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f \n"%(i,fluence,snr,toffset+(i+1)*tblock+idt,(toffset+(i+1)*nsamp+idt)*tsamp/1000,idt,dm,widthsamp))
-    f.write("%f %d %f %d %d %f %d %f %f %f\n"%(snr,tend,tend*tsamp/1000,boxcar+1,idt,dm,beamno,fluence,widthms,xoff))
+    f.write("%f %d %f %d %d %f %d %f %f %f %s\n"%(snr,tend,tend*tsamp/1000,boxcar+1,idt,dm,beamno,fluence,widthms,xoff,wrt_index))
     if fprint:
         print("%d fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f boxcar=%f \n"%(i,fluence,snr,tend,tend*tsamp/1000,idt,dm,widthsamp,boxcar))
 f.close()

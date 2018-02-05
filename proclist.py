@@ -16,19 +16,27 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 __author__ = "Harry Qiu"
 
-def run_filsim(ident,dm,width,flu,x):
+def run_filsim(ident,dm,width,flu,x,index):
     name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(flu)+'_fixed'
     print ('width, fluence, dm')
     print (width,flu,dm)
     print ('process file:'+name+' \n')
-    os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x))
+    if index is not None:
+        print("spectral index generated")
+        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x)+' -i -I '+str(index))
+    else:
+        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x))
 
-def sn_sim(ident,dm,width,sn,x):
+def sn_sim(ident,dm,width,sn,x,index):
     name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(sn)+'_fixed'
     print ('width, S/N, dm')
     print (width,sn,dm)
     print ('process file:'+name+' \n')
-    os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -a -A '+str(sn)+' -o '+name+' -x '+str(x))
+    if index is not None:
+        print("spectral index generated")
+        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -a -A '+str(sn)+' -o '+name+' -x '+str(x)+' -i -I '+str(index))
+    else:
+        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -a -A '+str(sn)+' -o '+name+' -x '+str(x))
 
 def _main():
     date=time.strftime('%Y_%m_%d',time.localtime())
@@ -51,6 +59,7 @@ def _main():
     parser.add_argument('--stepflu',type=float, default=0.5)
     parser.add_argument('-n','--name',type=str, default='testset_')
     parser.add_argument('--offset',type = float, default =0.5)
+    parser.add_argument('--index',type = float)
     #parser.add_argument(dest='files', nargs='+')
     parser.set_defaults(verbose=False)
     values = parser.parse_args()
@@ -73,11 +82,12 @@ def _main():
     flu=fmax
     width=wmin
     off=values.offset
+    index=values.index
     if values.lmode:
         print('run list')
         exc=np.loadtxt(values.list,delimiter=',')
         for i in range(len(exc)):
-            run_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off)
+            run_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off,index)
     elif values.snmode:
         ###flu is sn
         print ("snr fix mode")
@@ -88,11 +98,11 @@ def _main():
                     flu=fmin+j*fstep
                     for i in range(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
-                        sn_sim(ident,dm,width,flu,off)
+                        sn_sim(ident,dm,width,flu,off,index)
             else:
                 for i in xrange(int((dmax-dmin)/dstep)+1):
                     dm=i*dstep+dmin
-                    sn_sim(ident,dm,width,flu,off)
+                    sn_sim(ident,dm,width,flu,off,index)
         else:
             for k in range(int((wmax-wmin)/wstep)+1):
                 width=wmin+k*wstep
@@ -101,11 +111,11 @@ def _main():
                         flu=fmin+j*fstep
                         for i in range(int((dmax-dmin)/dstep)+1):
                             dm=i*dstep+dmin
-                            sn_sim(ident,dm,width,flu,off)
+                            sn_sim(ident,dm,width,flu,off,index)
                 else:
                     for i in xrange(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
-                        sn_sim(ident,dm,width,flu,off)
+                        sn_sim(ident,dm,width,flu,off,index)
 
 
 
@@ -117,11 +127,11 @@ def _main():
                     flu=fmin+j*fstep
                     for i in range(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
-                        run_filsim(ident,dm,width,flu,off)
+                        run_filsim(ident,dm,width,flu,off,index)
             else:
                 for i in xrange(int((dmax-dmin)/dstep)+1):
                     dm=i*dstep+dmin
-                    run_filsim(ident,dm,width,flu,off)
+                    run_filsim(ident,dm,width,flu,off,index)
         else:
             for k in range(int((wmax-wmin)/wstep)+1):
                 width=wmin+k*wstep
@@ -130,11 +140,11 @@ def _main():
                         flu=fmin+j*fstep
                         for i in range(int((dmax-dmin)/dstep)+1):
                             dm=i*dstep+dmin
-                            run_filsim(ident,dm,width,flu,off)
+                            run_filsim(ident,dm,width,flu,off,index)
                 else:
                     for i in xrange(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
-                        run_filsim(ident,dm,width,flu,off)
+                        run_filsim(ident,dm,width,flu,off,index)
 
     #os.system('tar -cvzf '+ident+"*.candlist candlist.tar.gz")
 

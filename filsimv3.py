@@ -79,7 +79,8 @@ def injector(frb,x,frbconvolvemap,normmap,tstart,nchan,tsamp,foff,froof,dm,ampli
         normfac=np.sum(convolved)
         normmap[c]+=convolved/normfac
         if index:
-            frbconvolvemap[c]+=normmap[c]*flu*((floor/froof)**ind_fac)
+            frbconvolvemap[c]+=normmap[c]*flu*((ceil/froof)**ind_fac)
+            normmap[c]=normmap[c]*((ceil/froof)**ind_fac)
         else:
             frbconvolvemap[c]+=normmap[c]*flu
         boxcar=np.sqrt(total_width2)+1

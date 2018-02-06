@@ -167,7 +167,7 @@ for cd in filelist:
         cand_array=np.loadtxt(cand_name,dtype=float)
         fof_array=np.loadtxt(fof_name,dtype=float)
         if (len(fof_array.flatten())/12)>1: #### if fredda found more than 1 candidate, fredda fofs have 12 columns
-            cycle=len(cand_array.flatten())/10  #### candlist files have 10 columns
+            cycle=len(cand_array.flatten())/11  #### candlist files have 10 columns
             for i in range(int(cycle)):
                 mk_time=cand_array[i][1]  #### time on column 2
                 mk_dm=cand_array[i][5]  #### dm column 6
@@ -213,7 +213,7 @@ for cd in filelist:
                     prob_fa.append(0)
     else: ### if no fredda result
         cand_array=np.loadtxt(cand_name,dtype=float)
-        cycle=len(cand_array.flatten())/12
+        cycle=len(cand_array.flatten())/11
         x_axis=np.append(x_axis,cand_array.T[x])
         y_axis=np.append(y_axis,np.zeros(cycle))
         label_axis=np.append(label_axis,cand_array.T[tag])

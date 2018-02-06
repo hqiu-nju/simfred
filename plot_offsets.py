@@ -164,8 +164,8 @@ for cd in filelist:
     cand_name= cd[:-1]
     fof_name=fof_pref+cd[:-9]+"fil.cand.fof"
     if os.path.exists(fof_name):
-        cand_array=np.loadtxt(cand_name,dtype=float)
-        fof_array=np.loadtxt(fof_name,dtype=float)
+        cand_array=np.loadtxt(cand_name)
+        fof_array=np.loadtxt(fof_name)
         if (len(fof_array.flatten())/12)>1: #### if fredda found more than 1 candidate, fredda fofs have 12 columns
             cycle=len(cand_array.flatten())/11  #### candlist files have 10 columns
             for i in range(int(cycle)):
@@ -212,7 +212,7 @@ for cd in filelist:
                 else:
                     prob_fa.append(0)
     else: ### if no fredda result
-        cand_array=np.loadtxt(cand_name,dtype=float)
+        cand_array=np.loadtxt(cand_name)
         cycle=len(cand_array.flatten())/11
         x_axis=np.append(x_axis,cand_array.T[x])
         y_axis=np.append(y_axis,np.zeros(cycle))

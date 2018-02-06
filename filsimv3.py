@@ -235,7 +235,7 @@ for i in xrange(10):
     if ch_index:
         wrt_index=ch_fac
     else:
-        wrt_index='-'
+        wrt_index='0'
     frbconvolvemap, normmap,boxcar = injector(frb,x,frbconvolvemap,normmap,toffset,nchan,tsamp,foff,froof,dm,amplitude,flu,width2,xoff,diffsamp,ch_index,ch_fac)
     #print i,t,toffset*tsamp,widthms,dm,flu
     if values.snr:

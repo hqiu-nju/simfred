@@ -88,7 +88,7 @@ def _main():
         exc=np.loadtxt(values.list,delimiter=',')
         if values.snmode:
             for i in range(len(exc)):
-                sn_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off,index)
+                sn_sim(ident,exc[i][0],exc[i][1],exc[i][2],off,index)
         else:
             for i in range(len(exc)):
                 run_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off,index)

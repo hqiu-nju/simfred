@@ -86,8 +86,12 @@ def _main():
     if values.lmode:
         print('run list')
         exc=np.loadtxt(values.list,delimiter=',')
-        for i in range(len(exc)):
-            run_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off,index)
+        if values.snmode:
+            for i in range(len(exc)):
+                sn_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off,index)
+        else:
+            for i in range(len(exc)):
+                run_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off,index)
     elif values.snmode:
         ###flu is sn
         print ("snr fix mode")
@@ -145,9 +149,7 @@ def _main():
                     for i in xrange(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
                         run_filsim(ident,dm,width,flu,off,index)
-
     #os.system('tar -cvzf '+ident+"*.candlist candlist.tar.gz")
-
 
 
 if __name__ == '__main__':

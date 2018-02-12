@@ -108,6 +108,7 @@ parser.add_argument('-z', '--zero',action='store_true', help='zero noise')
 parser.add_argument('-A', '--snfac',type=float, default=10)
 parser.add_argument('-I', '--indexfac',type=float, default=0)
 parser.add_argument('-x','--offset',type=float,default=0.5, help='Offset within sample')
+parser.add_argument('-N','--number',type=int,default=10, help='how many FRBs')
 #parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
 values = parser.parse_args()
@@ -220,7 +221,7 @@ xoff=values.offset
 realsamp=nsamp+int(widthsamp)*6
 diffsamp=int(widthsamp)*6
 #if values.menu == 0:
-for i in xrange(10):
+for i in xrange(values.number):
     dataset = (np.random.randn(nchan, realsamp) + 0)  #reset noise
     snr=0.
     snr_sig=0.
@@ -287,8 +288,8 @@ for i in xrange(10):
     if fprint:
         print("%d fluence=%f snr=%f samp=%d time=%f idt=%d dm=%d widthsamp=%f boxcar=%f \n"%(i,fluence,snr,tend,tend*tsamp/1000,idt,dm,widthsamp,boxcar))
 f.close()
-dataset = (np.random.randn(nchan, nsamp)*18 + 128).astype(np.uint8)
-dataset.T.tofile(mkout.fin)
+#dataset = (np.random.randn(nchan, nsamp)*18 + 128).astype(np.uint8)
+#dataset.T.tofile(mkout.fin)
 mkout.fin.flush()
 mkout.fin.close()
 if values.show:

@@ -18,6 +18,7 @@ __author__ = "Harry Qiu"
 
 def run_filsim(ident,dm,width,flu,x,index):
     name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(flu)+'_fixed'
+    print ('\n---------')
     print ('width, fluence, dm')
     print (width,flu,dm)
     print ('process file:'+name+' \n')
@@ -29,6 +30,7 @@ def run_filsim(ident,dm,width,flu,x,index):
 
 def sn_sim(ident,dm,width,sn,x,index):
     name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(sn)+'_fixed'
+    print ('\n---------')
     print ('width, S/N, dm')
     print (width,sn,dm)
     print ('process file:'+name+' \n')

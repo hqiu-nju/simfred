@@ -215,15 +215,23 @@ for cd in filelist:
         cand_array=np.loadtxt(cand_name)
         cycle=len(cand_array.flatten())/11
         x_axis=np.append(x_axis,cand_array.T[x])
-        y_axis=np.append(y_axis,np.zeros(cycle))
+        y_axis=np.append(y_axis,np.zeros(int(cycle)))
         label_axis=np.append(label_axis,cand_array.T[tag])
-        for i in range(cycle):
+        for i in range(int(cycle)):
             prob_pd.append(0)
 
 
 labels=np.unique(label_axis)
 
-
+'''
+In [12]: for i in labels:
+    ...:     print (i)
+    ...:     pd_std, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic='std',bins=20)
+    ...:     pd_mean, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic='mean',bins=20)
+    ...:     xbinned=bin_edges[:-1]+((bin_edges[1] - bin_edges[0])/2)
+    ...:     ybinned=pd_mean
+    ...:     plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,markersize=15,label="Width="+str(i)+" ms",fmt='s')
+'''
 
 
 

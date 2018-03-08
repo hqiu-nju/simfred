@@ -18,25 +18,18 @@ from matplotlib.ticker import  FormatStrFormatter
 from scipy import stats
 
 
-def scatter_plotter(x,y,tag,bmode=False):
-    plt.figure(2)
-    if bmode:
-        pd_mean, bin_edges, binnumber=stats.binned_statistic(x[y>0],y[y>0], statistic='mean')
-    else:
-        plt.scatter(x,y,label=tag)
 
-def box_plotter(x,y,tag,derr='std',dbin='mean',perr=True):
-    markersize=15
-    plt.figure(2)
-    pd_mean, bin_edges, binnumber=stats.binned_statistic(x[y>0],y[y>0], statistic=dbin, bins=int(len(x)/25))
-    bin_width = (bin_edges[1] - bin_edges[0])
-    xbinned=bin_edges[:-1]+ bin_width/2
-    ybinned=pd_mean
-    if perr:
-        pd_std=0
-    else:
-        pd_std =stats.binned_statistic(x[y>0],y[y>0], statistic=derr, bins=(len(x)/25))[0]
-    plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,ms=markersize,label=tag)
+def box_plotter(x_axis,y_axis,label_axis,labels,tag1='DM',tag2='(pc cm$^{-3}$)',derr='std'):
+    for i in labels:
+        print (i)
+        pd_std, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic=derr,bins=400)
+        pd_mean, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic='mean',bins=400)
+        xbinned=bin_edges[:-1]+((bin_edges[1] - bin_edges[0])/2)
+        ybinned=pd_mean
+        plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,markersize=15,label="Width="+str(i)+" ms",fmt='s')
+    plt.legend(loc=0,fontsize=10)
+    plt.tight_layout()
+
 
 
 
@@ -55,13 +48,8 @@ parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('-x','--xaxis',type=int,default=0)
 parser.add_argument('-y','--yaxis',type=int,default=0)
 parser.add_argument('-o','--output',type=str,default='freddacheck')
-parser.add_argument('--sncut',type=float,default=50.0)
-parser.add_argument('--scatter', action='store_true', help='Show')
-parser.add_argument('--line', action='store_true', help='Show')
-parser.add_argument('--errornone', action='store_true', help='Show')
-parser.add_argument('--errorbar', default='std',type=str, help='Show')
 parser.add_argument('-l','--label',type=int,default=5,help=' 5 for dm label, 1/7 for fluence/sn label, 3/8 for width label')
-parser.add_argument('--binmode', type=str,default='mean',help='Show')
+parser.add_argument('-u','--units',type=int,default=0,help=" 0=(pc cm$^{-3}$) 1=jy 2=ms 3=samples 4=none ")
 parser.add_argument('--prefix', type=str,default='',help='fof file prefix')
 parser.add_argument(dest='files', nargs='+')
 parser.set_defaults(verbose=False)
@@ -71,15 +59,12 @@ if values.verbose:
 else:
     logging.basicConfig(level=logging.INFO)
 
-pscat=values.scatter
-pguide=values.line
+
 limit=1000/1.2  ### 2seconds worth of samples for arrival time box
 dlim=100
-dbin=values.binmode
-derr=values.errorbar
 x=values.xaxis
 y=values.yaxis
-upbound=values.sncut
+
 
 ###number links just in case you forget
 '''
@@ -91,18 +76,18 @@ idt=4
 dm=5
 beamno=6
 '''
-units={}
-units[0]='S/N'
-units[1]='Incident Time(Samples)'
-units[2]='Incident Time(Seconds)'
-units[3]='Boxcar Width'
-units[4]='idt'
-units[5]='DM'
-units[6]='Beam No.'
-units[7]="Fluence"
-units[8]='Intrinsic Width'
-units[9]='Offset'
-units[10]='Spectral Index'
+label={}
+label[0]='S/N'
+label[1]='Incident Time(Samples)'
+label[2]='Incident Time(Seconds)'
+label[3]='Boxcar Width'
+label[4]='idt'
+label[5]='DM'
+label[6]='Beam No.'
+label[7]="Fluence"
+label[8]='Intrinsic Width'
+label[9]='Offset'
+label[10]='Spectral Index'
 name={}
 name[0]='_sn'
 name[1]='_Samp'
@@ -114,39 +99,42 @@ name[6]='_beam'
 name[7]="_flu"
 name[8]='_iwd'
 name[9]='_off'
-label={}
-label[1]=' (pc cm$^{-3}$)'
-label[2]=" Jy"##' (Jy)'
-label[3]=' (ms)'
-label[4]=' Samples'
-mark={}
-mark[0]='v'
-mark[1]='o'
-mark[2]='d'
-mark[3]='s'
-mark[4]='o'
-ol=open(values.output+'outlier.txt','w')
-histo=open(values.output+"histodata.txt",'w')
-histo.write("#### time error, s/n truth, s/n fredda, dm, dm_fredda, width_intrinsic, boxcar_fredda \n")
+name[10]="_specinx"
+units={}
+units[0]=' (pc cm$^{-3}$)'
+units[1]=" Jy"##' (Jy)'
+units[2]=' (ms)'
+units[3]=' Samples'
+units[4]=' '
+
+#ol=open(values.output+'outlier.txt','w')
+#histo=open(values.output+"histodata.txt",'w')
+#histo.write("#### time error, s/n truth, s/n fredda, dm, dm_fredda, width_intrinsic, boxcar_fredda \n")
 
 tag=values.label
-
-plt.figure(1,figsize=(12, 9))
+p_label=label[tag]
+name_label=name[tag]
+p_unit=units[values.units]
+'''
+plt.figure(1,figsize=(8, 6))
 plt.xlabel("False Acquistion Rate",fontsize=15)
 plt.ylabel("Detection Rate",fontsize=15)
 plt.xlim(-0.01,1.01)
 plt.ylim(-0.01,1.01)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
+'''
 ###
 ####
-plt.figure(2,figsize=(12, 9))
-plt.xlabel('Truth '+units[x],fontsize=15)
-plt.ylabel('Fredda '+units[y],fontsize=15)
+plt.figure(figsize=(8, 6))
+plt.xlabel('Truth '+label[x],fontsize=15)
+plt.ylabel('Fredda '+label[y],fontsize=15)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
 #####
 copies=open(values.files[0],'r')
 filelist=copies.readlines()
-
+copies.close()
 
 ###create array
 
@@ -222,7 +210,7 @@ for cd in filelist:
 
 
 labels=np.unique(label_axis)
-
+box_plotter(x_axis,y_axis,label_axis,labels,tag1=p_label,tag2=p_unit)
 '''
 In [12]: for i in labels:
     ...:     print (i)
@@ -232,9 +220,11 @@ In [12]: for i in labels:
     ...:     ybinned=pd_mean
     ...:     plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,markersize=15,label="Width="+str(i)+" ms",fmt='s')
 '''
+#plt.show()
+plt.savefig(values.output+name_label+'.pdf')
+plt.close()
 
 
 
-
-ol.close()
-histo.close()
+#ol.close()
+#histo.close()

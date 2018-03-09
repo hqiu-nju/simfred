@@ -19,14 +19,14 @@ from scipy import stats
 
 
 
-def box_plotter(x_axis,y_axis,label_axis,labels,tag1='DM',tag2='(pc cm$^{-3}$)',derr='std'):
+def box_plotter(x_axis,y_axis,label_axis,labels,tag1='DM',tag2='(pc cm$^{-3}$)',derr='std',bno=400,ms=15):
     for i in labels:
         print (i)
-        pd_std, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic=derr,bins=400)
-        pd_mean, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic='mean',bins=400)
+        pd_std, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic=derr,bins=bno)
+        pd_mean, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic='mean',bins=bno)
         xbinned=bin_edges[:-1]+((bin_edges[1] - bin_edges[0])/2)
         ybinned=pd_mean
-        plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,markersize=15,label=tag1+'= '+str(i)+tag2,fmt='s')
+        plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,markersize=ms,label=tag1+'= '+str(i)+tag2,fmt='s')
     plt.legend(loc=0,fontsize=10)
     plt.tight_layout()
 
@@ -36,7 +36,7 @@ def box_plotter(x_axis,y_axis,label_axis,labels,tag1='DM',tag2='(pc cm$^{-3}$)',
 '''
 dev:python3
 
-python2 will have int/float bugs in this code, plz see comments below
+python2 may have int/float bugs in this code, plz see comments below
 '''
 __author__ = "CRAFT Harry Qiu <hqiu0129@physics.usyd.edu.au>"
 
@@ -47,6 +47,8 @@ parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help
 parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('-x','--xaxis',type=int,default=0)
 parser.add_argument('-y','--yaxis',type=int,default=0)
+parser.add_argument('--ms',type=int,default=15)
+parser.add_argument('--bins',type=int,default=400)s
 parser.add_argument('-o','--output',type=str,default='freddacheck')
 parser.add_argument('-l','--label',type=int,default=5,help=' 5 for dm label, 1/7 for fluence/sn label, 3/8 for width label')
 parser.add_argument('-u','--units',type=int,default=0,help=" 0=(pc cm$^{-3}$) 1=jy 2=ms 3=samples 4=none ")

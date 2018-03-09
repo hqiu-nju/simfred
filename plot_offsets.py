@@ -26,7 +26,7 @@ def box_plotter(x_axis,y_axis,label_axis,labels,tag1='DM',tag2='(pc cm$^{-3}$)',
         pd_mean, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic='mean',bins=400)
         xbinned=bin_edges[:-1]+((bin_edges[1] - bin_edges[0])/2)
         ybinned=pd_mean
-        plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,markersize=15,label="Width="+str(i)+" ms",fmt='s')
+        plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,markersize=15,label=tag1+'= '+str(i)+tag2,fmt='s')
     plt.legend(loc=0,fontsize=10)
     plt.tight_layout()
 

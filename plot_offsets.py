@@ -48,7 +48,7 @@ parser.add_argument('-s','--show', action='store_true', help='Show')
 parser.add_argument('-x','--xaxis',type=int,default=0)
 parser.add_argument('-y','--yaxis',type=int,default=0)
 parser.add_argument('--ms',type=int,default=15)
-parser.add_argument('--bins',type=int,default=400)s
+parser.add_argument('--bins',type=int,default=400)
 parser.add_argument('-o','--output',type=str,default='freddacheck')
 parser.add_argument('-l','--label',type=int,default=5,help=' 5 for dm label, 1/7 for fluence/sn label, 3/8 for width label')
 parser.add_argument('-u','--units',type=int,default=0,help=" 0=(pc cm$^{-3}$) 1=jy 2=ms 3=samples 4=none ")

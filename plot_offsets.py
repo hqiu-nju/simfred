@@ -222,8 +222,11 @@ In [12]: for i in labels:
     ...:     ybinned=pd_mean
     ...:     plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,markersize=15,label="Width="+str(i)+" ms",fmt='s')
 '''
-#plt.show()
-plt.savefig(values.output+name_label+'.pdf')
+
+if values.show:
+    plt.show()
+else:
+    plt.savefig(values.output+name_label+'.pdf')
 plt.close()
 
 

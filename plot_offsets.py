@@ -45,6 +45,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 parser = ArgumentParser(description='Script description', formatter_class=ArgumentDefaultsHelpFormatter)
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Be verbose')
 parser.add_argument('-s','--show', action='store_true', help='Show')
+parser.add_argument('--prob', action='store_true', help='Show')
 parser.add_argument('-x','--xaxis',type=int,default=0)
 parser.add_argument('-y','--yaxis',type=int,default=0)
 parser.add_argument('--ms',type=int,default=15)
@@ -66,7 +67,7 @@ limit=1000/1.2  ### 2seconds worth of samples for arrival time box
 dlim=100
 x=values.xaxis
 y=values.yaxis
-
+probshow=values.prob
 
 ###number links just in case you forget
 '''
@@ -228,6 +229,14 @@ if values.show:
 else:
     plt.savefig(values.output+name_label+'.pdf')
 plt.close()
+
+if probshow: ###### ROC generation option
+    print('plotting probability plot')
+    plt.figure(figsize=(8, 6))
+    plt.xlabel('Detection Rate'+label[x],fontsize=15)
+    plt.ylabel('Fredda Correct Detection'+label[y],fontsize=15)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
 
 
 

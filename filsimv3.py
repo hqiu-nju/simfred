@@ -32,8 +32,10 @@ autoheader={'az_start': 0.0,
  'rawdatafile': None,
  'refdm': None,
  'source_name': 'None',
- 'src_dej': -32441.084833752,
- 'src_raj': 215344.63079648,
+ #'src_dej': -32441.084833752,
+ #'src_raj': 215344.63079648,
+ 'src_raj':174540.1662
+ 'src_dej':-290029.896
  'telescope_id': 7,
  'tsamp': 0.00126646875,
  'tstart': 57946.52703893818,
@@ -294,8 +296,14 @@ mkout.fin.flush()
 mkout.fin.close()
 if values.show:
     pylab.figure()
+    pylab.xlabel("Time Sample")
+    pylab.ylabel("Channel")
     pylab.imshow(frbconvolvemap,aspect='auto')
+    pylab.tight_layout()
     pylab.figure()
+    pylab.xlabel("Time Sample")
+    pylab.ylabel("Channel")
     pylab.imshow(datasetsum,aspect='auto')
+    pylab.tight_layout()
     pylab.show()
     pylab.close()

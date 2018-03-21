@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Template for making scripts to run from the command line
 
@@ -237,6 +237,8 @@ if probshow: ###### ROC generation option
     plt.ylabel('Fredda Correct Detection'+label[y],fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
+
+
 
 
 

@@ -161,7 +161,7 @@ if values.dm >2000:
     t=7
     nsamp = int(t*1000/tsamp)
 if values.dm > 4000:
-    tes=4.15*dm*((1.464-0.336)**-2 - 1.464**-2) #ms
+    tes=4.15*values.dm*((1.464-0.336)**-2 - 1.464**-2) #ms
     t=tes+2000
     nsamp = int(t/tsamp)
 

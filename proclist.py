@@ -26,7 +26,7 @@ def run_filsim(ident,dm,width,flu,x,index,no):
         print("spectral index generated")
         os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x)+' -i -I '+str(index)+' --number '+str(no))
     else:
-        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x)' --number '+str(no))
+        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x)+' --number '+str(no))
 
 def sn_sim(ident,dm,width,sn,x,index,no):
     name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(sn)+'_fixed'

@@ -144,7 +144,10 @@ label_axis=np.array([])
 
 prob_pd_t=[]
 prob_fa_t=[]
-prob_label=[]
+prob_dmlabel=[]
+prob_wdlabel=[]
+prob_snlabel=[]
+
 fof_pref=values.prefix
 
 ### for all items in filelist remember to -1 for \n in string, -9 for .candlist  so that is -10 in total.
@@ -212,7 +215,9 @@ for cd in filelist:
             prob_pd.append(0)
     prob_fa_t.append(sum(prob_fa))
     prob_pd_t.append(sum(prob_pd))
-    prob_label.append(cand_array[i][tag])
+    prob_dmlabel.append(cand_array[i][5])
+    prob_wdlabel.append(cand_array[i][8])
+    prob_snlabel.append(cand_array[i][0])
 
 labels=np.unique(label_axis)
 box_plotter(x_axis,y_axis,label_axis,labels,tag1=p_label,tag2=p_unit,bno=values.bins)
@@ -234,8 +239,8 @@ plt.close()
 
 
 
-roc=np.array([prob_fa_t,prob_pd_t,prob_label]).T
-s= pd.DataFrame(roc,columns=['fa','pd',p_label])
+roc=np.array([prob_fa_t,prob_pd_t,prob_dmlabel,prob_wdlabel,prob_snlabel]).T
+s= pd.DataFrame(roc,columns=['fa','pd','dm','wd','sn'])
 
 if probshow: ###### ROC generation option
     print('plotting probability plot')
@@ -244,6 +249,7 @@ if probshow: ###### ROC generation option
     plt.ylabel('Fredda Correct Detection',fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
+    plt.close()
 
 #ol.close()
 #histo.close()

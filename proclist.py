@@ -62,7 +62,7 @@ def _main():
     parser.add_argument('-n','--name',type=str, default='testset_')
     parser.add_argument('--offset',type = float, default =0.5)
     parser.add_argument('--index',type = float)
-    parser.add_argument('--number',type = float)
+    parser.add_argument('--number',type = int)
     #parser.add_argument(dest='files', nargs='+')
     parser.set_defaults(verbose=False)
     values = parser.parse_args()

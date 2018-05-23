@@ -16,7 +16,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 __author__ = "Harry Qiu"
 
-def run_filsim(ident,dm,width,flu,x,index):
+def run_filsim(ident,dm,width,flu,x,index,no):
     name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(flu)+'_fixed'
     print ('\n---------')
     print ('width, fluence, dm')
@@ -24,11 +24,11 @@ def run_filsim(ident,dm,width,flu,x,index):
     print ('process file:'+name+' \n')
     if index is not None:
         print("spectral index generated")
-        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x)+' -i -I '+str(index))
+        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x)+' -i -I '+str(index)+' --number '+str(no))
     else:
-        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x))
+        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -f '+str(flu)+' -o '+name+' -x '+str(x)' --number '+str(no))
 
-def sn_sim(ident,dm,width,sn,x,index):
+def sn_sim(ident,dm,width,sn,x,index,no):
     name=ident+"{0:04}".format(int(dm))+'_'+"{0:03}".format(width)+'_'+"{0:03}".format(sn)+'_fixed'
     print ('\n---------')
     print ('width, S/N, dm')
@@ -36,9 +36,9 @@ def sn_sim(ident,dm,width,sn,x,index):
     print ('process file:'+name+' \n')
     if index is not None:
         print("spectral index generated")
-        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -a -A '+str(sn)+' -o '+name+' -x '+str(x)+' -i -I '+str(index))
+        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -a -A '+str(sn)+' -o '+name+' -x '+str(x)+' -i -I '+str(index)+' --number '+str(no))
     else:
-        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -a -A '+str(sn)+' -o '+name+' -x '+str(x))
+        os.system('python filsimv3.py -d '+str(dm)+' -w '+str(width)+' -a -A '+str(sn)+' -o '+name+' -x '+str(x)+' --number '+str(no))
 
 def _main():
     date=time.strftime('%Y_%m_%d',time.localtime())
@@ -62,6 +62,7 @@ def _main():
     parser.add_argument('-n','--name',type=str, default='testset_')
     parser.add_argument('--offset',type = float, default =0.5)
     parser.add_argument('--index',type = float)
+    parser.add_argument('--number',type = float)
     #parser.add_argument(dest='files', nargs='+')
     parser.set_defaults(verbose=False)
     values = parser.parse_args()
@@ -85,15 +86,16 @@ def _main():
     width=wmin
     off=values.offset
     index=values.index
+    number=values.number
     if values.lmode:
         print('run list')
         exc=np.loadtxt(values.list,delimiter=',')
         if values.snmode:
             for i in range(len(exc)):
-                sn_sim(ident,exc[i][0],exc[i][1],exc[i][2],off,index)
+                sn_sim(ident,exc[i][0],exc[i][1],exc[i][2],off,index,number)
         else:
             for i in range(len(exc)):
-                run_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off,index)
+                run_filsim(ident,exc[i][0],exc[i][1],exc[i][2],off,index,number)
     elif values.snmode:
         ###flu is sn
         print ("snr fix mode")
@@ -104,11 +106,11 @@ def _main():
                     flu=fmin+j*fstep
                     for i in range(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
-                        sn_sim(ident,dm,width,flu,off,index)
+                        sn_sim(ident,dm,width,flu,off,index,number)
             else:
                 for i in xrange(int((dmax-dmin)/dstep)+1):
                     dm=i*dstep+dmin
-                    sn_sim(ident,dm,width,flu,off,index)
+                    sn_sim(ident,dm,width,flu,off,index,number)
         else:
             for k in range(int((wmax-wmin)/wstep)+1):
                 width=wmin+k*wstep
@@ -117,11 +119,11 @@ def _main():
                         flu=fmin+j*fstep
                         for i in range(int((dmax-dmin)/dstep)+1):
                             dm=i*dstep+dmin
-                            sn_sim(ident,dm,width,flu,off,index)
+                            sn_sim(ident,dm,width,flu,off,index,number)
                 else:
                     for i in xrange(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
-                        sn_sim(ident,dm,width,flu,off,index)
+                        sn_sim(ident,dm,width,flu,off,index,number)
 
 
 
@@ -133,11 +135,11 @@ def _main():
                     flu=fmin+j*fstep
                     for i in range(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
-                        run_filsim(ident,dm,width,flu,off,index)
+                        run_filsim(ident,dm,width,flu,off,index,number)
             else:
                 for i in xrange(int((dmax-dmin)/dstep)+1):
                     dm=i*dstep+dmin
-                    run_filsim(ident,dm,width,flu,off,index)
+                    run_filsim(ident,dm,width,flu,off,index,number)
         else:
             for k in range(int((wmax-wmin)/wstep)+1):
                 width=wmin+k*wstep
@@ -146,11 +148,11 @@ def _main():
                         flu=fmin+j*fstep
                         for i in range(int((dmax-dmin)/dstep)+1):
                             dm=i*dstep+dmin
-                            run_filsim(ident,dm,width,flu,off,index)
+                            run_filsim(ident,dm,width,flu,off,index,number)
                 else:
                     for i in xrange(int((dmax-dmin)/dstep)+1):
                         dm=i*dstep+dmin
-                        run_filsim(ident,dm,width,flu,off,index)
+                        run_filsim(ident,dm,width,flu,off,index,number)
     #os.system('tar -cvzf '+ident+"*.candlist candlist.tar.gz")
 
 

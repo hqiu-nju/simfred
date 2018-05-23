@@ -3,6 +3,9 @@ Template for making scripts to run from the command line
 
 Copyright (C) CSIRO 2015
 """
+
+
+#### this is proclist for filsimv3_compare
 import pylab
 import matplotlib as mpl
 import matplotlib.pyplot as plt

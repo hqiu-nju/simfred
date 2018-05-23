@@ -145,20 +145,23 @@ x_axis=np.array([])
 y_axis=np.array([])
 label_axis=np.array([])
 
-prob_pd=[]
-prob_fa=[]
+prob_pd_t=[]
+prob_fa_t=[]
 
 fof_pref=values.prefix
 
 ### for all items in filelist remember to -1 for \n in string, -9 for .candlist  so that is -10 in total.
 for cd in filelist:
+    prob_pd=[]
+    prob_fa=[]
     cand_name= cd[:-1]
     fof_name=fof_pref+cd[:-9]+"fil.cand.fof"
     if os.path.exists(fof_name):
+        print(fof_name)
         cand_array=np.loadtxt(cand_name)
         fof_array=np.loadtxt(fof_name)
         if (len(fof_array.flatten())/12)>1: #### if fredda found more than 1 candidate, fredda fofs have 12 columns
-            cycle=len(cand_array.flatten())/11  #### candlist files have 10 columns
+            cycle=len(cand_array.flatten())/11  #### candlist files have 11 columns
             for i in range(int(cycle)):
                 mk_time=cand_array[i][1]  #### time on column 2
                 mk_dm=cand_array[i][5]  #### dm column 6
@@ -174,7 +177,7 @@ for cd in filelist:
                         x_axis=np.append(x_axis,cand_array[i][x])
                         y_axis=np.append(y_axis,fof_array[tc][y])
                         label_axis=np.append(label_axis,cand_array[i][tag])
-                        prob_pd.append(1)
+                        prob_pd.append(1.0/cycle)
                     else: ### assign no detection information because of dm no match
                         x_axis=np.append(x_axis,cand_array[i][x])
                         y_axis=np.append(y_axis,0)
@@ -197,11 +200,11 @@ for cd in filelist:
                     dmcheck=(cand_array[tc][5]>mk_dm-dlim)*(cand_array[tc][5]<mk_dm+dlim)
                     #print(dmcheck)
                     if dmcheck:
-                        prob_fa.append(1)
-                    else:
                         prob_fa.append(0)
+                    else:
+                        prob_fa.append(1.0/cycle)
                 else:
-                    prob_fa.append(0)
+                    prob_fa.append(1.0/cycle)
     else: ### if no fredda result
         cand_array=np.loadtxt(cand_name)
         cycle=len(cand_array.flatten())/11
@@ -210,7 +213,8 @@ for cd in filelist:
         label_axis=np.append(label_axis,cand_array.T[tag])
         for i in range(int(cycle)):
             prob_pd.append(0)
-
+    prob_fa_t.append(sum(prob_fa))
+    prob_pd_t.append(sum(prob_pd))
 
 labels=np.unique(label_axis)
 box_plotter(x_axis,y_axis,label_axis,labels,tag1=p_label,tag2=p_unit)
@@ -233,8 +237,8 @@ plt.close()
 if probshow: ###### ROC generation option
     print('plotting probability plot')
     plt.figure(figsize=(8, 6))
-    plt.xlabel('Detection Rate'+label[x],fontsize=15)
-    plt.ylabel('Fredda Correct Detection'+label[y],fontsize=15)
+    plt.xlabel('Detection Rate',fontsize=15)
+    plt.ylabel('Fredda Correct Detection',fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
 

@@ -11,10 +11,7 @@ import numpy as np
 import os
 import sys
 import logging
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from pylab import *
-from matplotlib.ticker import  MultipleLocator
-from matplotlib.ticker import  FormatStrFormatter
+import pandas as pd
 from scipy import stats
 
 
@@ -147,7 +144,7 @@ label_axis=np.array([])
 
 prob_pd_t=[]
 prob_fa_t=[]
-
+prob_label=[]
 fof_pref=values.prefix
 
 ### for all items in filelist remember to -1 for \n in string, -9 for .candlist  so that is -10 in total.
@@ -215,9 +212,10 @@ for cd in filelist:
             prob_pd.append(0)
     prob_fa_t.append(sum(prob_fa))
     prob_pd_t.append(sum(prob_pd))
+    prob_label.append(cand_array[i][tag])
 
 labels=np.unique(label_axis)
-box_plotter(x_axis,y_axis,label_axis,labels,tag1=p_label,tag2=p_unit)
+box_plotter(x_axis,y_axis,label_axis,labels,tag1=p_label,tag2=p_unit,bno=values.bins)
 '''
 In [12]: for i in labels:
     ...:     print (i)
@@ -234,6 +232,11 @@ else:
     plt.savefig(values.output+name_label+'.pdf')
 plt.close()
 
+
+
+roc=np.array([prob_fa_t,prob_pd_t,prob_label]).T
+s= pd.DataFrame(roc,columns=['fa','pd',p_label])
+
 if probshow: ###### ROC generation option
     print('plotting probability plot')
     plt.figure(figsize=(8, 6))
@@ -241,10 +244,6 @@ if probshow: ###### ROC generation option
     plt.ylabel('Fredda Correct Detection',fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
-
-
-
-
 
 #ol.close()
 #histo.close()

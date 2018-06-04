@@ -248,17 +248,21 @@ for i in xrange(values.number):
     #print i,t,toffset*tsamp,widthms,dm,flu
     if values.snr:
         d = normmap.flatten()
+        temp=np.array(np.where(d > 0))
+        snr_cwj=(np.sum(d[temp]**2))**0.5
         #print('nosquare')
         #### snr calculation
         pulse=normmap>0
         snr1 = d.sum()/np.sqrt((d > 0.0).sum())
-        mfactor=mxsnr/snr1
+        print(snr_cwj,snr1)
+        mfactor=mxsnr/snr_cwj
         frbconvolvemap=normmap*mfactor
         d2 = frbconvolvemap.flatten()
         #print('nosquare')
         #### snr calculation
         snr = d2.sum()/np.sqrt((d2 > 0.0).sum())
         fluence=frbconvolvemap[1].sum()
+
     else:
         d = frbconvolvemap.flatten()
         #print('nosquare')

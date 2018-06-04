@@ -215,9 +215,9 @@ for cd in filelist:
             prob_pd.append(0)
     prob_fa_t.append(sum(prob_fa))
     prob_pd_t.append(sum(prob_pd))
-    prob_dmlabel.append(cand_array[i][5])
-    prob_wdlabel.append(cand_array[i][8])
-    prob_snlabel.append(cand_array[i][0])
+    prob_dmlabel.append(cand_array[0][5])
+    prob_wdlabel.append(cand_array[0][8])
+    prob_snlabel.append(cand_array[0][0])
 
 labels=np.unique(label_axis)
 box_plotter(x_axis,y_axis,label_axis,labels,tag1=p_label,tag2=p_unit,bno=values.bins)

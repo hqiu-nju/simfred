@@ -14,7 +14,89 @@ import logging
 import pandas as pd
 from scipy import stats
 
-
+###fof crossmatch
+def crossmatch(ans_list,folder,folder2,pre=' ',suf="fil.cand.fof",x=0,y=0,tag=5):
+    prob_pd_t=[]
+    prob_fa_t=[]
+    prob_dmlabel=[]
+    prob_wdlabel=[]
+    prob_snlabel=[]
+    x_axis=np.array([])
+    y_axis=np.array([])
+    label_axis=np.array([])
+    #print("hi")
+    #print (ans_list)
+    for cd in ans_list[:-5]:
+        prob_pd=[]
+        prob_fa=[]
+        cand=folder+ cd
+        fof_name=pre+cd[:-8]+suf
+        fof=folder2+fof_name
+        #print(cand,fof)
+        if os.path.exists(fof):
+            #print("yes")
+            cand_array=np.loadtxt(cand)
+            fof_array=np.loadtxt(fof)
+            cycle=len(cand_array.flatten())/11  #### candlist files have 11 columns
+            ##### check [pd]
+            for i in range(int(cycle)):
+                mk_time=cand_array[i][1]  #### time on column 2
+                mk_dm=cand_array[i][5]  #### dm column 6
+                #print(mk_dm)
+                time_check=np.intersect1d(np.where(fof_array.T[1]>mk_time-limit),np.where(fof_array.T[1]<mk_time+limit))
+                ### locating the time of the burst to match in the true results
+                if time_check.size: ##### if they found something within the time range
+                    if len(time_check) > 1:  ### more than 1 candidate in true file
+                        tc=np.where(fof_array.T[0]==fof_array.T[0][time_check].max())[0][0]
+                    else:
+                        tc=time_check[0]
+                    dmcheck=(fof_array[tc][5]>mk_dm-dlim)*(fof_array[tc][5]<mk_dm+dlim) ### check if the dm matches
+                    if dmcheck:  ### assign true detection information
+                        x_axis=np.append(x_axis,cand_array[i][x])
+                        y_axis=np.append(y_axis,fof_array[tc][y])
+                        label_axis=np.append(label_axis,cand_array[i][tag])
+                        prob_pd.append(1.0/cycle)
+                    else: ### assign no detection information because of dm no match
+                        x_axis=np.append(x_axis,cand_array[i][x])
+                        y_axis=np.append(y_axis,0)
+                        label_axis=np.append(label_axis,cand_array[i][tag])
+                        prob_pd.append(0)
+                else:  ### assign no detection because of empty within time range
+                    x_axis=np.append(x_axis,cand_array[i][x])
+                    y_axis=np.append(y_axis,0)
+                    label_axis=np.append(label_axis,cand_array[i][tag])
+                    prob_pd.append(0)
+            cycle=len(fof_array.flatten())/12
+            ###fa check
+            for i in range(int(cycle)):
+                dmcheck=0
+                mk_time=fof_array[i][1]  #### time on column 2
+                mk_dm=fof_array[i][5]  #### dm column 6
+                time_check=np.intersect1d(np.where(cand_array.T[1]>mk_time-limit),np.where(cand_array.T[1]<mk_time+limit))
+                if time_check.size:
+                    tc=time_check[0]
+                    dmcheck=(cand_array[tc][5]>mk_dm-dlim)*(cand_array[tc][5]<mk_dm+dlim)
+                    #print(dmcheck)
+                    if dmcheck:
+                        prob_fa.append(0)
+                    else:
+                        prob_fa.append(1.0/cycle)
+                else:
+                    prob_fa.append(1.0/cycle)
+        else: ### if no fredda result
+            cand_array=np.loadtxt(cand_name)
+            cycle=len(cand_array.flatten())/11
+            x_axis=np.append(x_axis,cand_array.T[x])
+            y_axis=np.append(y_axis,np.zeros(int(cycle)))
+            label_axis=np.append(label_axis,cand_array.T[tag])
+            for i in range(int(cycle)):
+                prob_pd.append(0)
+        prob_fa_t.append(sum(prob_fa))
+        prob_pd_t.append(sum(prob_pd))
+        prob_dmlabel.append(cand_array[0][5])
+        prob_wdlabel.append(cand_array[0][8])
+        prob_snlabel.append(cand_array[0][0])
+    return(prob_fa_t,prob_pd_t,prob_dmlabel,prob_wdlabel,prob_snlabel,x_axis,y_axis,label_axis)
 
 def box_plotter(x_axis,y_axis,label_axis,labels,tag1='DM',tag2='(pc cm$^{-3}$)',derr='std',bno=400,ms=15):
     for i in labels:
@@ -126,100 +208,23 @@ plt.yticks(fontsize=15)
 '''
 ###
 ####
+
+#####
+filelist=np.loadtxt(values.files[0],dtype=str)
+
+###create array
+
+fof_pref=values.prefix
+
+prob_fa_t,prob_pd_t,prob_dmlabel,prob_wdlabel,prob_snlabel,x_axis,y_axis,label_axis=crossmatch(
+filelist,folder=fof_pref,folder2=fof_pref,pre='',suf="fil.cand.fof",x=0,y=0,tag=5)
+
+labels=np.unique(label_axis)
 plt.figure(figsize=(8, 6))
 plt.xlabel('Truth '+label[x],fontsize=15)
 plt.ylabel('Fredda '+label[y],fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
-#####
-copies=open(values.files[0],'r')
-filelist=copies.readlines()
-copies.close()
-
-###create array
-
-x_axis=np.array([])
-y_axis=np.array([])
-label_axis=np.array([])
-
-prob_pd_t=[]
-prob_fa_t=[]
-prob_dmlabel=[]
-prob_wdlabel=[]
-prob_snlabel=[]
-
-fof_pref=values.prefix
-
-### for all items in filelist remember to -1 for \n in string, -9 for .candlist  so that is -10 in total.
-for cd in filelist:
-    prob_pd=[]
-    prob_fa=[]
-    cand_name= cd[:-1]
-    fof_name=fof_pref+cd[:-9]+"fil.cand.fof"
-    if os.path.exists(fof_name):
-        print(fof_name)
-        cand_array=np.loadtxt(cand_name)
-        fof_array=np.loadtxt(fof_name)
-        if (len(fof_array.flatten())/12)>1: #### if fredda found more than 1 candidate, fredda fofs have 12 columns
-            cycle=len(cand_array.flatten())/11  #### candlist files have 11 columns
-            for i in range(int(cycle)):
-                mk_time=cand_array[i][1]  #### time on column 2
-                mk_dm=cand_array[i][5]  #### dm column 6
-                time_check=np.intersect1d(np.where(fof_array.T[1]>mk_time-limit),np.where(fof_array.T[1]<mk_time+limit))
-                ### locating the time of the burst to match in the true results
-                if time_check.size: ##### if they found something within the time range
-                    if len(time_check) > 1:  ### more than 1 candidate in true file
-                        tc=np.where(fof_array.T[0]==fof_array.T[0][time_check].max())[0][0]
-                    else:
-                        tc=time_check[0]
-                    dmcheck=(fof_array[tc][5]>mk_dm-dlim)*(fof_array[tc][5]<mk_dm+dlim) ### check if the dm matches
-                    if dmcheck:  ### assign true detection information
-                        x_axis=np.append(x_axis,cand_array[i][x])
-                        y_axis=np.append(y_axis,fof_array[tc][y])
-                        label_axis=np.append(label_axis,cand_array[i][tag])
-                        prob_pd.append(1.0/cycle)
-                    else: ### assign no detection information because of dm no match
-                        x_axis=np.append(x_axis,cand_array[i][x])
-                        y_axis=np.append(y_axis,0)
-                        label_axis=np.append(label_axis,cand_array[i][tag])
-                        prob_pd.append(0)
-                else:  ### assign no detection because of empty within time range
-                    x_axis=np.append(x_axis,cand_array[i][x])
-                    y_axis=np.append(y_axis,0)
-                    label_axis=np.append(label_axis,cand_array[i][tag])
-                    prob_pd.append(0)
-        ####false Acquistion check
-            cycle=len(fof_array.flatten())/12
-            for i in range(int(cycle)):
-                dmcheck=0
-                mk_time=fof_array[i][1]  #### time on column 2
-                mk_dm=fof_array[i][5]  #### dm column 6
-                time_check=np.intersect1d(np.where(cand_array.T[1]>mk_time-limit),np.where(cand_array.T[1]<mk_time+limit))
-                if time_check.size:
-                    tc=time_check[0]
-                    dmcheck=(cand_array[tc][5]>mk_dm-dlim)*(cand_array[tc][5]<mk_dm+dlim)
-                    #print(dmcheck)
-                    if dmcheck:
-                        prob_fa.append(0)
-                    else:
-                        prob_fa.append(1.0/cycle)
-                else:
-                    prob_fa.append(1.0/cycle)
-    else: ### if no fredda result
-        cand_array=np.loadtxt(cand_name)
-        cycle=len(cand_array.flatten())/11
-        x_axis=np.append(x_axis,cand_array.T[x])
-        y_axis=np.append(y_axis,np.zeros(int(cycle)))
-        label_axis=np.append(label_axis,cand_array.T[tag])
-        for i in range(int(cycle)):
-            prob_pd.append(0)
-    prob_fa_t.append(sum(prob_fa))
-    prob_pd_t.append(sum(prob_pd))
-    prob_dmlabel.append(cand_array[0][5])
-    prob_wdlabel.append(cand_array[0][8])
-    prob_snlabel.append(cand_array[0][0])
-
-labels=np.unique(label_axis)
 box_plotter(x_axis,y_axis,label_axis,labels,tag1=p_label,tag2=p_unit,bno=values.bins)
 '''
 In [12]: for i in labels:

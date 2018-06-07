@@ -217,7 +217,7 @@ filelist=np.loadtxt(values.files[0],dtype=str)
 fof_pref=values.prefix
 
 prob_fa_t,prob_pd_t,prob_dmlabel,prob_wdlabel,prob_snlabel,x_axis,y_axis,label_axis=crossmatch(
-filelist,folder=fof_pref,folder2=fof_pref,pre='',suf="fil.cand.fof",x=0,y=0,tag=5)
+filelist,folder=fof_pref,folder2=fof_pref,pre='',suf="fil.cand.fof",x=x,y=y,tag=tag)
 
 labels=np.unique(label_axis)
 plt.figure(figsize=(8, 6))

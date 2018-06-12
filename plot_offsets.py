@@ -7,6 +7,8 @@ Copyright (C) CSIRO 2015
 import pylab
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+import matplotlib.cm as cmx
 import numpy as np
 import os
 import sys
@@ -21,12 +23,13 @@ def crossmatch(ans_list,folder,folder2,pre=' ',suf="fil.cand.fof",x=0,y=0,tag=5)
     prob_dmlabel=[]
     prob_wdlabel=[]
     prob_snlabel=[]
+    prob_offlabel=[]
     x_axis=np.array([])
     y_axis=np.array([])
     label_axis=np.array([])
     #print("hi")
     #print (ans_list)
-    for cd in ans_list[:-5]:
+    for cd in ans_list:
         prob_pd=[]
         prob_fa=[]
         cand=folder+ cd
@@ -95,19 +98,40 @@ def crossmatch(ans_list,folder,folder2,pre=' ',suf="fil.cand.fof",x=0,y=0,tag=5)
         prob_pd_t.append(sum(prob_pd))
         prob_dmlabel.append(cand_array[0][5])
         prob_wdlabel.append(cand_array[0][8])
-        prob_snlabel.append(cand_array[0][0])
-    return(prob_fa_t,prob_pd_t,prob_dmlabel,prob_wdlabel,prob_snlabel,x_axis,y_axis,label_axis)
+        prob_offlabel.append(cand_array[0][9])
+        #print (np.average(fof_array.T[0]))
+        prob_snlabel.append(np.average(fof_array.T[0]))
+    return(prob_fa_t,prob_pd_t,prob_dmlabel,prob_wdlabel,prob_snlabel,prob_offlabel,x_axis,y_axis,label_axis)
 
-def box_plotter(x_axis,y_axis,label_axis,labels,tag1='DM',tag2='(pc cm$^{-3}$)',derr='std',bno=400,ms=15):
-    for i in labels:
-        print (i)
-        pd_std, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic=derr,bins=bno)
-        pd_mean, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic='mean',bins=bno)
-        xbinned=bin_edges[:-1]+((bin_edges[1] - bin_edges[0])/2)
-        ybinned=pd_mean
-        plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,markersize=ms,label=tag1+'= '+str(i)+tag2,fmt='s')
-    plt.legend(loc=0,fontsize=10)
-    plt.tight_layout()
+def box_plotter(x_axis,y_axis,label_axis,labels,tag1='DM',tag2='(pc cm$^{-3}$)',derr='std',bno=400,ms=15,binmode=True,cmap_name='viridis'):
+    cmap = plt.cm.get_cmap(cmap_name)
+    max_freq = labels.max()+1
+    min_freq = labels.min()-1
+    print min_freq,max_freq
+    cNorm  = colors.Normalize(vmin=min_freq, vmax=max_freq)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cmap)
+    sm = scalarMap
+    sm._A = []
+    if binmode:
+        for i in labels:
+            print (i)
+            colorval = sm.to_rgba(i)
+            pd_std, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic=derr,bins=bno)
+            pd_mean, bin_edges, binnumber=stats.binned_statistic(x_axis[label_axis==i],y_axis[label_axis==i], statistic='mean',bins=bno)
+            xbinned=bin_edges[:-1]+((bin_edges[1] - bin_edges[0])/2)
+            ybinned=pd_mean
+            plt.errorbar(xbinned,ybinned,yerr=pd_std,alpha=0.5,markersize=ms,label=tag1+'= '+str(i)+tag2,fmt='s',color=colorval)
+        #plt.legend(loc=0,fontsize=10)
+        plt.colorbar(sm)
+        plt.tight_layout()
+    else:
+        for i in labels:
+            colorval = sm.to_rgba(i)
+            plt.scatter(x_axis[label_axis==i],y_axis[label_axis==i],label=tag1+str(i),color=colorval)
+        #plt.legend(loc=0,fontsize=10)
+        cbar=plt.colorbar(sm)
+        cbar.ax.set_ylabel(tag1+tag2)
+        plt.tight_layout()
 
 
 
@@ -128,6 +152,7 @@ parser.add_argument('--prob', action='store_true', help='Show')
 parser.add_argument('-x','--xaxis',type=int,default=0)
 parser.add_argument('-y','--yaxis',type=int,default=0)
 parser.add_argument('--ms',type=int,default=15)
+parser.add_argument('--scatter', action='store_true', help='Show')
 parser.add_argument('--bins',type=int,default=400)
 parser.add_argument('-o','--output',type=str,default='freddacheck')
 parser.add_argument('-l','--label',type=int,default=5,help=' 5 for dm label, 1/7 for fluence/sn label, 3/8 for width label')
@@ -189,6 +214,10 @@ units[2]=' (ms)'
 units[3]=' Samples'
 units[4]=' '
 
+if values.scatter:
+    binmode=False
+else:
+    binmode=True
 #ol=open(values.output+'outlier.txt','w')
 #histo=open(values.output+"histodata.txt",'w')
 #histo.write("#### time error, s/n truth, s/n fredda, dm, dm_fredda, width_intrinsic, boxcar_fredda \n")
@@ -216,7 +245,7 @@ filelist=np.loadtxt(values.files[0],dtype=str)
 
 fof_pref=values.prefix
 
-prob_fa_t,prob_pd_t,prob_dmlabel,prob_wdlabel,prob_snlabel,x_axis,y_axis,label_axis=crossmatch(
+prob_fa_t,prob_pd_t,prob_dmlabel,prob_wdlabel,prob_snlabel,prob_offlabel,x_axis,y_axis,label_axis=crossmatch(
 filelist,folder=fof_pref,folder2=fof_pref,pre='',suf="fil.cand.fof",x=x,y=y,tag=tag)
 
 labels=np.unique(label_axis)
@@ -225,7 +254,7 @@ plt.xlabel('Truth '+label[x],fontsize=15)
 plt.ylabel('Fredda '+label[y],fontsize=15)
 plt.xticks(fontsize=15)
 plt.yticks(fontsize=15)
-box_plotter(x_axis,y_axis,label_axis,labels,tag1=p_label,tag2=p_unit,bno=values.bins)
+box_plotter(x_axis,y_axis,label_axis,labels,tag1=p_label,tag2=p_unit,bno=values.bins,binmode=binmode)
 '''
 In [12]: for i in labels:
     ...:     print (i)
@@ -244,8 +273,8 @@ plt.close()
 
 
 
-roc=np.array([prob_fa_t,prob_pd_t,prob_dmlabel,prob_wdlabel,prob_snlabel]).T
-s= pd.DataFrame(roc,columns=['fa','pd','dm','wd','sn'])
+roc=np.array([prob_fa_t,prob_pd_t,prob_dmlabel,prob_wdlabel,prob_snlabel,prob_offlabel]).T
+s= pd.DataFrame(roc,columns=['fa','pd','dm','wd','sn','offset'])
 
 if probshow: ###### ROC generation option
     print('plotting probability plot')
@@ -254,7 +283,18 @@ if probshow: ###### ROC generation option
     plt.ylabel('Fredda Correct Detection',fontsize=15)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
-    plt.close()
+    '''
+    plt.figure(figsize=(10,9))
+    plt.ylabel("FREDDA S/N")
+    plt.xlabel("DM")
+    plt.plot(s[s.offset==0.00].dm,s[s.offset==0.0].sn,label='Offset = 0.00')
+    plt.plot(s[s.offset==0.25].dm,s[s.offset==0.25].sn,label='Offset = 0.25')
+    plt.plot(s[s.offset==0.50].dm,s[s.offset==0.50].sn,label='Offset = 0.50')
+    plt.plot(s[s.offset==0.75].dm,s[s.offset==0.75].sn,label='Offset = 0.75')
+    plt.legend(loc=0)
+    plt.tight_layout()
+    plt.savefig("width1_dm-sn.pdf")
+    '''
 
 #ol.close()
 #histo.close()

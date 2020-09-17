@@ -4,8 +4,8 @@ Template for making scripts to run from the command line
 
 Copyright (C) CSIRO 2015
 """
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+# import matplotlib as mpl
+# import matplotlib.pyplot as plt
 import numpy as np
 import os
 import sys

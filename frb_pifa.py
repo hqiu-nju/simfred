@@ -24,10 +24,9 @@ def _main():
     parser = ArgumentParser(description='Script description', formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Be verbose')
     parser.add_argument('-d', '--dm',type=float, default=200,help='DM of pulse')
-    parser.add_argument('--dedisp',type=float, default=0,help='How much is dedispersed, leave as zero for original pulse')
     parser.add_argument('-w', '--width',type=float, default=0.1,help='millisecond pulse width')
     parser.add_argument('-o', '--output',type=str, default='testfilterbank',help='output filename')
-    parser.add_argument('-s','--show', action='store_true', help='Show')
+    # parser.add_argument('-s','--show', action='store_true', help='Show')
     parser.add_argument('--nchan',type=int,default=336,help='number of channels')
     parser.add_argument('--bw',type=int,default=336,help='bandwidth MHz')
     parser.add_argument('--ftop',type=int,default=1100,help='fch1 frequency (MHz)')
@@ -38,7 +37,9 @@ def _main():
     parser.add_argument('-I', '--spectralindex',type=float, default=0)
     parser.add_argument('-x','--offset',type=float,default=0.5, help='Offset within sample')
     parser.add_argument("--noise",type=int,default=1,help='noise level adjustment')
-    parser.add_argument('--inject',action='store_true',help='make ASKAP filterbanks, only works on py27 at the moment')
+    parser.add_argument("-m","--mode",type=str,default='dm',help='variable parameter dm, sigma, tau, sn')
+    parser.add_argument('--step',type=float,default=100, help='variable step')
+    # parser.add_argument('--inject',action='store_true',help='make ASKAP filterbanks, only works on py27 at the moment')
     parser.add_argument('-N','--nfrb',type=int,default=1, help='how many FRBs to inject')
     parser.add_argument("--fbstd",type=int,default=18,help='filterbank units')
     parser.add_argument("--fbbase",type=int,default=128,help='filterbank baseline')
@@ -46,11 +47,9 @@ def _main():
     #parser.add_argument(dest='files', nargs='+')
     parser.set_defaults(verbose=False)
     values = parser.parse_args()
-    dm0=values.dm
-    dmerr=values.dedisp
-    sigma=values.width
-    N=values.nfrb
-    dm=dm0
+    dm=values.dm
+    dmerr=0
+    nfrb=values.nfrb
     global ftop,fch1,bwchan
     noise=values.noise
     tsamp=values.tsamp ##ms
@@ -59,7 +58,7 @@ def _main():
     fch1=values.ftop
     ftop=fch1/1000  # GHz
     bandwidth=values.bw
-    show=values.show
+    # show=values.show
     output=values.output
     fcentre=fch1+bandwidth/2 ## MHz
     bwchan=bandwidth/nchan
@@ -71,34 +70,34 @@ def _main():
     base=values.fbbase
     offset=values.offset
     ##create base datasample
-    #print(bwchan)
+    print(tau1)
     #np.random.seed(25)
-    if values.inject :
-        mockheader=makeheader(fch1,bwchan,nchan,nsamp,dmerr)
-        filterbank=fbio.makefilterbank(output+".fil",header=mockheader)
-        # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
-        # print filterbank.header
-        filterbank.writenoise(int(5000//tsamp),fbstd*noise,base)
-        # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
-        # noise.T.tofile(filterbank.fin)
-        # burst=dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,output,show=False)
-        for i in range(values.nfrb):
-            burst0=dispersion_waterfall(nchan,nsamp,0,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
-            background=(np.random.randn(nchan, nsamp)*fbstd*noise + base).astype(np.uint8)
-            burst=(burst0*fbstd).astype(np.uint8)+background
-            if show:
-                # plt.imshow(burst0,aspect='auto')
-                # plt.show()
-                plt.imshow(burst,aspect='auto')
-                plt.show()
-            filterbank.writeblock(burst)
-            # burst.T.tofile(filterbank.fin)
-        filterbank.closefile()
-        # filterbank.fin.flush()
-        # filterbank.fin.close()
-    else:
-        burst=dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show)
-        np.save(arr=burst,file=output)
+    mockheader=makeheader(fch1,bwchan,nchan,nsamp,dmerr)
+    if values.mode == 'dm':
+        dmrange=np.arange(100,dm,values.step)
+        for p1 in dmrange:
+            filename=output+"_DM"+"{0:0}".format(p1)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(amp)+"_tau"+"{0:0}".format(tau1)
+            inject(mockheader,filename,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1,p1,amp,tau1,alpha,width,dmerr,offset)
+
+
+
+def inject(mockheader,output,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset):
+    filterbank=fbio.makefilterbank(output+".fil",header=mockheader)
+    # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
+    # print filterbank.header
+    filterbank.writenoise(int(5000//tsamp),fbstd*noise,base)
+    # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
+    # noise.T.tofile(filterbank.fin)
+    # burst=dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,output,show=False)
+    for i in range(nfrb):
+        burst0=dispersion_waterfall(nchan,nsamp,0,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
+        background=(np.random.randn(nchan, nsamp)*fbstd*noise + base).astype(np.uint8)
+        burst=(burst0*fbstd).astype(np.uint8)+background
+        filterbank.writeblock(burst)
+        # burst.T.tofile(filterbank.fin)
+    filterbank.closefile()
+    # filterbank.fin.flush()
+    # filterbank.fin.close()
 
 def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     header={'az_start': 0.0,

@@ -11,7 +11,7 @@ import os
 import sys
 import logging
 from numpy import convolve
-from matplotlib.gridspec import GridSpec
+# from matplotlib.gridspec import GridSpec
 # import bilby
 # from astropy import units as u
 import fbio

@@ -302,3 +302,7 @@ def scat_pulse_smear(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi):
 
 def quick_snr(sf):
     return np.sum(sf[sf>0]**2)**0.5
+
+
+if __name__ == '__main__':
+    _main()

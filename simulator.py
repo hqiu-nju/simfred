@@ -29,8 +29,8 @@ def _main():
     parser.add_argument('-o', '--output',type=str, default='testfilterbank',help='output filename')
     parser.add_argument('-s','--show', action='store_true', help='Show')
     parser.add_argument('--nchan',type=int,default=336,help='number of channels')
-    parser.add_argument('--bw',type=int,default=336,help='bandwidth MHz')
-    parser.add_argument('--ftop',type=int,default=1100,help='fch1 frequency (MHz)')
+    parser.add_argument('--bw',type=float,default=-336,help='bandwidth MHz')
+    parser.add_argument('--ftop',type=int,default=1400,help='fch1 frequency (MHz)')
     parser.add_argument('--tsamp',type=float,default=1.26,help='millisecond tsamp')
     parser.add_argument('-A', '--snfac',type=float, default=20)
     parser.add_argument('-t', '--tau',type=float, default=0)
@@ -106,7 +106,7 @@ def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     'data_type': 1,
     'fch1':freqaskap ,
     'fchannel': None,
-    'foff': bwchan,
+    'foff': 1,
     'machine_id': 0,
     'nbits': 8,
     'nchans': nchan,
@@ -131,17 +131,23 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
     time=np.arange(nsamp)*tsamp
     vif,chan_idx=freq_splitter_idx(nchan,0,nchan,bwchan,fch1)
     toas=np.array(delaypos(vif,bwchan,fch1,dm))
+    bin=10
+    matrix=np.ones((nsamp,bin))*np.linspace(-0.5,0.5,bin)*tsamp
+    timematrix=(np.ones((nsamp,bin)).T*time).T
+    global finergrid
+    finergrid=(matrix+timematrix).flatten()
     for i in range(nchan):
         t0=nsamp//2*tsamp+toas[i]+offset
         ampx=amp
         #print (ampx)
         #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
         if tau1 !=0:
-            base[i]+=scat_pulse_smear(time,t0,tau1,dm,0,width,alpha,ampx,vif[i])
+            base[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,ampx,vif[i]).reshape(nsamp,-1),axis=1)
         else: #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-            base[i]+=single_pulse_smear(time,t0,dm,0,width,ampx,vif[i])
+            base[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,ampx,vif[i]).reshape(nsamp,-1),axis=1)
     if show:
         plt.imshow(base,aspect='auto')
+        plt.yticks(chan_idx,vif)
         plt.show()
     # np.save(arr=base,file=output)
     if dmerr !=float(0):
@@ -154,9 +160,9 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
             #print (ampx)
             #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
             if tau1 !=0:
-                base2[i]+=scat_pulse_smear(time,t0,tau1,dm,0,width,alpha,ampx,vif[i])
+                base2[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,ampx,vif[i]).reshape(nsamp,-1),axis=1)
             else: #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-                base2[i]+=single_pulse_smear(time,t0,dm,0,width,ampx,vif[i])
+                base2[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,ampx,vif[i]).reshape(nsamp,-1),axis=1)
         if show:
             plt.figure()
             plt.imshow(base,aspect='auto')
@@ -171,7 +177,7 @@ def dmdelays(dm,vi,ftop): ## dispersion time delay offset
     #ftop=1464/1000 ## MHz--->GHz
     #fbot=1128/1000 ## MHz--->GHz
     ### ftop is in GHz
-    ti=4.15*dm*np.abs(ftop**(-beta)-vi**(-beta)) ### ms
+    ti=4.15*dm*(vi**(-beta)-ftop**(-beta)) ### ms
     return ti ### ms
 def delaypos(f,bwchan,fch1,dm):
     ftop=fch1/1000
@@ -182,7 +188,7 @@ def delaypos(f,bwchan,fch1,dm):
         fchan=i/1000
         #print(ftop,i,dw)
         #print(fchan,dmdelays(dm,fchan,ftop)*(-1*dw/np.abs(dw)))
-        times.append(dmdelays(dm,fchan,ftop)*(-1*dw/np.abs(dw)))
+        times.append(dmdelays(dm,fchan,ftop))
     #print ("times generated, max delay is",times[-1])
     return times
 def freq_splitter_idx(n,skip,end,bwchan,fch1):

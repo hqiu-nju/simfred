@@ -44,6 +44,7 @@ def _main():
     parser.add_argument("--fbstd",type=int,default=18,help='filterbank units')
     parser.add_argument("--fbbase",type=int,default=128,help='filterbank baseline')
     parser.add_argument('-L','--nsamp',type=int,default=1024, help='data length')
+    parser.add_argument('--min',type=float,default=0,help='start value')
     #parser.add_argument(dest='files', nargs='+')
     parser.set_defaults(verbose=False)
     values = parser.parse_args()
@@ -74,7 +75,7 @@ def _main():
     #np.random.seed(25)
     mockheader=makeheader(fch1,bwchan,nchan,nsamp,dmerr)
     if values.mode == 'dm':
-        dmrange=np.arange(100,dm,values.step)
+        dmrange=np.arange(50,dm,values.step)
         for p1 in dmrange:
             filename=output+"_DM"+"{0:0}".format(p1)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(amp)+"_tau"+"{0:0}".format(tau1)
             inject(mockheader,filename,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1,p1,amp,tau1,alpha,width,dmerr,offset)

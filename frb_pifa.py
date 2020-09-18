@@ -75,7 +75,7 @@ def _main():
     #np.random.seed(25)
     mockheader=makeheader(fch1,bwchan,nchan,nsamp,dmerr)
     if values.mode == 'dm':
-        dmrange=np.arange(50,dm,values.step)
+        dmrange=np.arange(values.min,dm,values.step)
         for p1 in dmrange:
             filename=output+"_DM"+"{0:0}".format(p1)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(amp)+"_tau"+"{0:0}".format(tau1)
             inject(mockheader,filename,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1,p1,amp,tau1,alpha,width,dmerr,offset)

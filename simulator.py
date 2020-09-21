@@ -106,7 +106,7 @@ def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     'data_type': 1,
     'fch1':freqaskap ,
     'fchannel': None,
-    'foff': 1,
+    'foff': bwchan,
     'machine_id': 0,
     'nbits': 8,
     'nchans': nchan,

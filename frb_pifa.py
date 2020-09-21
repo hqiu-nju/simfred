@@ -127,7 +127,7 @@ def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     'za_start': 0.0}
     return header
 def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show):
-    base = np.random.randn(nchan, nsamp)*noise
+    base = np.zeros((nchan, nsamp))
     time=np.arange(nsamp)*tsamp
     vif,chan_idx=freq_splitter_idx(nchan,0,nchan,bwchan,fch1)
     toas=np.array(delaypos(vif,bwchan,fch1,dm))
@@ -136,19 +136,22 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
     timematrix=(np.ones((nsamp,bin)).T*time).T
     global finergrid
     finergrid=(matrix+timematrix).flatten()
+    ampx=amp*np.random.rand(1)
     for i in range(nchan):
         t0=nsamp//2*tsamp+toas[i]+offset
-        ampx=amp
         #print (ampx)
         #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
         if tau1 !=0:
-            base[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,ampx,vif[i]).reshape(nsamp,-1),axis=1)
+            base[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,1,vif[i]).reshape(nsamp,-1),axis=1)
         else: #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-            base[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,ampx,vif[i]).reshape(nsamp,-1),axis=1)
+            base[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,1,vif[i]).reshape(nsamp,-1),axis=1)
+    base_sn=quick_snr(base)
+    base=base/base_sn*ampx + np.random.randn(nchan, nsamp)*noise
     if show:
         plt.imshow(base,aspect='auto')
-        plt.yticks(chan_idx,vif)
+        # plt.yticks(chan_idx,vif)
         plt.show()
+
     # np.save(arr=base,file=output)
     if dmerr !=float(0):
         base2 = np.random.randn(nchan, nsamp)*noise
@@ -156,19 +159,21 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
         toas=np.array(delaypos(vif,bwchan,fch1,dm-dmerr))
         for i in range(nchan):
             t0=nsamp//2*tsamp+toas[i]
-            ampx=amp*np.random.rand(1)
             #print (ampx)
             #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
             if tau1 !=0:
-                base2[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,ampx,vif[i]).reshape(nsamp,-1),axis=1)
+                base2[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,1,vif[i]).reshape(nsamp,-1),axis=1)
             else: #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-                base2[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,ampx,vif[i]).reshape(nsamp,-1),axis=1)
+                base2[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,1,vif[i]).reshape(nsamp,-1),axis=1)
+        base_sn=quick_snr(base2)
+        base2= base2/base_sn*ampx +np.random.randn(nchan, nsamp)*noise
         if show:
             plt.figure()
-            plt.imshow(base,aspect='auto')
+            plt.imshow(base2,aspect='auto')
             plt.show()
-        # np.save(arr=base2,file=output+"_shifted")
         return base2
+        # np.save(arr=base2,file=output+"_shifted")
+
     else:
         return base
 

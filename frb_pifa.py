@@ -79,6 +79,12 @@ def _main():
         for p1 in dmrange:
             filename=output+"_DM"+"{0:0}".format(p1)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(amp)+"_tau"+"{0:0}".format(tau1)
             inject(mockheader,filename,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1,p1,amp,tau1,alpha,width,dmerr,offset)
+    if values.mode == 'sn':
+        snrange=np.arange(values.min,amp,values.step)
+        for p1 in snrange:
+            filename=output+"_DM"+"{0:0}".format(dm)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(p1)+"_tau"+"{0:0}".format(tau1)
+            inject(mockheader,filename,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1,dm,p1,tau1,alpha,width,dmerr,offset)
+
 
 
 

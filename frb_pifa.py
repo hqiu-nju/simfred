@@ -90,8 +90,9 @@ def inject(mockheader,output,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1
     # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
     # noise.T.tofile(filterbank.fin)
     # burst=dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,output,show=False)
+    burst0=dispersion_waterfall(nchan,nsamp,0,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
     for i in range(nfrb):
-        burst0=dispersion_waterfall(nchan,nsamp,0,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
+        np.random.seed(i)
         background=(np.random.randn(nchan, nsamp)*fbstd*noise + base).astype(np.uint8)
         burst=(burst0*fbstd).astype(np.uint8)+background
         filterbank.writeblock(burst)

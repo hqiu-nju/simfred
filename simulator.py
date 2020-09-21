@@ -137,7 +137,7 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
     timematrix=(np.ones((nsamp,bin)).T*time).T
     global finergrid
     finergrid=(matrix+timematrix).flatten()
-    ampx=amp*np.random.rand(1)
+    ampx=amp
     for i in range(nchan):
         t0=nsamp//2*tsamp+toas[i]+offset
         #print (ampx)

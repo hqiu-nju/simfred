@@ -130,7 +130,7 @@ def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     'src_raj':174540.1662,
     'src_dej':-290029.896,
     'telescope_id': 7,
-    'tsamp': 0.00126646875,
+    'tsamp': 0.00126,
     'tstart': 57946.52703893818,
     'za_start': 0.0}
     return header
@@ -193,8 +193,8 @@ def dmdelays(dm,vi,ftop): ## dispersion time delay offset
     ti=4.15*dm*(vi**(-beta)-ftop**(-beta)) ### ms
     return ti ### ms
 def delaypos(f,bwchan,fch1,dm):
-    ftop=fch1/1000
-    dw=float(bwchan)/1000
+    ftop=fch1/1000.
+    dw=float(bwchan)/1000.
     #print(bwchan)
     times=[]
     for i in f:

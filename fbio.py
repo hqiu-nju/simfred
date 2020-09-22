@@ -2,14 +2,12 @@
 """
 Writes numpy files into filterbank, needs sigproc.py which runs in python2
 """
-import matplotlib as mpl
+
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import sys
 import logging
-from numpy import convolve
-from matplotlib.gridspec import GridSpec
 # import bilby
 # from astropy import units as u
 import sigproc as sgp

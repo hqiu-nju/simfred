@@ -29,8 +29,8 @@ def _main():
     parser.add_argument('-o', '--output',type=str, default='testfilterbank',help='output filename')
     parser.add_argument('-s','--show', action='store_true', help='Show')
     parser.add_argument('--nchan',type=int,default=336,help='number of channels')
-    parser.add_argument('--bw',type=float,default=-336,help='bandwidth MHz')
-    parser.add_argument('--ftop',type=int,default=1400,help='fch1 frequency (MHz)')
+    parser.add_argument('--bw',type=float,default=336,help='bandwidth MHz')
+    parser.add_argument('--ftop',type=int,default=1100,help='fch1 frequency (MHz)')
     parser.add_argument('--tsamp',type=float,default=1.26,help='millisecond tsamp')
     parser.add_argument('-A', '--snfac',type=float, default=20)
     parser.add_argument('-t', '--tau',type=float, default=0)
@@ -123,7 +123,7 @@ def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     'src_raj':174540.1662,
     'src_dej':-290029.896,
     'telescope_id': 7,
-    'tsamp': 0.00126646875,
+    'tsamp': 0.00126,
     'tstart': 57946.52703893818,
     'za_start': 0.0}
     return header

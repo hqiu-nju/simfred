@@ -28,7 +28,7 @@ def _main():
     parser.add_argument('-o', '--output',type=str, default='testfilterbank',help='output filename')
     # parser.add_argument('-s','--show', action='store_true', help='Show')
     parser.add_argument('--nchan',type=int,default=336,help='number of channels')
-    parser.add_argument('--bw',type=int,default=-336,help='bandwidth MHz')
+    parser.add_argument('--bw',type=int,default=336,help='bandwidth MHz')
     parser.add_argument('--ftop',type=int,default=1100,help='fch1 frequency (MHz)')
     parser.add_argument('--tsamp',type=float,default=1.26,help='millisecond tsamp')
     parser.add_argument('-A', '--snfac',type=float, default=20)

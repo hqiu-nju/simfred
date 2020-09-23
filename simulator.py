@@ -143,14 +143,15 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
         #print (ampx)
         #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
         if tau1 !=0:
-            base[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,1,vif[i]).reshape(nsamp,-1),axis=1)
+            base[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,10,vif[i]).reshape(nsamp,-1),axis=1)
         else: #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-            base[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,1,vif[i]).reshape(nsamp,-1),axis=1)
+            base[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,10,vif[i]).reshape(nsamp,-1),axis=1)
     base_sn=quick_snr(base)
     base=base/base_sn*ampx + np.random.randn(nchan, nsamp)*noise
     if show:
         plt.imshow(base,aspect='auto')
-        # plt.yticks(chan_idx,vif)
+        plt.yticks([0,335],[vif[0],vif[335]])
+        plt.ylabel('Frequency (MHz)')
         plt.show()
 
     # np.save(arr=base,file=output)

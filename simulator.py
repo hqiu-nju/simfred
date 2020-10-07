@@ -152,6 +152,8 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
         plt.imshow(base,aspect='auto')
         plt.yticks([0,335],[vif[0],vif[335]])
         plt.ylabel('Frequency (MHz)')
+        plt.xlabel("Time Samples")
+        plt.tight_layout()
         plt.show()
 
     # np.save(arr=base,file=output)
@@ -172,6 +174,10 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
         if show:
             plt.figure()
             plt.imshow(base2,aspect='auto')
+            plt.yticks([0,335],[vif[0],vif[335]])
+            plt.ylabel('Frequency (MHz)')
+            plt.xlabel("Time Samples")
+            plt.tight_layout()
             plt.show()
         return base2
         # np.save(arr=base2,file=output+"_shifted")

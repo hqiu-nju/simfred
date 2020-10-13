@@ -29,7 +29,7 @@ def _main():
     # parser.add_argument('-s','--show', action='store_true', help='Show')
     parser.add_argument('--nchan',type=int,default=336,help='number of channels')
     parser.add_argument('--bw',type=int,default=336,help='bandwidth MHz')
-    parser.add_argument('--ftop',type=int,default=1100,help='fch1 frequency (MHz)')
+    parser.add_argument('--ftop',type=int,default=1100.5,help='fch1 frequency (MHz)')
     parser.add_argument('--tsamp',type=float,default=1.26,help='millisecond tsamp')
     parser.add_argument('-A', '--snfac',type=float, default=20)
     parser.add_argument('-t', '--tau',type=float, default=0)
@@ -112,7 +112,7 @@ def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     header={'az_start': 0.0,
     'barycentric': None,
     'data_type': 1,
-    'fch1':freqaskap ,
+    'fch1':freqaskap-0.5*bwchan ,
     'fchannel': None,
     'foff': bwchan,
     'machine_id': 0,

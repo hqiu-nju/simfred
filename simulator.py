@@ -105,7 +105,7 @@ def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     header={'az_start': 0.0,
     'barycentric': None,
     'data_type': 1,
-    'fch1':freqaskap+0.5*bwchan ,
+    'fch1':freqaskap-0.5*bwchan ,
     'fchannel': None,
     'foff': bwchan,
     'machine_id': 0,

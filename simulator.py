@@ -15,7 +15,7 @@ from matplotlib.gridspec import GridSpec
 # import bilby
 # from astropy import units as u
 import fbio
-import sigproc as sgp
+import sigproc3 as sgp
 MIN_FLOAT = sys.float_info[3]
 __author__ = "Harry Qiu"
 

@@ -10,7 +10,7 @@ import sys
 import logging
 # import bilby
 # from astropy import units as u
-import sigproc as sgp
+import sigproc3 as sgp
 
 MIN_FLOAT = sys.float_info[3]
 __author__ = "Harry Qiu"

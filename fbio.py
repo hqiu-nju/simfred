@@ -45,7 +45,7 @@ class makefilterbank:
         # if header== "Empty":
         #     print("using default header with fch1=1464, nchan=336, foff=-1")
         self.header=header
-        self.fbank=sgp.SigprocFile(filename,'w',header)
+        self.fbank=sgp.SigprocFile(filename,'wb',header)
         self.fbank.seek_data()
 
     def writeblock(self,input):

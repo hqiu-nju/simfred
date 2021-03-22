@@ -139,7 +139,7 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
     finergrid=(matrix+timematrix).flatten()
     ampx=amp
     for i in range(nchan):
-        t0=nsamp//2*tsamp+toas[i]+offset
+        t0=nsamp//3*tsamp+toas[i]+offset
         #print (ampx)
         #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
         if tau1 !=0:
@@ -162,7 +162,7 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
         time=np.arange(nsamp)*tsamp
         toas=np.array(delaypos(vif,bwchan,fch1,dm-dmerr))
         for i in range(nchan):
-            t0=nsamp//2*tsamp+toas[i]
+            t0=nsamp//3*tsamp+toas[i]
             #print (ampx)
             #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
             if tau1 !=0:

@@ -15,7 +15,7 @@ from numpy import convolve
 # import bilby
 # from astropy import units as u
 import fbio
-import sigproc as sgp
+import sigproc3 as sgp
 MIN_FLOAT = sys.float_info[3]
 __author__ = "Harry Qiu"
 
@@ -31,10 +31,10 @@ def _main():
     parser.add_argument('--bw',type=int,default=336,help='bandwidth MHz')
     parser.add_argument('--ftop',type=int,default=1100.5,help='fch1 frequency (MHz)')
     parser.add_argument('--tsamp',type=float,default=1.26,help='millisecond tsamp')
-    parser.add_argument('-A', '--snfac',type=float, default=20)
-    parser.add_argument('-t', '--tau',type=float, default=0)
-    parser.add_argument('-a', '--alpha',type=float, default=0)
-    parser.add_argument('-I', '--spectralindex',type=float, default=0)
+    parser.add_argument('-A', '--snfac',type=float, default=20,help='set the signal-to-noise')
+    parser.add_argument('-t', '--tau',type=float, default=0,help='set the scatter broadening')
+    parser.add_argument('-a', '--alpha',type=float, default=0,help='scattering index minus alpha, nu^-alpha')
+    parser.add_argument('-I', '--spectralindex',type=float, default=0,help='spectral index of burst')
     parser.add_argument('-x','--offset',type=float,default=0.5, help='Offset within sample')
     parser.add_argument("--noise",type=int,default=1,help='noise level adjustment')
     parser.add_argument("-m","--mode",type=str,default='dm',help='variable parameter dm, sigma, tau, sn')

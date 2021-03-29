@@ -92,7 +92,7 @@ def inject(mockheader,output,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1
     filterbank=fbio.makefilterbank(output+".fil",header=mockheader)
     # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
     # print filterbank.header
-    filterbank.writenoise(int(10000//tsamp),fbstd*noise,base)
+    filterbank.writenoise(5000,fbstd*noise,base)
     # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
     # noise.T.tofile(filterbank.fin)
     # burst=dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,output,show=False)
@@ -146,7 +146,7 @@ def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,w
     finergrid=(matrix+timematrix).flatten()
     ampx=amp
     for i in range(nchan):
-        t0=nsamp//2*tsamp+toas[i]+offset
+        t0=nsamp//3*tsamp+toas[i]+offset
         #print (ampx)
         #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
         if tau1 !=0:
@@ -314,7 +314,7 @@ def scat_pulse_smear(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi):
     return a*flux
 
 def quick_snr(sf):
-    return np.sum(sf[sf>0]**2)**0.5
+    return np.sum(sf[sf>1]**2)**0.5
 
 
 if __name__ == '__main__':

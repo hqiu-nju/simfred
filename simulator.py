@@ -57,12 +57,14 @@ def _main():
     nsamp=values.nsamp
     nchan=values.nchan
     fch1=values.ftop
-    ftop=fch1/1000  # GHz
+ # GHz
     bandwidth=values.bw
     show=values.show
     output=values.output
-    fcentre=fch1+bandwidth/2 ## MHz
+
     bwchan=bandwidth/nchan
+    ftop=fch1/1000
+    fcentre=fch1+bandwidth/2 ## MHz
     tau1=values.tau
     alpha=values.alpha
     width=values.width

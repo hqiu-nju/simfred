@@ -224,7 +224,7 @@ def freq_splitter_idx(n,skip,end,bwchan,fch1):
 
 def gaus_func(sigi,t0,t,ti):
     #ti=0### gaussian function
-    sit=1/np.sqrt(np.pi*2*(sigi**2))*np.exp(-(t-t0-ti)**2/2*(sigi**2)) ### model 0 in ravi 2018
+    sit=1/np.sqrt(np.pi*2*(sigi**2))*np.exp(-(t-t0-ti)**2/2/(sigi**2)) ### model 0 in ravi 2018
     return sit
 
 ### adjust dm

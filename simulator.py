@@ -159,12 +159,10 @@ def check_your_snr(sf):
 
 def mask_check_sn(sf):
     time_series=sf.sum(0)
-
-    maxpulse=np.sum(np.max(sf,axis=1))
-
     # print(snr_your(burst.sum(0),width))
 #     print(mask.shape)
     basemean=np.mean(time_series[:1500])
+    maxpulse=np.sum(np.max(sf,axis=1))-basemean
 #     print(basemean)
     burstcut=time_series-basemean
     std=np.std(burstcut[:1500])

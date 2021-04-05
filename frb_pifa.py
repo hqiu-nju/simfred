@@ -83,13 +83,13 @@ def _main():
         for p1 in dmrange:
             burst,dedisp_burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,p1,amp,tau1,alpha,width,dmerr,offset,show=False) ### this is a noise free burst
             filename=output+"_DM"+"{0:0}".format(p1)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(amp)+"_tau"+"{0:0}".format(tau1)
-            inject(mockheader,output,nsamp,nchan,fbstd,noise,base,N,burst,dedisp_burst,amp)
+            inject(mockheader,filename,nsamp,nchan,fbstd,noise,base,N,burst,dedisp_burst,amp)
     if values.mode == 'sn':
         burst,dedisp_burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
         snrange=np.arange(values.min,amp,values.step)
         for p1 in snrange:
             filename=output+"_DM"+"{0:0}".format(dm)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(p1)+"_tau"+"{0:0}".format(tau1)
-            inject(mockheader,output,nsamp,nchan,fbstd,noise,base,N,burst,dedisp_burst,p1)
+            inject(mockheader,filename,nsamp,nchan,fbstd,noise,base,N,burst,dedisp_burst,p1)
 
 
 

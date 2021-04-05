@@ -76,7 +76,7 @@ def _main():
     ##create base datasample
     #print(bwchan)
     #np.random.seed(25)
-    burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show) ### this is a noise free burst
+    burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,100,tau1,alpha,width,dmerr,offset,show) ### this is a noise free burst
     print(quick_snr(burst))
     if values.inject :
         mockheader=makeheader(fch1,bwchan,nchan,nsamp,dmerr)
@@ -197,9 +197,9 @@ def dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,d
             #print (ampx)
             #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
             if tau1 !=0:
-                base[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,1,vif[i],fch1).reshape(nsamp,-1),axis=1)
+                base[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,100,vif[i],fch1).reshape(nsamp,-1),axis=1)
             else: #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-                base[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,1,vif[i],fch1).reshape(nsamp,-1),axis=1)
+                base[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,100,vif[i],fch1).reshape(nsamp,-1),axis=1)
         base_sn=quick_snr(base)
         base=base/base_sn*ampx
         if show:

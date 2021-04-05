@@ -85,11 +85,14 @@ def _main():
         inject(mockheader,output,nsamp,nchan,fbstd,noise,base,N,burst,dedisp_burst,amp)
     else:
         filbank=burst+np.random.randn(nchan, nsamp)
-        init_sn=mask_check_sn(filbank)
-        print("initial sn",init_sn, amp/init_sn)
+        dedispfil=dedisp_b+np.random.randn(nchan, nsamp)
+        init_sn=check_your_snr(dedispfil)
+        print("dedisp vs disp sn",init_sn,mask_check_sn(filbank))
+
         finalfil=burst*amp/init_sn+np.random.randn(nchan, nsamp)
-        print("final sn",mask_check_sn(finalfil))
-        print("match filter sn",quick_snr(burst/init_sn*amp))
+
+        print("final sn",mask_check_sn(finalfil),mask_check_sn(dedisp_b*amp/init_sn+np.random.randn(nchan, nsamp)))
+        newburst=(finalfil*fbstd+base).astype(np.uint8)
         np.save(arr=(finalfil*fbstd+base).astype(np.uint8),file=output)
 
 def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,amp):

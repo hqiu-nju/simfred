@@ -75,16 +75,17 @@ def _main():
     #np.random.seed(25)
     mockheader=makeheader(fch1,bwchan,nchan,nsamp,dmerr)
     print("creating waterfall")
+    N=nfrb
  ### this is a noise free burst
     # print(quick_snr(burst),quick_snr(dedisp_burst))
     if values.mode == 'dm':
         dmrange=np.arange(values.min,dm,values.step)
         for p1 in dmrange:
-            burst,dedisp_burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,p1,amp,tau1,alpha,width,dmerr,offset,show) ### this is a noise free burst
+            burst,dedisp_burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,p1,amp,tau1,alpha,width,dmerr,offset,show=False) ### this is a noise free burst
             filename=output+"_DM"+"{0:0}".format(p1)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(amp)+"_tau"+"{0:0}".format(tau1)
             inject(mockheader,output,nsamp,nchan,fbstd,noise,base,N,burst,dedisp_burst,amp)
     if values.mode == 'sn':
-        burst,dedisp_burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show)
+        burst,dedisp_burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
         snrange=np.arange(values.min,amp,values.step)
         for p1 in snrange:
             filename=output+"_DM"+"{0:0}".format(dm)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(p1)+"_tau"+"{0:0}".format(tau1)

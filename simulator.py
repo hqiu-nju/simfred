@@ -84,13 +84,13 @@ def _main():
         mockheader=makeheader(fch1,bwchan,nchan,nsamp,dmerr)
         inject(mockheader,output,nsamp,nchan,fbstd,noise,base,N,burst,dedisp_burst,amp)
     else:
-        filbank=burst+np.random.randn(nchan, nsamp)
+        # filbank=burst+np.random.randn(nchan, nsamp)
         dedispfil=dedisp_burst+np.random.randn(nchan, nsamp)
-        init_sn=check_your_snr(dedispfil)
-        print("dedisp vs disp sn",init_sn,mask_check_sn(filbank))
+        init_sn=quick_snr(burst)
+        print("dedisp vs disp sn",init_sn,check_your_snr(dedispfil))
 
         finalfil=burst*amp/init_sn+np.random.randn(nchan, nsamp)
-
+        print("match filter",quick_snr(burst*amp/init_sn))
         print("final sn",mask_check_sn(finalfil),mask_check_sn(dedisp_burst*amp/init_sn+np.random.randn(nchan, nsamp)))
         newburst=(finalfil*fbstd+base).astype(np.uint8)
         np.save(arr=(finalfil*fbstd+base).astype(np.uint8),file=output)
@@ -105,13 +105,13 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,am
     # burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
     for i in range(nfrb):
         np.random.seed(i)
-        filbank=burst+np.random.randn(nchan, nsamp)
+        # filbank=burst+np.random.randn(nchan, nsamp)
         dedispfil=dedisp_b+np.random.randn(nchan, nsamp)
-        init_sn=check_your_snr(dedispfil)
-        print("dedisp vs disp sn",init_sn,mask_check_sn(filbank))
+        init_sn=quick_snr(burst)
+        print("dedisp vs disp sn",init_sn,check_your_snr(dedispfil))
 
         finalfil=burst*amp/init_sn+np.random.randn(nchan, nsamp)
-
+        print("match filter",quick_snr(burst*amp/init_sn))
         print("final sn",mask_check_sn(finalfil),mask_check_sn(dedisp_b*amp/init_sn+np.random.randn(nchan, nsamp)))
         newburst=(finalfil*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)

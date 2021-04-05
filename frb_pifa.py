@@ -76,7 +76,7 @@ def _main():
     mockheader=makeheader(fch1,bwchan,nchan,nsamp,dmerr)
     print("creating waterfall")
  ### this is a noise free burst
-    print(quick_snr(burst),quick_snr(dedisp_burst))
+    # print(quick_snr(burst),quick_snr(dedisp_burst))
     if values.mode == 'dm':
         dmrange=np.arange(values.min,dm,values.step)
         for p1 in dmrange:

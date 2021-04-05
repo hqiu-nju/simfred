@@ -99,12 +99,12 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,amp):
     # noise.T.tofile(filterbank.fin)
     # burst=dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,output,show=False)
     for i in range(nfrb):
-        # np.random.seed(i)
+        np.random.seed(i)
         filbank=burst+np.random.randn(nchan, nsamp)
-        init_sn=check_your_snr(filbank)
+        init_sn=mask_check_sn(filbank)
         print("initial sn",init_sn, amp/init_sn)
         finalfil=burst*amp/init_sn+np.random.randn(nchan, nsamp)
-        print("final sn",check_your_snr(finalfil))
+        print("final sn",mask_check_sn(finalfil))
         print("match filter sn",quick_snr(burst/init_sn*amp))
         newburst=(finalfil*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)
@@ -166,7 +166,19 @@ def check_your_snr(sf):
     std=np.std(burstcut[:1500])
 #     print(burstcut.max()/std)
     return burstcut.max()/std
+def mask_check_sn(sf):
+    time_series=sf.sum(0)
 
+    maxpulse=np.sum(np.max(sf,axis=1))
+
+    # print(snr_your(burst.sum(0),width))
+#     print(mask.shape)
+    basemean=np.mean(time_series[:1500])
+#     print(basemean)
+    burstcut=time_series-basemean
+    std=np.std(burstcut[:1500])
+#     print(burstcut.max()/std)
+    return maxpulse/std
 ############## waterfall ##############
 def dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show):
     time=np.arange(nsamp)*tsamp

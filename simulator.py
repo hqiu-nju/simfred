@@ -76,7 +76,7 @@ def _main():
     ##create base datasample
     #print(bwchan)
     #np.random.seed(25)
-    global burst
+    # global burst
     print("creating waterfall")
     burst,dedisp_burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show) ### this is a noise free burst
     print(quick_snr(burst),quick_snr(dedisp_burst))

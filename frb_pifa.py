@@ -37,7 +37,7 @@ def _main():
     parser.add_argument('-I', '--spectralindex',type=float, default=0,help='spectral index of burst')
     parser.add_argument('-x','--offset',type=float,default=0.5, help='Offset within sample')
     parser.add_argument("--noise",type=int,default=1,help='noise level adjustment')
-    parser.add_argument("-m","--mode",type=str,default='dm',help='variable parameter dm, sigma, tau, sn')
+    parser.add_argument("-m","--mode",type=str,default='dm',help='variable parameter dm or sn')
     parser.add_argument('--step',type=float,default=100, help='variable step')
     # parser.add_argument('--inject',action='store_true',help='make ASKAP filterbanks, only works on py27 at the moment')
     parser.add_argument('-N','--nfrb',type=int,default=1, help='how many FRBs to inject')
@@ -74,39 +74,47 @@ def _main():
     print(tau1)
     #np.random.seed(25)
     mockheader=makeheader(fch1,bwchan,nchan,nsamp,dmerr)
+    print("creating waterfall")
+ ### this is a noise free burst
+    print(quick_snr(burst),quick_snr(dedisp_burst))
     if values.mode == 'dm':
         dmrange=np.arange(values.min,dm,values.step)
         for p1 in dmrange:
+            burst,dedisp_burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,p1,amp,tau1,alpha,width,dmerr,offset,show) ### this is a noise free burst
             filename=output+"_DM"+"{0:0}".format(p1)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(amp)+"_tau"+"{0:0}".format(tau1)
-            inject(mockheader,filename,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1,p1,amp,tau1,alpha,width,dmerr,offset)
+            inject(mockheader,output,nsamp,nchan,fbstd,noise,base,N,burst,dedisp_burst,amp)
     if values.mode == 'sn':
+        burst,dedisp_burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show)
         snrange=np.arange(values.min,amp,values.step)
         for p1 in snrange:
             filename=output+"_DM"+"{0:0}".format(dm)+"_sigma"+"{0:1}".format(width)+"_SN"+"{0:0}".format(p1)+"_tau"+"{0:0}".format(tau1)
-            inject(mockheader,filename,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1,dm,p1,tau1,alpha,width,dmerr,offset)
+            inject(mockheader,output,nsamp,nchan,fbstd,noise,base,N,burst,dedisp_burst,p1)
 
 
 
-
-def inject(mockheader,output,tsamp,fbstd,noise,base,nfrb,nchan,nsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset):
+def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,amp):
     filterbank=fbio.makefilterbank(output+".fil",header=mockheader)
     # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
     # print filterbank.header
     filterbank.writenoise(5000,fbstd*noise,base)
     # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
     # noise.T.tofile(filterbank.fin)
-    # burst=dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,output,show=False)
-    burst0=dispersion_waterfall(nchan,nsamp,0,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
+    # burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
     for i in range(nfrb):
         np.random.seed(i)
-        background=(np.random.randn(nchan, nsamp)*fbstd*noise + base).astype(np.uint8)
-        burst=(burst0*fbstd).astype(np.uint8)+background
-        filterbank.writeblock(burst)
+        filbank=burst+np.random.randn(nchan, nsamp)
+        dedispfil=dedisp_b+np.random.randn(nchan, nsamp)
+        init_sn=check_your_snr(dedispfil)
+        print("dedisp vs disp sn",init_sn,mask_check_sn(filbank))
+
+        finalfil=burst*amp/init_sn+np.random.randn(nchan, nsamp)
+
+        print("final sn",mask_check_sn(finalfil),mask_check_sn(dedisp_b*amp/init_sn+np.random.randn(nchan, nsamp)))
+        newburst=(finalfil*fbstd+base).astype(np.uint8)
+        filterbank.writeblock(newburst)
         # burst.T.tofile(filterbank.fin)
-    filterbank.writenoise(int(10000//tsamp),fbstd*noise,base)
+    filterbank.writenoise(5000,fbstd*noise,base)
     filterbank.closefile()
-    # filterbank.fin.flush()
-    # filterbank.fin.close()
 
 def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     header={'az_start': 0.0,
@@ -134,57 +142,85 @@ def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     'tstart': 57946.52703893818,
     'za_start': 0.0}
     return header
-def dispersion_waterfall(nchan,nsamp,noise,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show):
-    base = np.zeros((nchan, nsamp))
+
+######## snr functions here ########
+def quick_snr(sf):
+    return np.sum(sf[sf>0]**2)**0.5
+
+def check_your_snr(sf):
+    time_series=sf.sum(0)
+#     maxpos=np.argmax(time_series)
+    # print(snr_your(burst.sum(0),width))
+#     print(mask.shape)
+    basemean=np.mean(time_series[:len(time_series//3)])
+#     print(basemean)
+    burstcut=time_series-basemean
+    std=np.std(burstcut[:len(time_series//3)])
+#     print(burstcut.max()/std)
+    return burstcut.max()/std
+
+def mask_check_sn(sf):
+    time_series=sf.sum(0)
+    # print(snr_your(burst.sum(0),width))
+#     print(mask.shape)
+    basemean=np.mean(time_series[:len(time_series//3)])
+    maxpulse=np.sum(np.max(sf,axis=1))-basemean
+#     print(basemean)
+    burstcut=time_series-basemean
+    std=np.std(burstcut[:len(time_series//3)])
+#     print(burstcut.max()/std)
+    return maxpulse/std
+
+############## waterfall ##############
+def dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show):
     time=np.arange(nsamp)*tsamp
     vif,chan_idx=freq_splitter_idx(nchan,0,nchan,bwchan,fch1)
-    toas=np.array(delaypos(vif,bwchan,fch1,dm))
     bin=10
     matrix=np.ones((nsamp,bin))*np.linspace(-0.5,0.5,bin)*tsamp
     timematrix=(np.ones((nsamp,bin)).T*time).T
     global finergrid
     finergrid=(matrix+timematrix).flatten()
     ampx=amp
+    A=100
+    base = np.zeros((nchan, nsamp))
+    base2 = np.random.randn(nchan, nsamp)*0
+    t02=nsamp//3*tsamp
+    if dmerr == float(0):
+        toas=np.array(delaypos(vif,bwchan,fch1,dm))
+    else:
+        toas=np.array(delaypos(vif,bwchan,fch1,dm+dmerr))
+        # plt.plot(gaus_func(0.3,2000+toas[0],finergrid,0))
+        # plt.show()
     for i in range(nchan):
-        t0=nsamp//3*tsamp+toas[i]+offset
+        t0=nsamp//3+toas[i]+offset
         #print (ampx)
         #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
+        # print("channel",i)
         if tau1 !=0:
-            base[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,10,vif[i]).reshape(nsamp,-1),axis=1)
+            base[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,A,vif[i],fch1).reshape(nsamp,-1),axis=1)
+            base2[i]+=np.mean(scat_pulse_smear(finergrid,t02,tau1,dm,0,width,alpha,A,vif[i],fch1).reshape(nsamp,-1),axis=1)
         else: #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-            base[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,10,vif[i]).reshape(nsamp,-1),axis=1)
+            base[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,A,vif[i],fch1).reshape(nsamp,-1),axis=1)
+            base2[i]+=np.mean(single_pulse_smear(finergrid,t02,dm,0,width,A,vif[i],fch1).reshape(nsamp,-1),axis=1)
+
+                # print(quick_snr(base[i]))
     base_sn=quick_snr(base)
-    base=base/base_sn*ampx + np.random.randn(nchan, nsamp)*noise
+    base_sn2=quick_snr(base2)
+    print(base_sn,base_sn2)
+    base=base/base_sn2*ampx
+    base2=base2/base_sn2*ampx
+
     if show:
         plt.imshow(base,aspect='auto')
-        # plt.yticks(chan_idx,vif)
+        plt.yticks([0,335],[vif[0],vif[335]])
+        plt.ylabel('Frequency (MHz)')
+        plt.xlabel("Time Samples")
+        plt.tight_layout()
         plt.show()
-
-    # np.save(arr=base,file=output)
-    if dmerr !=float(0):
-        base2 = np.random.randn(nchan, nsamp)*noise
-        time=np.arange(nsamp)*tsamp
-        toas=np.array(delaypos(vif,bwchan,fch1,dm-dmerr))
-        for i in range(nchan):
-            t0=nsamp//2*tsamp+toas[i]
-            #print (ampx)
-            #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
-            if tau1 !=0:
-                base2[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,1,vif[i]).reshape(nsamp,-1),axis=1)
-            else: #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-                base2[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,1,vif[i]).reshape(nsamp,-1),axis=1)
-        base_sn=quick_snr(base2)
-        base2= base2/base_sn*ampx +np.random.randn(nchan, nsamp)*noise
-        if show:
-            plt.figure()
-            plt.imshow(base2,aspect='auto')
-            plt.show()
-        return base2
+    return base,base2
         # np.save(arr=base2,file=output+"_shifted")
 
-    else:
-        return base
-
+##########
 def dmdelays(dm,vi,ftop): ## dispersion time delay offset
     beta=2
     #ftop=1464/1000 ## MHz--->GHz
@@ -193,8 +229,8 @@ def dmdelays(dm,vi,ftop): ## dispersion time delay offset
     ti=4.15*dm*(vi**(-beta)-ftop**(-beta)) ### ms
     return ti ### ms
 def delaypos(f,bwchan,fch1,dm):
-    ftop=fch1/1000.
-    dw=float(bwchan)/1000.
+    ftop=fch1/1000
+    dw=float(bwchan)/1000
     #print(bwchan)
     times=[]
     for i in f:
@@ -212,7 +248,7 @@ def freq_splitter_idx(n,skip,end,bwchan,fch1):
     vi=base+vi
     chan_idx=np.arange(n)*dw+skip
     chan_idx=np.append(chan_idx,end)
-    chan_idx=chan_idx.astype(np.int)
+    chan_idx=chan_idx.astype(np.int64)
     return vi,chan_idx
 
 
@@ -221,17 +257,17 @@ def freq_splitter_idx(n,skip,end,bwchan,fch1):
 ### you should be able to copy them to other versions directly, please do not change the units in these functions
 ### functions
 
-
 def gaus_func(sigi,t0,t,ti):
     #ti=0### gaussian function
     sit=1/np.sqrt(np.pi*2*(sigi**2))*np.exp(-(t-t0-ti)**2/2/(sigi**2)) ### model 0 in ravi 2018
     return sit
 
 ### adjust dm
-def tidm(dmerr,vi): ## dispersion time delay offset
+def tidm(dmerr,vi,fch1): ## dispersion time delay offset
     vi=vi/1000 ## MHz---> GHz
     dmerr=dmerr
     beta=2
+    ftop=fch1/1000
     ### ftop is in GHz
     ti=4.15*dmerr*np.abs(ftop**(-beta)-vi**(-beta)) ### ms
     return ti ### ms
@@ -260,62 +296,42 @@ def delta_t(dm,v): ### calculate dm smearing
 
 # Design functions here
 
-def single_pulse(t,t0,dm,dmerr,sigma,a,vi):
-    ### vi is MHz
 
-    #dmerr=dmerr ### smaller
-    ti=tidm(dmerr,vi) ##ms
-    smear=delta_t(dmerr,vi) ##ms
-    width=np.sqrt(sigma**2+smear**2)
-    pulse=gaus_func(width,t0,t,ti) ## create pulse
-    sf=pulse
-    sn_norm=quick_snr(sf)
-    flux=sf/sn_norm### normalise
-    return a*flux
-def single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi):
+def single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi,fch1):
     ### vi is MHz
     #dmerr=dmerr ### smaller
-    ti=tidm(dmerr,vi) ##ms
+    ti=tidm(dmerr,vi,fch1) ##ms
+#     print(ti)
     smear=delta_t(dm+dmerr,vi) ##ms
+#     print(smear)
     width=np.sqrt(sigma**2+smear**2)
+    # print(width)
     pulse=gaus_func(width,t0,t,ti) ## create pulse
+    # plt.plot(t,pulse)
+    # plt.show()
     sf=pulse
     sn_norm=quick_snr(sf)
+    # print(sn_norm,a)
     flux=sf/sn_norm### normalise
     return a*flux
-def scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi):
+
+def scat_pulse_smear(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi,fch1):
     ### vi is MHz
     vi=vi
     #dmerr=dmerr ## smaller
-    ti=tidm(dmerr,vi)##ms
-    smear=delta_t(dmerr,vi) ##ms
-    width=np.sqrt(sigma**2+smear**2)
-    gt0=np.mean(t)
-    pulse=gaus_func(width,t0,t,ti) ## create pulse
-    scat_corr=scat(t,gt0,tau1,alpha,vi) ## create scatter kernel
-    sf=convolve(pulse,scat_corr,'same')
-    sn_norm=quick_snr(sf)
-    flux=sf/sn_norm### normalise
-    return a*flux
-def scat_pulse_smear(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi):
-    ### vi is MHz
-    vi=vi
-    #dmerr=dmerr ## smaller
-    ti=tidm(dmerr,vi)##ms
+    ti=tidm(dmerr,vi,fch1)##ms
     smear=delta_t(dm+dmerr,vi) ##ms
     width=np.sqrt(sigma**2+smear**2)
     gt0=np.mean(t)
     pulse=gaus_func(width,t0,t,ti) ## create pulse
-    scat_corr=scat(t,gt0,tau1,alpha,vi) ## create scatter kernel
+    scat_corr=scat(t,gt0,tau1,alpha,vi,ti) ## create scatter kernel
     # flux=convolve(scat_corr,pulse,'same')
     sf=convolve(pulse,scat_corr,'same')
     sn_norm=quick_snr(sf)
     flux=sf/sn_norm### normalise
     return a*flux
 
-def quick_snr(sf):
-    return np.sum(sf[sf>1]**2)**0.5
-
+##########
 
 if __name__ == '__main__':
     _main()

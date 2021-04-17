@@ -104,16 +104,16 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,am
     # burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
     for i in range(nfrb):
         np.random.seed(i)
-        noise=np.random.randn(nchan, nsamp)
-        array=burst+noise
+        bkg=np.random.randn(nchan, nsamp)
+        array=burst+bkg
         init_sn=quick_snr(array[mask])
-        finalfil=burst*amp/init_sn+noise
+        finalfil=burst*amp/init_sn+bkg
         newburst=(finalfil*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)
         # burst.T.tofile(filterbank.fin)
     filterbank.writenoise(5000,fbstd*noise,base)
     filterbank.closefile()
-
+    
 def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):
     header={'az_start': 0.0,
     'barycentric': None,

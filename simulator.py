@@ -80,18 +80,16 @@ def _main():
     print("creating waterfall")
     burst,dedisp_burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show) ### this is a noise free burst
     print(quick_snr(burst),quick_snr(dedisp_burst))
+    mask=burst>0
     if values.inject :
         mockheader=makeheader(fch1,bwchan,nchan,nsamp,dmerr)
         inject(mockheader,output,nsamp,nchan,fbstd,noise,base,N,burst,dedisp_burst,amp)
     else:
         # filbank=burst+np.random.randn(nchan, nsamp)
-        dedispfil=dedisp_burst+np.random.randn(nchan, nsamp)
-        init_sn=quick_snr(burst)
-        print("dedisp vs disp sn",init_sn,check_your_snr(dedispfil))
-
-        finalfil=burst*amp/init_sn+np.random.randn(nchan, nsamp)
-        print("match filter",quick_snr(burst*amp/init_sn))
-        print("final sn",mask_check_sn(finalfil),mask_check_sn(dedisp_burst*amp/init_sn+np.random.randn(nchan, nsamp)))
+        noise=np.random.randn(nchan, nsamp)
+        array=burst+noise
+        init_sn=quick_snr(array[mask])
+        finalfil=burst*amp/init_sn+noise
         newburst=(finalfil*fbstd+base).astype(np.uint8)
         np.save(arr=(finalfil*fbstd+base).astype(np.uint8),file=output)
 
@@ -100,19 +98,16 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,am
     # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
     # print filterbank.header
     filterbank.writenoise(5000,fbstd*noise,base)
+    mask=burst>0
     # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
     # noise.T.tofile(filterbank.fin)
     # burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
     for i in range(nfrb):
         np.random.seed(i)
-        # filbank=burst+np.random.randn(nchan, nsamp)
-        dedispfil=dedisp_b+np.random.randn(nchan, nsamp)
-        init_sn=quick_snr(burst)
-        print("dedisp vs disp sn",init_sn,check_your_snr(dedispfil))
-
-        finalfil=burst*amp/init_sn+np.random.randn(nchan, nsamp)
-        print("match filter",quick_snr(burst*amp/init_sn))
-        print("final sn",mask_check_sn(finalfil),mask_check_sn(dedisp_b*amp/init_sn+np.random.randn(nchan, nsamp)))
+        noise=np.random.randn(nchan, nsamp)
+        array=burst+noise
+        init_sn=quick_snr(array[mask])
+        finalfil=burst*amp/init_sn+noise
         newburst=(finalfil*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)
         # burst.T.tofile(filterbank.fin)
@@ -209,8 +204,8 @@ def dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,d
                 # print(quick_snr(base[i]))
     base_sn=quick_snr(base)
     base_sn2=quick_snr(base2)
-    print(base_sn,base_sn2)
-    base=base/base_sn2*ampx
+    # print(base_sn,base_sn2)
+    base=base/base_sn*ampx
     base2=base2/base_sn2*ampx
 
     if show:

@@ -98,19 +98,16 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,am
     # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
     # print filterbank.header
     filterbank.writenoise(5000,fbstd*noise,base)
+    mask=burst>0
     # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
     # noise.T.tofile(filterbank.fin)
     # burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
     for i in range(nfrb):
         np.random.seed(i)
-        # filbank=burst+np.random.randn(nchan, nsamp)
-        dedispfil=dedisp_b+np.random.randn(nchan, nsamp)
-        init_sn=quick_snr(burst)
-        print("dedisp vs disp sn",init_sn,check_your_snr(dedispfil))
-
-        finalfil=burst*amp/init_sn+np.random.randn(nchan, nsamp)
-        print("match filter",quick_snr(burst*amp/init_sn))
-        print("final sn",mask_check_sn(finalfil),mask_check_sn(dedisp_b*amp/init_sn+np.random.randn(nchan, nsamp)))
+        noise=np.random.randn(nchan, nsamp)
+        array=burst+noise
+        init_sn=quick_snr(array[mask])
+        finalfil=burst*amp/init_sn+noise
         newburst=(finalfil*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)
         # burst.T.tofile(filterbank.fin)

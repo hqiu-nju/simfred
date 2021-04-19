@@ -97,7 +97,7 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,am
     filterbank=fbio.makefilterbank(output+".fil",header=mockheader)
     # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
     # print filterbank.header
-    filterbank.writenoise(5000,fbstd*noise,base)
+    filterbank.writenoise(10000,fbstd*noise,base)
     mask=burst>0
     # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
     # noise.T.tofile(filterbank.fin)
@@ -107,11 +107,13 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,am
         bkg=np.random.randn(nchan, nsamp)
         array=burst+bkg
         init_sn=quick_snr(array[mask])
-        finalfil=burst*amp/init_sn+bkg
-        newburst=(finalfil*fbstd+base).astype(np.uint8)
+        array[mask]=array[mask]/init_sn*amp
+        newburst=(array*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)
+        filterbank.writenoise(5000,fbstd*noise,base)
+
         # burst.T.tofile(filterbank.fin)
-    filterbank.writenoise(5000,fbstd*noise,base)
+    filterbank.writenoise(10000,fbstd*noise,base)
     filterbank.closefile()
 
 def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr):

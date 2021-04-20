@@ -107,7 +107,9 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,am
         bkg=np.random.randn(nchan, nsamp)
         array=burst+bkg
         init_sn=quick_snr(array[mask])
+        print(init_sn)
         array[mask]=array[mask]/init_sn*amp
+        print(quick_snr(array[mask]))
         newburst=(array*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)
         filterbank.writenoise(5000,fbstd*noise,base)

@@ -98,7 +98,7 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,am
     # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
     # print filterbank.header
     filterbank.writenoise(10000,fbstd*noise,base)
-    mask=burst>0
+    mask=burst>1
     # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
     # noise.T.tofile(filterbank.fin)
     # burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
@@ -108,7 +108,7 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,dedisp_b,am
         array=burst+bkg
         init_sn=quick_snr(array[mask])
         print(init_sn)
-        array[mask]=array[mask]/init_sn*amp
+        array=burst/init_sn*amp+bkg
         print(quick_snr(array[mask]))
         newburst=(array*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)

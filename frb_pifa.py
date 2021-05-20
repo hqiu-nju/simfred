@@ -99,22 +99,21 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,amp):
     # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
     # print filterbank.header
     filterbank.writenoise(nsamp,fbstd*noise,base)
-    mask=burst>0
+    mask=burst>2*noise
     # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
     # noise.T.tofile(filterbank.fin)
     # burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
     for i in range(nfrb):
         np.random.seed(i)
-        noise=np.random.randn(nchan, nsamp)
-        array=burst+noise
+        bkg=np.random.randn(nchan, nsamp)*noise
+        array=burst+bkg
         raw_sn=quick_snr(array[mask])
-        finalfil=burst+noise
-        finalfil[mask]=finalfil[mask]/raw_sn*amp
+        finalfil=burst/raw_sn*amp+bkg
+        # finalfil[mask]=finalfil[mask]/raw_sn*amp
         print(quick_snr(finalfil[mask]))
         newburst=(finalfil*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)
         filterbank.writenoise(nsamp,fbstd*noise,base)
-
         # burst.T.tofile(filterbank.fin)
     filterbank.writenoise(nsamp,fbstd*noise,base)
     filterbank.closefile()
@@ -231,7 +230,6 @@ def dispersion_boxcar(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,width,dmerr,offset,sh
     ampx=amp
     A=100
     base = np.zeros((nchan, nsamp))
-    t02=nsamp//3*tsamp
     if dmerr == float(0):
         toas=np.array(delaypos(vif,bwchan,fch1,dm))
     else:
@@ -243,7 +241,11 @@ def dispersion_boxcar(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,width,dmerr,offset,sh
         #print (ampx)
         #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
         # print("channel",i)
-        base[i]+=boxcar(time,t0,ampx,width)
+        smear=delta_t(dm+dmerr,vif[i])
+        print(vif[i],smear)
+        box=np.sqrt(width**2+smear**2+tsamp**2)
+        print(box)
+        base[i]+=boxcar(time,t0,ampx,box)
 
 
                 # print(quick_snr(base[i]))
@@ -345,8 +347,8 @@ def single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi,fch1):
     smear=delta_t(dm+dmerr,vi) ##ms
 #     print(smear)
     width=np.sqrt(sigma**2+smear**2)
-    # print(width)
-    pulse=gaus_func(width,t0,t,ti) ## create pulse
+    print(vi,width)
+    pulse=gaus_func(width/2,t0,t,ti) ## create pulse
     # plt.plot(t,pulse)
     # plt.show()
     sf=pulse
@@ -363,7 +365,7 @@ def scat_pulse_smear(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi,fch1):
     smear=delta_t(dm+dmerr,vi) ##ms
     width=np.sqrt(sigma**2+smear**2)
     gt0=np.mean(t)
-    pulse=gaus_func(width,t0,t,ti) ## create pulse
+    pulse=gaus_func(width/2,t0,t,ti) ## create pulse
     scat_corr=scat(t,gt0,tau1,alpha,vi,ti) ## create scatter kernel
     # flux=convolve(scat_corr,pulse,'same')
     sf=convolve(pulse,scat_corr,'same')

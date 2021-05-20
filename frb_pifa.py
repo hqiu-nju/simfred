@@ -45,6 +45,7 @@ def _main():
     parser.add_argument("--fbbase",type=int,default=128,help='filterbank baseline')
     parser.add_argument('-L','--nsamp',type=int,default=1024, help='data length')
     parser.add_argument('--min',type=float,default=0,help='start value')
+    parser.add_argument('-B','--boxcar',action='store_true',help='generate boxcars instead of widths')
     #parser.add_argument(dest='files', nargs='+')
     parser.set_defaults(verbose=False)
     values = parser.parse_args()
@@ -97,7 +98,7 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,amp):
     filterbank=fbio.makefilterbank(output+".fil",header=mockheader)
     # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
     # print filterbank.header
-    filterbank.writenoise(10000,fbstd*noise,base)
+    filterbank.writenoise(nsamp,fbstd*noise,base)
     mask=burst>0
     # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
     # noise.T.tofile(filterbank.fin)
@@ -109,6 +110,7 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,amp):
         raw_sn=quick_snr(array[mask])
         finalfil=burst+noise
         finalfil[mask]=finalfil[mask]/raw_sn*amp
+        print(quick_snr(finalfil[mask]))
         newburst=(finalfil*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)
         filterbank.writenoise(nsamp,fbstd*noise,base)

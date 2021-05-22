@@ -93,10 +93,10 @@ def _main():
         inject(mockheader,output,nsamp,nchan,fbstd,noise,base,N,burst,amp)
     else:
         # filbank=burst+np.random.randn(nchan, nsamp)
-        mask=burst>2*noise
+        # mask=burst>0*noise
         bkg=np.random.randn(nchan, nsamp)*noise
         array=burst+bkg
-        raw_sn=quick_snr(array[mask])
+        # raw_sn=quick_snr(array[mask])
         # product=noise+boxarray
         # print(quick_snr(boxarray))
         # raw_sn=quick_snr(product[boxarray>0])
@@ -105,17 +105,16 @@ def _main():
         # adjusted_sn=quick_snr(product2[boxarray>0])
         # print(raw_sn)
         # print(adjusted_sn)
-        finalfil=burst/raw_sn*amp+bkg
+        # finalfil=burst/raw_sn*amp+bkg
         # finalfil[mask]=finalfil[mask]/raw_sn*amp
-        newburst=(finalfil*fbstd+base).astype(np.uint8)
-        np.save(arr=(finalfil*fbstd+base).astype(np.uint8),file=output)
+        # newburst=(finalfil*fbstd+base).astype(np.uint8)
+        np.save(arr=(array*fbstd+base).astype(np.uint8),file=output)
 
 def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,amp):
     filterbank=fbio.makefilterbank(output+".fil",header=mockheader)
     # filterbank=sgp.SigprocFile(output+'.fil','w',mockheader)
     # print filterbank.header
     filterbank.writenoise(nsamp,fbstd*noise,base)
-    mask=burst>2*noise
     # noise=(np.random.randn(nchan, nsamp)*fbstd + fbbase).astype(np.uint8)
     # noise.T.tofile(filterbank.fin)
     # burst=dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,dmerr,offset,show=False)
@@ -123,11 +122,8 @@ def inject(mockheader,output,nsamp,nchan,fbstd,noise,base,nfrb,burst,amp):
         np.random.seed(i)
         bkg=np.random.randn(nchan, nsamp)*noise
         array=burst+bkg
-        raw_sn=quick_snr(array[mask])
-        finalfil=burst/raw_sn*amp+bkg
         # finalfil[mask]=finalfil[mask]/raw_sn*amp
-        print(quick_snr(finalfil[mask]))
-        newburst=(finalfil*fbstd+base).astype(np.uint8)
+        newburst=(array*fbstd+base).astype(np.uint8)
         filterbank.writeblock(newburst)
         filterbank.writenoise(nsamp,fbstd*noise,base)
         # burst.T.tofile(filterbank.fin)
@@ -138,7 +134,7 @@ def makeheader(freqaskap,bwchan,nchan,nsamp,dmerr,tsamp):
     header={'az_start': 0.0,
     'barycentric': None,
     'data_type': 1,
-    'fch1':freqaskap-0.5*bwchan ,
+    'fch1':freqaskap,
     'fchannel': None,
     'foff': bwchan,
     'machine_id': 0,
@@ -201,32 +197,38 @@ def dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,d
     ampx=amp
     A=100
     base = np.zeros((nchan, nsamp))
-    # base2 = np.random.randn(nchan, nsamp)*0
-    # t02=nsamp//3*tsamp
+    base2 = np.random.randn(nchan, nsamp)*0
+    t02=nsamp//3*tsamp
     if dmerr == float(0):
         toas=np.array(delaypos(vif,bwchan,fch1,dm))
     else:
         toas=np.array(delaypos(vif,bwchan,fch1,dm+dmerr))
-        # plt.plot(gaus_func(0.3,2000+toas[0],finergrid,0))
-        # plt.show()
+        plt.plot(gaus_func(0.3,2000+toas[0],finergrid,0))
+        plt.show()
     for i in range(nchan):
         t0=nsamp//3+toas[i]+offset
-        #print (ampx)
-        #scat_pulse(t,t0,tau1,dm,dmerr,sigma,alpha,a,vi)
+        # print(t0)
+        # print (ampx)
         # print("channel",i)
         if tau1 !=0:
             base[i]+=np.mean(scat_pulse_smear(finergrid,t0,tau1,dm,0,width,alpha,A,vif[i],fch1).reshape(nsamp,-1),axis=1)
-            # base2[i]+=np.mean(scat_pulse_smear(finergrid,t02,tau1,dm,0,width,alpha,A,vif[i],fch1).reshape(nsamp,-1),axis=1)
+            base2[i]+=np.mean(scat_pulse_smear(finergrid,t02,tau1,dm,0,width,alpha,A,vif[i],fch1).reshape(nsamp,-1),axis=1)
         else: #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
             base[i]+=np.mean(single_pulse_smear(finergrid,t0,dm,0,width,A,vif[i],fch1).reshape(nsamp,-1),axis=1)
-            # base2[i]+=np.mean(single_pulse_smear(finergrid,t02,dm,0,width,A,vif[i],fch1).reshape(nsamp,-1),axis=1)
+            base2[i]+=np.mean(single_pulse_smear(finergrid,t02,dm,0,width,A,vif[i],fch1).reshape(nsamp,-1),axis=1)
 
                 # print(quick_snr(base[i]))
-    base_sn=quick_snr(base)
-    # base_sn2=quick_snr(base2)
+    smear=delta_t(dm+dmerr,np.min(vif))
+    # if tau1 !=0:
+    #     boxcar=np.round(np.sqrt(width**2+smear**2))
+    #
+    # else:
+    #      ##ms
+    boxcar=np.round(np.sqrt(width**2+smear**2))
+
+    base_sn=quick_snr(base2[:,np.int(t02-boxcar/2):np.int(t02+boxcar/2)])
     # print(base_sn,base_sn2)
     base=base/base_sn*ampx
-    # base2=base2/base_sn2*ampx
     if show:
         plt.imshow(base,aspect='auto')
         plt.yticks([0,335],[vif[0],vif[335]])
@@ -234,7 +236,7 @@ def dispersion_waterfall(nchan,nsamp,tsamp,bwchan,fch1,dm,amp,tau1,alpha,width,d
         plt.xlabel("Time Samples")
         plt.tight_layout()
         plt.show()
-    return base  ###,base2
+    return base
         # np.save(arr=base2,file=output+"_shifted")
 
 
@@ -363,7 +365,7 @@ def single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi,fch1):
     smear=delta_t(dm+dmerr,vi) ##ms
 #     print(smear)
     width=np.sqrt(sigma**2+smear**2)
-    print(vi,width)
+    # print(vi,width)
     pulse=gaus_func(width/2,t0,t,ti) ## create pulse
     # plt.plot(t,pulse)
     # plt.show()

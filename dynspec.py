@@ -10,7 +10,7 @@ import fbio
 
 class spectra:
     def __init__(self,fch1=1100,nchan=336,bwchan=1,tsamp=1):
-        """Create a mock dynamic spectrum.
+        """initiate function for creating a mock dynamic spectrum. This sets up the header.
         Parameters
         ----------
         fch1 : float
@@ -53,7 +53,7 @@ class spectra:
         'za_start': 0.0}
 
     def create_filterbank(self,file_name,std=18,base=127):
-        """Create a mock dynamic spectrum array.
+        """Create a mock dynamic spectrum filterbank file.
         Parameters
         ----------
         file_name : string
@@ -68,12 +68,27 @@ class spectra:
         self.fil_base=base
 
     def closefile(self):
+        """Close writing filterbank
+
+        """
         self.filterbank.closefile()
 
     def writenoise(self,nsamp=5000):
+        """Write a block of white noise into the filterbank.
+        Parameters
+        ----------
+        nsamp : int
+            length of noise in units of tsamp
+        """
         self.filterbank.writenoise(nsamp,self.fil_std,self.fil_base)
 
     def imprint(self,array):
+        """Create a mock dynamic spectrum filterbank file.
+        Parameters
+        ----------
+        nsamp : int
+            length of noise in units of tsamp
+        """
         bkg=np.random.randn(array.shape[0],array.shape[1])*self.fil_std+self.fil_base
         imprint=(bkg+array).astype(np.uint8)
         self.filterbank.writeblock(imprint)
@@ -84,10 +99,17 @@ class spectra:
         imprint=(bkg+array).astype(np.uint8)
         return imprint
 
-    def burst(self,dm=200,width=1,A=20,t0=2500,nsamp=5000,mode="boxcar",show=False,fstart=0,fend=336,tau=0.1,alpha=4,offset=0.5):
+    def burst(self,dm=200,width=1,A=20,t0=2500,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.5,fstart=0,fend=336):
         """Create a pulse.
         Parameters
         ----------
+        mode : string
+            enter pulse shape used for injection: boxcar,scat,single
+            boxcar: dynspec.boxcar
+            scat: dynspec.spectra.scat_pulse_smear
+            single: dynspec.spectra.single_pulse_smear
+
+
         """
         self.dm=dm
         self.width=width

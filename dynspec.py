@@ -137,17 +137,21 @@ class spectra:
             if mode=='boxcar':
                 smear=delta_t(dm,vif[i],self.bwchan)
                 # print(vif[i],smear)
-                box=np.sqrt(width**2+smear**2+tsamp**2)
+                box=np.sqrt(width**2+smear**2)
                 # print(box)
                 base[i]+=boxcar(time,ti,A,box)
                 base2[i]+=boxcar(time,t0,A,box)
 
             elif mode=='scat':
-                base[i]+=np.mean(self.scat_pulse_smear(finergrid,ti,tau1,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
-                base2[i]+=np.mean(self.scat_pulse_smear(finergrid,t0,tau1,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dm_p=np.mean(self.scat_pulse_smear(finergrid,ti,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dedisp_p=np.mean(self.scat_pulse_smear(finergrid,t0,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
+                base[i]+=dm_p/np.max(dm_p)*A
+                base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="single": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-                base[i]+=np.mean(self.single_pulse_smear(finergrid,ti,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
-                base2[i]+=np.mean(self.single_pulse_smear(finergrid,t0,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dm_p=np.mean(self.single_pulse_smear(finergrid,ti,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dedisp_p=np.mean(self.single_pulse_smear(finergrid,t0,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                base[i]+=dm_p/np.max(dm_p)*A
+                base2[i]+=dedisp_p/np.max(dedisp_p)*A
         if show:
             plt.imshow(base,aspect='auto')
             plt.yticks([0,self.nchan-1],[vif[0],vif[self.nchan-1]])
@@ -155,20 +159,19 @@ class spectra:
             plt.xlabel("Time Samples")
             plt.tight_layout()
             plt.show()
-        snfactor=quick_snr(base)
-        snfactor2=quick_snr(base2)
+
+        # snfactor=np.max(np.sum(base2,axis=0))
         # print(snfactor,snfactor2)
-        self.burst_original=base/snfactor*A
-        self.burst_dedispersed=base2/snfactor2*A
+        self.burst_original=base#/snfactor*A
+        self.burst_dedispersed=base2#/snfactor*A
         return self.burst_original,self.burst_dedispersed
 
 
     def single_pulse_smear(self,t,t0,dm,sigma,a,vi):
         ### vi is MHz
         #dmerr=dmerr ### smaller
-        fch1=self.fch1
+        # fch1=self.fch1
         bwchan=self.bwchan
-
     #     print(ti)
         smear=delta_t(dm,vi,bwchan) ##msdelta_t(dm,v,bwchan)
     #     print(smear)
@@ -179,38 +182,51 @@ class spectra:
         # plt.show()
         sf=pulse
         # print("CHECK")
-        sn_norm=quick_snr(sf)
-        # print(sn_norm,a)
+        # sn_norm=quick_snr(sf)
+        sn_norm=np.max(sf)
         flux=sf/sn_norm*a### normalise
         # print(quick_snr(flux))
         return flux
 
-    def scat_pulse_smear(self,t,t0,tau1,dm,sigma,alpha,a,vi,fch1):
-        fch1=self.fch1
+    def scat_pulse_smear(self,t,t0,tau1,dm,sigma,alpha,a,vi):
+        # fch1=self.fch1
         bwchan=self.bwchan
         ### vi is MHz
         vi=vi
         smear=delta_t(dm,vi,bwchan) ##ms
+        # print (vi)
         width=np.sqrt(sigma**2+smear**2)
         gt0=np.mean(t)
         pulse=gaus_func(t,t0,width/2) ## create pulse
-        scat_corr=scat(t,gt0,tau1,alpha,vi,ti) ## create scatter kernel
+        scat_corr=scattering(t,gt0,tau1,alpha,vi) ## create scatter kernel
         # flux=convolve(scat_corr,pulse,'same')
         sf=convolve(pulse,scat_corr,'same')
-        sn_norm=quick_snr(sf)
+        # sn_norm=quick_snr(sf)
+        sn_norm=np.max(sf)
+
         flux=sf/sn_norm### normalise
         return a*flux
     # def model_pulse(self)
 
-
+def simulate(array,std=18,base=127):
+    bkg=np.random.randn(array.shape[0],array.shape[1])*std+base
+    imprint=(bkg+array).astype(np.uint8)
+    return imprint
 
 def quick_snr(sf):
     # print("snr_check")
     return np.sum(sf[sf>0]**2)**0.5
 
+def quad_sum(sf):
+    # print("snr_check")
+    return np.sum(sf**2)**0.5
+
+def old_snr(sf):
+    return np.sum(sf)/np.sqrt((sf.flatten()).shape[0])
+
 def boxcar(t,t0,a,width):
     y=np.zeros(t.shape[0])
-    mask=(t<t0+width*0.5)*(t>t0-width*0.5)
+    mask=(t<t0+width)*(t>t0)
     y[mask]=a
     return y
 
@@ -223,7 +239,7 @@ def gaus_func(t,t0,sigi):
 def scattering(t,t_0,tau1,alpha,v):
     ###tau=tau1/1000 ## ms
     flux=np.zeros(len(t))
-    flux[t>=t_0]=np.exp(-(t[t>=t_0]-t_0)/(tau1*(v/1)**(-alpha)))
+    flux[t>=t_0]=np.exp(-(t[t>=t_0]-t_0)/(tau1*(v/1000)**(-alpha)))
     return flux
 
 
@@ -267,3 +283,6 @@ def freq_splitter_idx(n,skip,end,bwchan,fch1):
     chan_idx=np.append(chan_idx,end)
     chan_idx=chan_idx.astype(np.int64)
     return vi,chan_idx
+
+def fscrunch():
+    np.sum((simdata.astype(np.float64)-base),axis=0)

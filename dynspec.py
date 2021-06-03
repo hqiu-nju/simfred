@@ -6,7 +6,7 @@ import logging
 from numpy import convolve
 from matplotlib.gridspec import GridSpec
 import fbio
-
+import math as m
 
 class spectra:
     def __init__(self,fch1=1100,nchan=336,bwchan=1,tsamp=1):
@@ -216,13 +216,14 @@ class spectra:
         mask=np.sum(base2,axis=0)>0
         fscrunched=np.sum((simdata.astype(np.float64)-127),axis=0)
         fscrun_rms=np.std(fscrunched[5000:])
+        fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
         # print("rms",fscrun_rms)
         sf=(fscrunched/fscrun_rms)[mask]
         ### real snr here
         quadsn=(np.sum(sf**2)**0.5)
         # sf=base2
 
-        return (f"{self.dm};{self.width};{quadsn}\n")
+        return (f"{self.dm};{self.width};{fwhm};{quadsn}\n")
 
 def simulate(array,std=18,base=127,outtype=np.uint8):
     bkg=np.random.randn(array.shape[0],array.shape[1])*std+base

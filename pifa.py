@@ -8,7 +8,7 @@ model=dynspec.spectra(fch1=1100,nchan=336,bwchan=1,tsamp=1)
 
 
 w=open(f"test_DM_width.txt",'w')
-for i in np.arange(10,2000,10):
+for i in np.arange(10,2001,10):
     ### create file
     model.create_filterbank(f"test_DM{i}_width1",std=18,base=127)
     print (f"test_DM{i}_width1")

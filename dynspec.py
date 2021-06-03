@@ -99,7 +99,7 @@ class spectra:
         imprint=(bkg+array).astype(np.uint8)
         return imprint
 
-    def burst(self,dm=200,width=1,A=20,t0=2500,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.5,fstart=0,fend=336):
+    def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.5,fstart=0,fend=336):
         """Create a pulse.
         Parameters
         ----------
@@ -111,6 +111,7 @@ class spectra:
 
 
         """
+        t0=nsamp//2
         self.dm=dm
         self.width=width
         self.amplitude=A
@@ -148,7 +149,9 @@ class spectra:
                 base[i]+=dm_p/np.max(dm_p)*A
                 base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="single": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
+                # print("real file")
                 dm_p=np.mean(self.single_pulse_smear(finergrid,ti,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                # print("dedisp file")
                 dedisp_p=np.mean(self.single_pulse_smear(finergrid,t0,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
                 base[i]+=dm_p/np.max(dm_p)*A
                 base2[i]+=dedisp_p/np.max(dedisp_p)*A
@@ -172,6 +175,7 @@ class spectra:
         #dmerr=dmerr ### smaller
         # fch1=self.fch1
         bwchan=self.bwchan
+        # print (t0)
     #     print(ti)
         smear=delta_t(dm,vi,bwchan) ##msdelta_t(dm,v,bwchan)
     #     print(smear)
@@ -184,6 +188,12 @@ class spectra:
         # print("CHECK")
         # sn_norm=quick_snr(sf)
         sn_norm=np.max(sf)
+        if sn_norm==0.0:
+            print(f"warning check these parameters {vi} {t0},{width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
+            # plt.plot(t,pulse)
+            # plt.show()
+
+        # print(sn_norm)
         flux=sf/sn_norm*a### normalise
         # print(quick_snr(flux))
         return flux
@@ -224,7 +234,7 @@ class spectra:
         # print(quadsn)
         # sf=base2
 
-        return (f"{self.dm};{self.width};{fwhm};{quadsn}\n")
+        return f"{self.dm};{self.width};{fwhm};{quadsn}\n",quadsn
 
 def simulate(array,std=18,base=127,outtype=np.uint8):
     bkg=np.random.randn(array.shape[0],array.shape[1])*std+base
@@ -251,7 +261,9 @@ def boxcar(t,t0,a,width):
 
 def gaus_func(t,t0,sigi):
     #ti=0### gaussian function
-    sit=1/np.sqrt(np.pi*2*(sigi**2))*np.exp(-(t-t0)**2/2/(sigi**2)) ### model 0 in ravi 2018
+    sit=10*np.exp(-(t-t0)**2/2/(sigi**2)) ### model 0 in ravi 2018
+
+    ### normalisation factor is 1/np.sqrt(np.pi*2*(sigi**2)) replace A with this term for a total of 1 pdf
     return sit
 
 def scattering(t,t_0,tau1,alpha,v):
@@ -301,3 +313,22 @@ def freq_splitter_idx(n,skip,end,bwchan,fch1):
     chan_idx=np.append(chan_idx,end)
     chan_idx=chan_idx.astype(np.int64)
     return vi,chan_idx
+
+
+def L2_snr(base2):
+    ### Harry's fscrunch and L2 snr script
+    simdata=simulate(base2,outtype=np.float64)
+    base_rescaled=(simdata.astype(np.float64)-127)/np.std(simdata[:2000])
+    clean_rescaled=base_rescaled[base2>0]
+    mask=np.sum(base2,axis=0)>0
+    fscrunched=np.sum((simdata.astype(np.float64)-127),axis=0)
+    fscrun_rms=np.std(fscrunched[:2000])
+    # fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
+    # print("rms",fscrun_rms)
+    sf=(fscrunched/fscrun_rms)[mask]
+    ### real snr here
+    quadsn=(np.sum(sf**2)**0.5)
+    # print(quadsn)
+    # sf=base2
+
+    return quadsn

@@ -215,12 +215,13 @@ class spectra:
         clean_rescaled=base_rescaled[base2>0]
         mask=np.sum(base2,axis=0)>0
         fscrunched=np.sum((simdata.astype(np.float64)-127),axis=0)
-        fscrun_rms=np.std(fscrunched[5000:])
+        fscrun_rms=np.std(fscrunched[:2000])
         fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
         # print("rms",fscrun_rms)
         sf=(fscrunched/fscrun_rms)[mask]
         ### real snr here
         quadsn=(np.sum(sf**2)**0.5)
+        # print(quadsn)
         # sf=base2
 
         return (f"{self.dm};{self.width};{fwhm};{quadsn}\n")

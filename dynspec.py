@@ -207,10 +207,26 @@ class spectra:
         flux=sf/sn_norm### normalise
         return a*flux
     # def model_pulse(self)
+    def L2_snr(self):
+        ### Harry's fscrunch and L2 snr script
+        base2=self.burst_dedispersed
+        simdata=simulate(base2,outtype=np.float64)
+        base_rescaled=(simdata.astype(np.float64)-127)/np.std(simdata[:2000])
+        clean_rescaled=base_rescaled[base2>0]
+        mask=np.sum(base2,axis=0)>0
+        fscrunched=np.sum((simdata.astype(np.float64)-127),axis=0)
+        fscrun_rms=np.std(fscrunched[5000:])
+        # print("rms",fscrun_rms)
+        sf=(fscrunched/fscrun_rms)[mask]
+        ### real snr here
+        quadsn=(np.sum(sf**2)**0.5)
+        # sf=base2
 
-def simulate(array,std=18,base=127):
+        return (f"{self.dm};{self.width};{quadsn}\n")
+
+def simulate(array,std=18,base=127,outtype=np.uint8):
     bkg=np.random.randn(array.shape[0],array.shape[1])*std+base
-    imprint=(bkg+array).astype(np.uint8)
+    imprint=(bkg+array).astype(outtype)
     return imprint
 
 def quick_snr(sf):

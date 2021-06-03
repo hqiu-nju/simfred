@@ -283,6 +283,3 @@ def freq_splitter_idx(n,skip,end,bwchan,fch1):
     chan_idx=np.append(chan_idx,end)
     chan_idx=chan_idx.astype(np.int64)
     return vi,chan_idx
-
-def fscrunch():
-    np.sum((simdata.astype(np.float64)-base),axis=0)

@@ -82,7 +82,7 @@ class spectra:
         """
         self.filterbank.writenoise(nsamp,self.fil_std,self.fil_base)
 
-    def imprint(self,array):
+    def inject(self,array):
         """Create a mock dynamic spectrum filterbank file.
         Parameters
         ----------
@@ -92,7 +92,7 @@ class spectra:
         bkg=np.random.randn(array.shape[0],array.shape[1])*self.fil_std+self.fil_base
         imprint=(bkg+array).astype(np.uint8)
         self.filterbank.writeblock(imprint)
-        self.imprint=imprint
+        self.injected_array=imprint
 
 
     def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.5,fstart=0,fend=336):

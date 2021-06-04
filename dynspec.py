@@ -92,12 +92,8 @@ class spectra:
         bkg=np.random.randn(array.shape[0],array.shape[1])*self.fil_std+self.fil_base
         imprint=(bkg+array).astype(np.uint8)
         self.filterbank.writeblock(imprint)
-        return imprint
+        self.imprint=imprint
 
-    def simulate(self,array):
-        bkg=np.random.randn(array.shape[0],array.shape[1])*self.fil_std+self.fil_base
-        imprint=(bkg+array).astype(np.uint8)
-        return imprint
 
     def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.5,fstart=0,fend=336):
         """Create a pulse.
@@ -130,6 +126,7 @@ class spectra:
         base = np.zeros((self.nchan, nsamp))
         base2 = np.zeros((self.nchan, nsamp))
         toas=np.array(delaypos(vif,self.bwchan,self.fch1,dm))
+        self.toas=toas
         for i in range(self.nchan):
             ti=t0+toas[i]+offset
             # print(t0)

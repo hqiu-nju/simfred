@@ -135,11 +135,10 @@ class spectra:
             if mode=='boxcar':
                 smear=delta_t(dm,vif[i],self.bwchan)
                 # print(vif[i],smear)
-                box=np.sqrt(width**2+smear**2)
+                box=width
                 # print(box)
                 base[i]+=boxcar(time,ti,A,box)
                 base2[i]+=boxcar(time,t0,A,box)
-
             elif mode=='scat':
                 dm_p=np.mean(self.scat_pulse_smear(finergrid,ti,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
                 dedisp_p=np.mean(self.scat_pulse_smear(finergrid,t0,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
@@ -152,6 +151,14 @@ class spectra:
                 dedisp_p=np.mean(self.single_pulse_smear(finergrid,t0,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
                 base[i]+=dm_p/np.max(dm_p)*A
                 base2[i]+=dedisp_p/np.max(dedisp_p)*A
+            elif mode=="nosmear": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
+                # print("real file")
+                dm_p=np.mean(self.single_pulse(finergrid,ti,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                # print("dedisp file")
+                dedisp_p=np.mean(self.single_pulse(finergrid,t0,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                base[i]+=dm_p/np.max(dm_p)*A
+                base2[i]+=dedisp_p/np.max(dedisp_p)*A
+
         if show:
             plt.imshow(base,aspect='auto')
             plt.yticks([0,self.nchan-1],[vif[0],vif[self.nchan-1]])
@@ -165,6 +172,52 @@ class spectra:
         self.burst_original=base#/snfactor*A
         self.burst_dedispersed=base2#/snfactor*A
         return self.burst_original,self.burst_dedispersed
+
+
+    def single_pulse(self,t,t0,sigma,a,vi):
+        ### vi is MHz
+        #dmerr=dmerr ### smaller
+        # fch1=self.fch1
+        bwchan=self.bwchan
+        # print (t0)
+    #     print(ti)
+    #     print(smear)
+        width=sigma
+        # print(vi,width)
+        pulse=gaus_func(t,t0,width/2) ## create pulse
+        # plt.plot(t,pulse)
+        # plt.show()
+        sf=pulse
+        # print("CHECK")
+        # sn_norm=quick_snr(sf)
+        sn_norm=np.max(sf)
+        if sn_norm==0.0:
+            print(f"warning check these parameters {vi} {t0},{width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
+            # plt.plot(t,pulse)
+            # plt.show()
+
+        # print(sn_norm)
+        flux=sf/sn_norm*a### normalise
+        # print(quick_snr(flux))
+        return flux
+
+    def scat_pulse(self,t,t0,tau1,sigma,alpha,a,vi):
+        # fch1=self.fch1
+        bwchan=self.bwchan
+        ### vi is MHz
+        vi=vi
+        # print (vi)
+        width=sigma
+        gt0=np.mean(t)
+        pulse=gaus_func(t,t0,width/2) ## create pulse
+        scat_corr=scattering(t,gt0,tau1,alpha,vi) ## create scatter kernel
+        # flux=convolve(scat_corr,pulse,'same')
+        sf=convolve(pulse,scat_corr,'same')
+        # sn_norm=quick_snr(sf)
+        sn_norm=np.max(sf)
+
+        flux=sf/sn_norm### normalise
+        return a*flux
 
 
     def single_pulse_smear(self,t,t0,dm,sigma,a,vi):
@@ -310,6 +363,10 @@ def freq_splitter_idx(n,skip,end,bwchan,fch1):
     chan_idx=np.append(chan_idx,end)
     chan_idx=chan_idx.astype(np.int64)
     return vi,chan_idx
+
+def fscrunch(array,prepost=2000):
+
+    return fscrunched
 
 
 def L2_snr(base2):

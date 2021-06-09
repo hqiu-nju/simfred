@@ -129,6 +129,7 @@ class spectra:
         self.toas=toas
         for i in range(self.nchan):
             ti=t0+toas[i]+offset
+            t_dedisp=t0+offset
             # print(t0)
             # print (ampx)
             # print("channel",i)
@@ -138,24 +139,24 @@ class spectra:
                 box=width
                 # print(box)
                 base[i]+=boxcar(time,ti,A,box)
-                base2[i]+=boxcar(time,t0,A,box)
+                base2[i]+=boxcar(time,t_dedisp,A,box)
             elif mode=='scat':
                 dm_p=np.mean(self.scat_pulse_smear(finergrid,ti,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
-                dedisp_p=np.mean(self.scat_pulse_smear(finergrid,t0,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dedisp_p=np.mean(self.scat_pulse_smear(finergrid,t_dedisp,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
                 base[i]+=dm_p/np.max(dm_p)*A
                 base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="single": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
                 # print("real file")
                 dm_p=np.mean(self.single_pulse_smear(finergrid,ti,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
-                dedisp_p=np.mean(self.single_pulse_smear(finergrid,t0,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dedisp_p=np.mean(self.single_pulse_smear(finergrid,t_dedisp,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
                 base[i]+=dm_p/np.max(dm_p)*A
                 base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="nosmear": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
                 # print("real file")
                 dm_p=np.mean(self.single_pulse(finergrid,ti,width,A,vif[i]).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
-                dedisp_p=np.mean(self.single_pulse(finergrid,t0,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dedisp_p=np.mean(self.single_pulse(finergrid,t_dedisp,width,A,vif[i]).reshape(nsamp,-1),axis=1)
                 base[i]+=dm_p/np.max(dm_p)*A
                 base2[i]+=dedisp_p/np.max(dedisp_p)*A
 

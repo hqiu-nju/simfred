@@ -95,7 +95,7 @@ class spectra:
         self.injected_array=imprint
 
 
-    def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.5,fstart=0,fend=336):
+    def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,fstart=0,fend=336):
         """Create a pulse.
         Parameters
         ----------

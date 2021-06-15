@@ -129,7 +129,7 @@ class spectra:
         self.toas=toas
         for i in range(self.nchan):
             ti=t0+toas[i]+offset
-            t_dedisp=t0+offset
+            t_dedisp=t0+offset+toas[i]%0.5
             # print(t0)
             # print (ampx)
             # print("channel",i)

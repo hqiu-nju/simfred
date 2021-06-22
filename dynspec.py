@@ -86,8 +86,8 @@ class spectra:
         """Create a mock dynamic spectrum filterbank file.
         Parameters
         ----------
-        nsamp : int
-            length of noise in units of tsamp
+        array : numpy array object
+            the burst array data to be injected into the filterbank object
         """
         bkg=np.random.randn(array.shape[0],array.shape[1])*self.fil_std+self.fil_base
         imprint=(bkg+array).astype(np.uint8)
@@ -268,20 +268,12 @@ class spectra:
         flux=sf/sn_norm### normalise
         return a*flux
     # def model_pulse(self)
-    def L2_snr(self):
+    def write_snr(self):
         ### Harry's fscrunch and L2 snr script
         base2=self.burst_dedispersed
-        simdata=simulate(base2,outtype=np.float64)
-        base_rescaled=(simdata.astype(np.float64)-127)/np.std(simdata[:2000])
-        clean_rescaled=base_rescaled[base2>0]
-        mask=np.sum(base2,axis=0)>0
-        fscrunched=np.sum((simdata.astype(np.float64)-127),axis=0)
-        fscrun_rms=np.std(fscrunched[:2000])
+        quadsn=L2_snr(base2)
         fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
-        # print("rms",fscrun_rms)
-        sf=(fscrunched/fscrun_rms)[mask]
-        ### real snr here
-        quadsn=(np.sum(sf**2)**0.5)
+
         # print(quadsn)
         # sf=base2
 
@@ -329,7 +321,7 @@ def tidm(dmerr,vi,fch1): ## dispersion time delay offset
     beta=2
     ftop=fch1/1000
     ### ftop is in GHz
-    ti=4.15*dmerr*(vi**(-beta)-ftop**(-beta)) ### ms
+    ti=4.1488*dmerr*(vi**(-beta)-ftop**(-beta)) ### ms
     return ti ### ms
 
 def delta_t(dm,v,bwchan): ### calculate dm smearing
@@ -372,15 +364,14 @@ def fscrunch(array,prepost=2000):
 
 def L2_snr(base2):
     ### Harry's fscrunch and L2 snr script
-    simdata=simulate(base2,outtype=np.float64)
-    base_rescaled=(simdata.astype(np.float64)-127)/np.std(simdata[:2000])
-    clean_rescaled=base_rescaled[base2>0]
-    mask=np.sum(base2,axis=0)>0
-    fscrunched=np.sum((simdata.astype(np.float64)-127),axis=0)
+    simdata=simulate(base2,outtype=np.float64) #base2 is the clean burst array
+    fscrunched=np.sum((simdata.astype(np.float64)),axis=0)
+    fscrun_mean=np.mean(fscrunched[:2000])
     fscrun_rms=np.std(fscrunched[:2000])
+    mask=np.sum(base2,axis=0)/fscrun_rms>1 # no noise find where the pulse is after fscrunch
     # fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
     # print("rms",fscrun_rms)
-    sf=(fscrunched/fscrun_rms)[mask]
+    sf=((fscrunched-fscrun_mean)/fscrun_rms)[mask]
     ### real snr here
     quadsn=(np.sum(sf**2)**0.5)
     # print(quadsn)

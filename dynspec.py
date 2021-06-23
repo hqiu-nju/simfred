@@ -297,8 +297,14 @@ def old_snr(sf):
 
 def boxcar(t,t0,a,width):
     y=np.zeros(t.shape[0])
-    mask=(t<t0+width)*(t>t0)
-    y[mask]=a
+    samp_diff=np.diff(t)[0]
+    hw=width/2
+    p1=np.argmin(np.abs(t-t0+hw))
+    p2=np.argmin(np.abs(t-t0-hw))
+    y[p1+1:p2]=a
+    y[p1]=a*((t[p1]+0.5*samp_diff)-(t0-hw))
+    y[p2]=a*((t0+hw)-(t[p2]-0.5*samp_diff))
+
     return y
 
 

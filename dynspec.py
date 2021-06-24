@@ -141,7 +141,7 @@ class spectra:
             # print (ampx)
             # print("channel",i)
             if mode=='boxcar':
-                excess=toas
+                excess=toas[i]
                 t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
                 ti=t0+offset*self.tsamp+excess
                 # print(vif[i],smear)
@@ -150,7 +150,7 @@ class spectra:
                 base[i]+=boxcar(time,ti,A,box)
                 base2[i]+=boxcar(time,t_dedisp,A,box)
             elif mode=='scat':
-                excess=toas_withsmear
+                excess=toas_withsmear[i]
                 t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
                 ti=t0+offset*self.tsamp+excess
                 dm_p=np.mean(self.scat_pulse_smear(finergrid,ti,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
@@ -158,7 +158,7 @@ class spectra:
                 base[i]+=dm_p/np.max(dm_p)*A
                 base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="single":
-                excess=toas_withsmear
+                excess=toas_withsmear[i]
                 t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
                 ti=t0+offset*self.tsamp+excess
                 dm_p=np.mean(self.single_pulse_smear(finergrid,ti,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
@@ -167,7 +167,7 @@ class spectra:
                 base[i]+=dm_p/np.max(dm_p)*A
                 base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="nosmear": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-                excess=toas
+                excess=toas[i]
                 t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
                 ti=t0+offset*self.tsamp+excess
                 dm_p=np.mean(self.single_pulse(finergrid,ti,width,A,vif[i]).reshape(nsamp,-1),axis=1)

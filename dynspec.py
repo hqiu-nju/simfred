@@ -100,10 +100,16 @@ class spectra:
         Parameters
         ----------
         mode : string
-            enter pulse shape used for injection: boxcar,scat,single
+            Enter pulse shape used for injection: boxcar,scat,single
             boxcar: dynspec.boxcar
             scat: dynspec.spectra.scat_pulse_smear
             single: dynspec.spectra.single_pulse_smear
+        width : float
+            This is the 1-sigma of the gaussian, in units of ms.
+            Note: for the boxcar it is the full width of the boxcar
+        nsamp : int
+            This sets the length of the array. Must be long enough for the dispersion track.
+
 
 
         """
@@ -125,35 +131,45 @@ class spectra:
         self.x_time=time
         base = np.zeros((self.nchan, nsamp))
         base2 = np.zeros((self.nchan, nsamp))
+        smear=delta_t(dm,vif,self.bwchan) ## add the smear factor here to shift the pulse when considering smearing
         toas=np.array(delaypos(vif,self.bwchan,self.fch1,dm))
+        toas_withsmear=toas+np.sqrt(smear**2+width**2)
         self.toas=toas
         for i in range(self.nchan):
-            ti=t0+toas[i]+offset
-            t_dedisp=t0+offset+toas[i]%0.5
+
             # print(t0)
             # print (ampx)
             # print("channel",i)
             if mode=='boxcar':
-                smear=delta_t(dm,vif[i],self.bwchan)
+                excess=toas
+                t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
+                ti=t0+offset*self.tsamp+excess
                 # print(vif[i],smear)
                 box=width
                 # print(box)
                 base[i]+=boxcar(time,ti,A,box)
                 base2[i]+=boxcar(time,t_dedisp,A,box)
             elif mode=='scat':
+                excess=toas_withsmear
+                t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
+                ti=t0+offset*self.tsamp+excess
                 dm_p=np.mean(self.scat_pulse_smear(finergrid,ti,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
                 dedisp_p=np.mean(self.scat_pulse_smear(finergrid,t_dedisp,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
                 base[i]+=dm_p/np.max(dm_p)*A
                 base2[i]+=dedisp_p/np.max(dedisp_p)*A
-            elif mode=="single": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-                # print("real file")
+            elif mode=="single":
+                excess=toas_withsmear
+                t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
+                ti=t0+offset*self.tsamp+excess
                 dm_p=np.mean(self.single_pulse_smear(finergrid,ti,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
                 dedisp_p=np.mean(self.single_pulse_smear(finergrid,t_dedisp,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
                 base[i]+=dm_p/np.max(dm_p)*A
                 base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="nosmear": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-                # print("real file")
+                excess=toas
+                t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
+                ti=t0+offset*self.tsamp+excess
                 dm_p=np.mean(self.single_pulse(finergrid,ti,width,A,vif[i]).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
                 dedisp_p=np.mean(self.single_pulse(finergrid,t_dedisp,width,A,vif[i]).reshape(nsamp,-1),axis=1)
@@ -384,3 +400,22 @@ def L2_snr(base2):
     # sf=base2
 
     return quadsn
+
+def rollingbox(base2):
+    ### rolling boxcar filter
+    simdata=simulate(base2,outtype=np.float64) #base2 is the clean burst array
+    fscrunched=np.sum((simdata.astype(np.float64)),axis=0)
+    fscrun_mean=np.mean(fscrunched[:2000])
+    fscrun_rms=np.std(fscrunched[:2000])
+    mask=np.sum(base2,axis=0)/fscrun_rms>1 # no noise find where the pulse is after fscrunch
+    p0=np.argmax(np.sum(base2,axis=0))
+    snr=0
+    for i in range(np.sum(mask)*2):
+        width=i+1
+    #     print(width)
+    #     print(width//2,width-width//2)
+        # print(f"{p0-width//2}:{p0+(width-width//2)}")
+        box=sf[p0-width//2:p0+(width-width//2)]
+        box_snr=np.sum(box)/np.sqrt(width)
+        if box_snr > snr:
+            snr=box_snr

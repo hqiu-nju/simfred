@@ -101,7 +101,7 @@ class spectra:
         ----------
         mode : string
             Enter pulse shape used for injection: boxcar,scat,single
-            boxcar: dynspec.boxcar
+            boxcar: dynspec.boxcar_func
             scat: dynspec.spectra.scat_pulse_smear
             single: dynspec.spectra.single_pulse_smear
         width : float
@@ -147,8 +147,8 @@ class spectra:
                 # print(vif[i],smear)
                 box=width
                 # print(box)
-                base[i]+=boxcar(time,ti,A,box)
-                base2[i]+=boxcar(time,t_dedisp,A,box)
+                base[i]+=boxcar_func(time,ti,A,box)
+                base2[i]+=boxcar_func(time,t_dedisp,A,box)
             elif mode=='scat':
                 excess=toas_withsmear[i]
                 t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
@@ -311,15 +311,12 @@ def quad_sum(sf):
 def old_snr(sf):
     return np.sum(sf)/np.sqrt((sf.flatten()).shape[0])
 
-def boxcar(t,t0,a,width):
+def boxcar_func(t,t0,a,width):
     y=np.zeros(t.shape[0])
     samp_diff=np.diff(t)[0]
     hw=width/2
     p1=np.argmin(np.abs(t-t0+hw))
-    p2=np.argmin(np.abs(t-t0-hw))
-    y[p1+1:p2]=a
-    y[p1]=a*((t[p1]+0.5*samp_diff)-(t0-hw))
-    y[p2]=a*((t0+hw)-(t[p2]-0.5*samp_diff))
+    y[p1:p1+np.int(width)]=a
 
     return y
 

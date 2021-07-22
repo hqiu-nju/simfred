@@ -1,8 +1,6 @@
-#!/usr/bin/env python2
 """
-Writes numpy files into filterbank, needs sigproc.py which runs in python2
+Writes numpy files into filterbank, needs sigproc.py now sigproc3
 """
-
 import matplotlib.pyplot as plt
 import numpy as np
 import os

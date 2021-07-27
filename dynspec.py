@@ -355,6 +355,9 @@ def delta_t(dm,v,bwchan): ### calculate dm smearing
 #
 
 
+def get_fwhm(i):
+    fwhm=(m.sqrt(8.0*m.log(2.0)))*i
+    return fwhm
 def delaypos(f,bwchan,fch1,dm):
     ftop=fch1
     #print(bwchan)

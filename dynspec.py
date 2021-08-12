@@ -3,7 +3,8 @@ import numpy as np
 import os
 import sys
 import logging
-from numpy import convolve
+# from numpy import convolve
+from scipy.signal import convolve
 from matplotlib.gridspec import GridSpec
 import fbio
 import math as m
@@ -51,6 +52,9 @@ class spectra:
         'tsamp': tsamp/1000,
         'tstart': 57946.52703893818,
         'za_start': 0.0}
+        vif,chan_idx=freq_splitter_idx(self.nchan,0,self.nchan,self.bwchan,self.fch1)
+        self.vif=vif
+        self.chan_idx=chan_idx
 
     def create_filterbank(self,file_name,std=18,base=127):
         """Create a mock dynamic spectrum filterbank file.
@@ -95,8 +99,8 @@ class spectra:
         self.injected_array=imprint
 
 
-    def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,fstart=0,fend=336):
-        """Create a pulse.
+    def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,fstart=0,fend=336,dmoff=0):
+        """Create a dispersed pulse. Outputs both the dedispered and dedispered pulse
         Parameters
         ----------
         mode : string
@@ -122,8 +126,6 @@ class spectra:
         self.pulse_nsamp=nsamp
         tsamp=self.tsamp
         time=np.arange(nsamp)*tsamp
-        vif,chan_idx=freq_splitter_idx(self.nchan,fstart,fend,self.bwchan,self.fch1)
-        self.vif=vif
         bins=10
         matrix=np.ones((nsamp,bins))*np.linspace(-0.5,0.5,bins)*tsamp
         timematrix=(np.ones((nsamp,bins)).T*time).T
@@ -132,10 +134,13 @@ class spectra:
         self.x_time=time
         base = np.zeros((self.nchan, nsamp))
         base2 = np.zeros((self.nchan, nsamp))
+        vif=self.vif
         smear=delta_t(dm,vif,self.bwchan) ## add the smear factor here to shift the pulse when considering smearing
-        toas=np.array(delaypos(vif,self.bwchan,self.fch1,dm))
-        toas_withsmear=toas+np.sqrt(smear**2+width**2)
+        smeared=np.sqrt(smear**2+width**2)
+        toas=np.array(delaypos(vif,self.bwchan,self.fch1,dm+dmoff))
+        # toas_withsmear=toas+np.sqrt(smear**2+width**2)
         self.toas=toas
+        effbw=self.bwchan
         for i in range(self.nchan):
 
             # print(t0)
@@ -151,20 +156,20 @@ class spectra:
                 base[i]+=boxcar_func(time,ti,A,box)
                 base2[i]+=boxcar_func(time,t_dedisp,A,box)
             elif mode=='scat':
-                excess=toas_withsmear[i]
+                excess=toas[i]
                 t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
                 ti=t0+offset*self.tsamp+excess
-                dm_p=np.mean(self.scat_pulse_smear(finergrid,ti,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
-                dedisp_p=np.mean(self.scat_pulse_smear(finergrid,t_dedisp,tau,dm,width,alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
-                base[i]+=dm_p/np.sum(dm_p)*100
+                dm_p=np.mean(self.scat_pulse(finergrid,ti,tau,smeared[i],alpha,10,vif[i]).reshape(nsamp,-1),axis=1)
+                dedisp_p=np.mean(self.scat_pulse(finergrid,t_dedisp,tau,smeared[i],alpha,10,vif[i]).reshape(nsamp,-1),axis=1)
+                base[i]+=dm_p/np.sum(dm_p)*A
                 base2[i]+=dedisp_p/np.sum(dedisp_p)*A
             elif mode=="single":
-                excess=toas_withsmear[i]
+                excess=toas[i]
                 t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
                 ti=t0+offset*self.tsamp+excess
-                dm_p=np.mean(self.single_pulse_smear(finergrid,ti,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dm_p=np.mean(self.single_pulse(finergrid,ti,smeared[i],A).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
-                dedisp_p=np.mean(self.single_pulse_smear(finergrid,t_dedisp,dm,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dedisp_p=np.mean(self.single_pulse(finergrid,t_dedisp,smeared[i],A).reshape(nsamp,-1),axis=1)
                 base[i]+=dm_p/np.sum(dm_p)*A
                 base2[i]+=dedisp_p/np.sum(dedisp_p)*A
             elif mode=="nosmear": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
@@ -192,11 +197,10 @@ class spectra:
         return self.burst_original,self.burst_dedispersed
 
 
-    def single_pulse(self,t,t0,sigma,a,vi):
+    def single_pulse(self,t,t0,sigma,a):
         ### vi is MHz
         #dmerr=dmerr ### smaller
         # fch1=self.fch1
-        bwchan=self.bwchan
         # print (t0)
     #     print(ti)
     #     print(smear)
@@ -220,17 +224,13 @@ class spectra:
         return flux
 
     def scat_pulse(self,t,t0,tau1,sigma,alpha,a,vi):
-        # fch1=self.fch1
-        bwchan=self.bwchan
-        ### vi is MHz
-        vi=vi
+
         # print (vi)
-        width=sigma
         gt0=np.mean(t)
-        pulse=gaus_func(t,t0,width/2) ## create pulse
+        pulse=gaus_func(t,t0,sigma/2) ## create pulse
         scat_corr=scattering(t,gt0,tau1,alpha,vi) ## create scatter kernel
         # flux=convolve(scat_corr,pulse,'same')
-        sf=convolve(pulse,scat_corr,'same')
+        sf=convolve(pulse,scat_corr,'same',method='fft')
         # sn_norm=quick_snr(sf)
         sn_norm=np.sum(sf)
 
@@ -238,11 +238,11 @@ class spectra:
         return a*flux
 
 
-    def single_pulse_smear(self,t,t0,dm,sigma,a,vi):
+    def single_pulse_smear(self,t,t0,dm,sigma,a,vi,bwchan):
         ### vi is MHz
         #dmerr=dmerr ### smaller
         # fch1=self.fch1
-        bwchan=self.bwchan
+        # bwchan=self.bwchan
         # print (t0)
     #     print(ti)
         smear=delta_t(dm,vi,bwchan) ##msdelta_t(dm,v,bwchan)
@@ -266,9 +266,9 @@ class spectra:
         # print(quick_snr(flux))
         return flux
 
-    def scat_pulse_smear(self,t,t0,tau1,dm,sigma,alpha,a,vi):
+    def scat_pulse_smear(self,t,t0,tau1,dm,sigma,alpha,a,vi,bwchan):
         # fch1=self.fch1
-        bwchan=self.bwchan
+        # bwchan=self.bwchan
         ### vi is MHz
         vi=vi
         smear=delta_t(dm,vi,bwchan) ##ms
@@ -278,7 +278,7 @@ class spectra:
         pulse=gaus_func(t,t0,width/2) ## create pulse
         scat_corr=scattering(t,gt0,tau1,alpha,vi) ## create scatter kernel
         # flux=convolve(scat_corr,pulse,'same')
-        sf=convolve(pulse,scat_corr,'same')
+        sf=convolve(pulse,scat_corr,'same',method='fft')
         # sn_norm=quick_snr(sf)
         sn_norm=np.max(sf)
 
@@ -295,6 +295,81 @@ class spectra:
         # sf=base2
 
         return f"{self.dm};{self.width};{fwhm};{quadsn}\n",quadsn
+
+    def model(self,dm=200,width=1,A=20,nsamp=1000,mode="single",tau=0.1,alpha=4,t0=200,dmoff=0,effbw=1):
+        """Create a dedispersed pulse with a dm offset, good for subband modelling, bandwidth tunable
+        Parameters
+        ----------
+        mode : string
+            Enter pulse shape used for injection: coherent,scat,single
+            coherent: dynspec.spectra.single_pulse_smear, only smearing for DM offset
+            scat: dynspec.spectra.scat_pulse_smear
+            single: dynspec.spectra.single_pulse_smear
+        width : float
+            This is the 1-sigma of the gaussian, in units of ms.
+            Note: for the boxcar it is the full width of the boxcar
+        nsamp : int
+            This sets the length of the array. Must be long enough for the dispersion track.
+        A : float
+            This is now the channel fluence of the pulse with no frequency variation applied. This is not the same for boxcar mode, this parameter decides the injected value of the boxcar.
+        t0 : float
+            Pulse position. This is in the units of time not time sample.
+
+        """
+        self.dm=dm+dmoff
+        self.width=width
+        self.amplitude=A
+        self.t0=t0
+        self.pulse_nsamp=nsamp
+        tsamp=self.tsamp
+        time=np.arange(nsamp)*tsamp
+        bins=10
+        matrix=np.ones((nsamp,bins))*np.linspace(-0.5,0.5,bins)*tsamp
+        timematrix=(np.ones((nsamp,bins)).T*time).T
+        finergrid=(matrix+timematrix).flatten()
+        self.grid=finergrid
+        self.x_time=time
+        base = np.zeros((self.nchan, nsamp))
+        vif=self.vif
+
+        if mode=="coherent":
+            coh_smear=delta_t(dmoff,vif,self.bwchan) ## add the smear factor here to shift the pulse when considering smearing
+            coh_smeared=np.sqrt(coh_smear**2+width**2)
+        else:
+            smear=delta_t(dm+dmoff,vif,self.bwchan) ## add the smear factor here to shift the pulse when considering smearing
+            smeared=np.sqrt(smear**2+width**2)
+        toas=np.array(delaypos(vif,self.bwchan,self.fch1,dmoff))
+        # toas_withsmear=toas#+np.sqrt(smear**2+width**2)
+        self.toas=toas_withsmear
+        # self.bwchan=eff
+        for i in range(self.nchan):
+
+            # print(t0)
+            # print (ampx)
+            # print("channel",i)
+            if mode=='scat':
+                excess=toas[i]
+                ti=t0+excess
+                dm_p=np.mean(self.scat_pulse(finergrid,ti,tau,smeared[i],alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
+                base[i]+=dm_p/np.sum(dm_p)*A
+                # base2[i]+=dedisp_p/np.sum(dedisp_p)*A
+            elif mode=="single":
+                excess=toas[i]
+                ti=t0+excess
+                dm_p=np.mean(self.single_pulse(finergrid,ti,smeared[i],A,vif[i]).reshape(nsamp,-1),axis=1)
+                base[i]+=dm_p/np.sum(dm_p)*A
+                # base2[i]+=dedisp_p/np.sum(dedisp_p)*A
+            elif mode=="coherent": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
+                excess=toas[i]
+                ti=t0+excess
+                dm_p=np.mean(self.scat_pulse_smear(finergrid,ti,tau,coh_smeared[i],alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
+                base[i]+=dm_p/np.sum(dm_p)*A
+                # base2[i]+=dedisp_p/np.sum(dedisp_p)*A
+
+        # snfactor=np.max(np.sum(base2,axis=0))
+        # print(snfactor,snfactor2)
+        self.model_burst=base#/snfactor*A
+        return base
 
 def simulate(array,std=18,base=127,outtype=np.uint8):
     bkg=np.random.randn(array.shape[0],array.shape[1])*std+base

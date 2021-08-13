@@ -118,7 +118,9 @@ class spectra:
 
 
         """
-        t0=nsamp//2
+        t0=nsamp//4
+        if self.bwchan > 0:
+            t0=nsamp//4*3
         self.dm=dm
         self.width=width
         self.amplitude=A
@@ -176,9 +178,9 @@ class spectra:
                 excess=toas[i]
                 t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
                 ti=t0+offset*self.tsamp+excess
-                dm_p=np.mean(self.single_pulse(finergrid,ti,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dm_p=np.mean(self.single_pulse(finergrid,ti,width,A).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
-                dedisp_p=np.mean(self.single_pulse(finergrid,t_dedisp,width,A,vif[i]).reshape(nsamp,-1),axis=1)
+                dedisp_p=np.mean(self.single_pulse(finergrid,t_dedisp,width,A).reshape(nsamp,-1),axis=1)
                 base[i]+=dm_p/np.sum(dm_p)*A
                 base2[i]+=dedisp_p/np.sum(dedisp_p)*A
 

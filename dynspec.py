@@ -214,7 +214,7 @@ class spectra:
         # sn_norm=quick_snr(sf)
         sn_norm=np.max(sf)
         if sn_norm==0.0:
-            print(f"warning check these parameters {vi} {t0},{width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
+            print(f"warning check these parameters {t0},{width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
             # plt.plot(t,pulse)
             # plt.show()
 
@@ -226,9 +226,10 @@ class spectra:
     def scat_pulse(self,t,t0,tau1,sigma,alpha,a,vi):
 
         # print (vi)
-        gt0=np.mean(t)
+        kernel=t[t<3*tau1]
+        gt0=np.mean(kernel)
         pulse=gaus_func(t,t0,sigma/2) ## create pulse
-        scat_corr=scattering(t,gt0,tau1,alpha,vi) ## create scatter kernel
+        scat_corr=scattering(kernel,gt0,tau1,alpha,vi) ## create scatter kernel
         # flux=convolve(scat_corr,pulse,'same')
         sf=convolve(pulse,scat_corr,'same',method='fft')
         # sn_norm=quick_snr(sf)

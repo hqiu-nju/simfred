@@ -214,7 +214,7 @@ class spectra:
         # sn_norm=quick_snr(sf)
         sn_norm=np.max(sf)
         if sn_norm==0.0:
-            print(f"warning check these parameters {t0},{width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
+            print(f"warning check these parameters{t0},{width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
             # plt.plot(t,pulse)
             # plt.show()
 

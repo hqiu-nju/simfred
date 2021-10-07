@@ -10,7 +10,7 @@ import fbio
 import math as m
 
 class spectra:
-    def __init__(self,fch1=1100,nchan=336,bwchan=1,tsamp=1):
+    def __init__(self,fch1=1100,nchan=336,bwchan=1,tsamp=1,nbits=8):
         """initiate function for creating a mock dynamic spectrum. This sets up the header.
         Parameters
         ----------
@@ -35,7 +35,7 @@ class spectra:
         'fchannel': None,
         'foff': bwchan,
         'machine_id': 0,
-        'nbits': 8,
+        'nbits': nbits,
         'nchans': nchan,
         'nifs': 1,
         'nsamples': None,

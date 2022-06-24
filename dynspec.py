@@ -155,7 +155,7 @@ class spectra:
         nsamp : int
             This sets the length of the array. Must be long enough for the dispersion track.
         A : float
-            This is now the channel fluence of the pulse with no frequency variation applied. This is not the same for boxcar mode, this parameter decides the injected value of the boxcar.
+            This is now the channel amplitude of the pulse with no frequency variation applied. This is not the same for boxcar mode, this parameter decides the injected value of the boxcar.
 
 
         """
@@ -204,8 +204,8 @@ class spectra:
                 ti=t0+offset*self.tsamp+excess
                 dm_p=np.mean(scat_pulse(finergrid,ti,tau,smeared[i],alpha,10,vif[i]).reshape(nsamp,-1),axis=1)
                 dedisp_p=np.mean(scat_pulse(finergrid,t_dedisp,tau,smeared[i],alpha,10,vif[i]).reshape(nsamp,-1),axis=1)
-                base[i]+=dm_p/np.sum(dm_p)*A
-                base2[i]+=dedisp_p/np.sum(dedisp_p)*A
+                base[i]+=dm_p/np.max(dm_p)*A
+                base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="single":
                 excess=toas[i]
                 t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
@@ -213,8 +213,8 @@ class spectra:
                 dm_p=np.mean(single_pulse(finergrid,ti,smeared[i],A).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
                 dedisp_p=np.mean(single_pulse(finergrid,t_dedisp,smeared[i],A).reshape(nsamp,-1),axis=1)
-                base[i]+=dm_p/np.sum(dm_p)*A
-                base2[i]+=dedisp_p/np.sum(dedisp_p)*A
+                base[i]+=dm_p/np.max(dm_p)*A
+                base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="nosmear": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
                 excess=toas[i]
                 t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
@@ -222,8 +222,8 @@ class spectra:
                 dm_p=np.mean(single_pulse(finergrid,ti,width,A).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
                 dedisp_p=np.mean(single_pulse(finergrid,t_dedisp,width,A).reshape(nsamp,-1),axis=1)
-                base[i]+=dm_p/np.sum(dm_p)*A
-                base2[i]+=dedisp_p/np.sum(dedisp_p)*A
+                base[i]+=dm_p/np.max(dm_p)*A
+                base2[i]+=dedisp_p/np.max(dedisp_p)*A
 
         if show:
             plt.imshow(base,aspect='auto')
@@ -543,8 +543,9 @@ def L2_snr(base2):
     fscrun_mean=np.mean(fscrunched)
     fscrun_median=np.median(fscrunched)
     # fscrun_rms=np.std(fscrunched)
-    fscrun_mad=np.median(fscrunched-fscrun_mean) ##use MAD
-    mask=np.sum(base2,axis=0)/fscrun_mad>1 # no noise find where the pulse is after fscrunch
+    fscrun_mad=np.median(np.abs(fscrunched-fscrun_mean)) ##use MAD
+    print (fscrun_mad)
+    mask=np.sum(base2,axis=0)/fscrun_mad>0 # no noise find where the pulse is after fscrunch
     # fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
     # print("rms",fscrun_rms)
     sf=((fscrunched-fscrun_median)/fscrun_mad)[mask]
@@ -557,14 +558,12 @@ def L2_snr(base2):
 
 def L2_clean(base2):
     ### Harry's fscrunch and L2 snr script with no noise, assume rms/std is 1
-    simdata=base2 #base2 is the clean burst array
-    fscrunched=np.mean((simdata.astype(np.float64)),axis=0)
-    fscrun_mean=0
-    fscrun_rms=1
-    mask=np.mean(base2,axis=0)/fscrun_rms>1 # no noise find where the pulse is after fscrunch
+    ydata=base2 #base2 is the clean burst array
+    fscrunched=np.mean((ydata.astype(np.float64)),axis=0)
+    mask=np.mean(base2,axis=0)>0 # no noise find where the pulse is after fscrunch
     # fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
     # print("rms",fscrun_rms)
-    sf=((fscrunched-fscrun_mean)/fscrun_rms)[mask]
+    sf=fscrunched[mask]
     ### real snr here
     quadsn=(np.sum(sf**2)**0.5)
     # print(quadsn)

@@ -544,7 +544,7 @@ def L2_snr(base2):
     fscrun_median=np.median(fscrunched)
     # fscrun_rms=np.std(fscrunched)
     fscrun_mad=np.median(np.abs(fscrunched-fscrun_mean)) ##use MAD
-    print (fscrun_mad)
+    # print (fscrun_mad)
     mask=np.sum(base2,axis=0)/fscrun_mad>0 # no noise find where the pulse is after fscrunch
     # fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
     # print("rms",fscrun_rms)

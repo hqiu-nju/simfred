@@ -243,7 +243,7 @@ class spectra:
     def write_snr(self):
         ### Harry's fscrunch and L2 snr script
         base2=self.burst_dedispersed
-        quadsn=L2_snr(base2)
+        quadsn=L2_clean(base2)
         fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
 
         # print(quadsn)
@@ -540,12 +540,14 @@ def L2_snr(base2):
     ### Harry's fscrunch and L2 snr script
     simdata=simulate(base2,outtype=np.float64) #base2 is the clean burst array
     fscrunched=np.sum((simdata.astype(np.float64)),axis=0)
-    fscrun_mean=np.mean(fscrunched[:2000])
-    fscrun_rms=np.std(fscrunched[:2000])
-    mask=np.sum(base2,axis=0)/fscrun_rms>1 # no noise find where the pulse is after fscrunch
+    fscrun_mean=np.mean(fscrunched)
+    fscrun_median=np.median(fscrunched)
+    # fscrun_rms=np.std(fscrunched)
+    fscrun_mad=np.median(fscrunched-fscrun_mean) ##use MAD
+    mask=np.sum(base2,axis=0)/fscrun_mad>1 # no noise find where the pulse is after fscrunch
     # fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
     # print("rms",fscrun_rms)
-    sf=((fscrunched-fscrun_mean)/fscrun_rms)[mask]
+    sf=((fscrunched-fscrun_median)/fscrun_mad)[mask]
     ### real snr here
     quadsn=(np.sum(sf**2)**0.5)
     # print(quadsn)
@@ -569,6 +571,7 @@ def L2_clean(base2):
     # sf=base2
 
     return quadsn
+
 
 def rollingbox(base2):
     ### rolling boxcar filter

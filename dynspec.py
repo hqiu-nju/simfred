@@ -94,8 +94,12 @@ class spectra:
         'tstart': 57946.52703893818,
         'za_start': 0.0}
         vif,chan_idx=freq_splitter_idx(self.nchan,0,self.nchan,self.bwchan,self.fch1)
+        fbin=10 ### finer frequency grid use
+        ff,ff_idx=freq_splitter_idx(self.nchan*fbin,0,self.nchan*fbin,self.bwchan/fbin,self.fch1)
         self.vif=vif
+        self.finerfreq=ff
         self.chan_idx=chan_idx
+        self.ff_idx=ff_idx
 
     def create_filterbank(self,file_name,std=18,base=127):
         """Create a mock dynamic spectrum filterbank file.
@@ -170,21 +174,23 @@ class spectra:
         tsamp=self.tsamp
         time=np.arange(nsamp)*tsamp
         bins=10
+        fbin=10
+        scrunchbw=self.bwchan/fbin
         matrix=np.ones((nsamp,bins))*np.linspace(-0.5,0.5,bins)*tsamp
         timematrix=(np.ones((nsamp,bins)).T*time).T
         finergrid=(matrix+timematrix).flatten()
         self.grid=finergrid
         self.x_time=time
-        base = np.zeros((self.nchan, nsamp))
-        base2 = np.zeros((self.nchan, nsamp))
-        vif=self.vif
-        smear=delta_t(dm,vif,self.bwchan) ## add the smear factor here to shift the pulse when considering smearing
+        base = np.zeros((self.nchan*fbin, nsamp))
+        base2 = np.zeros((self.nchan*fbin, nsamp))
+        vif=self.finerfreq
+        smear=delta_t(dm,vif,scrunchbw) ## add the smear factor here to shift the pulse when considering smearing
         smeared=np.sqrt(smear**2+width**2)
-        toas=np.array(delaypos(vif,self.bwchan,self.fch1,dm+dmoff))
+        toas=np.array(delaypos(vif,scrunchbw,self.fch1,dm+dmoff))
         # toas_withsmear=toas+np.sqrt(smear**2+width**2)
         self.toas=toas
         effbw=self.bwchan
-        for i in range(self.nchan):
+        for i in range(self.nchan*fbin):
 
             # print(t0)
             # print (ampx)
@@ -227,7 +233,7 @@ class spectra:
 
         if show:
             plt.imshow(base,aspect='auto')
-            plt.yticks([0,self.nchan-1],[vif[0],vif[self.nchan-1]])
+            plt.yticks([0,self.nchan*fbin-1],[vif[0],vif[self.nchan-1]])
             plt.ylabel('Frequency (MHz)')
             plt.xlabel("Time Samples")
             plt.tight_layout()
@@ -235,15 +241,17 @@ class spectra:
 
         # snfactor=np.max(np.sum(base2,axis=0))
         # print(snfactor,snfactor2)
-        self.burst_original=base#/snfactor*A
-        self.burst_dedispersed=base2#/snfactor*A
+        self.base=base
+        self.base2=base2
+        self.burst_original=np.mean(base.reshape(self.nchan,fbin,nsamp),axis=1)#/snfactor*A
+        self.burst_dedispersed=np.mean(base2.reshape(self.nchan,fbin,nsamp),axis=1)#/snfactor*A
         return self.burst_original,self.burst_dedispersed
 
     # def model_pulse(self)
     def write_snr(self):
         ### Harry's fscrunch and L2 snr script
         base2=self.burst_dedispersed
-        quadsn=L2_clean(base2)
+        quadsn=triangle_snr(base2)
         fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
 
         # print(quadsn)
@@ -545,7 +553,7 @@ def L2_snr(base2):
     # fscrun_rms=np.std(fscrunched)
     fscrun_mad=np.median(np.abs(fscrunched-fscrun_mean)) ##use MAD
     # print (fscrun_mad)
-    mask=np.sum(base2,axis=0)/fscrun_mad>0 # no noise find where the pulse is after fscrunch
+    mask=np.sum(base2,axis=0)/fscrun_mad>1 # no noise find where the pulse is after fscrunch
     # fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
     # print("rms",fscrun_rms)
     sf=((fscrunched-fscrun_median)/fscrun_mad)[mask]
@@ -570,6 +578,33 @@ def L2_clean(base2):
     # sf=base2
 
     return quadsn
+
+def triangle_snr(base2):
+    simdata=simulate(base2,outtype=np.float64)
+    fscrun_mean=np.mean(simdata)
+    fscrun_median=np.median(simdata)
+    fscrun_mad=np.median(np.abs(simdata-fscrun_mean))
+    mask2d=(base2<=0)
+    # mask2d_b=(base2>0)
+    # medianresponse=np.sqrt(mask2d_b.sum(0)/336)
+    # simdata2=np.copy(simdata)
+    ydata=simdata-fscrun_median
+    ydata[mask2d]=0
+    sf=np.sum((ydata)/fscrun_mad,0)/np.sqrt(simdata.shape[0])
+    ### real snr here
+    quadsn=(np.sum(sf**2)**0.5)
+    return quadsn
+
+def triangle_clean(base2):
+    simdata=base2
+    effsig=np.sum(base2>0,0)
+    mask=effsig>0
+
+    sf=np.sum(simdata.astype(np.float64),0)[mask]
+    ### real snr here
+    quadsn=(np.sum(sf**2)**0.5)/np.sqrt(np.sum(effsig[mask]**2))
+    return quadsn
+
 
 
 def rollingbox(base2):

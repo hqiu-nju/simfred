@@ -251,7 +251,7 @@ class spectra:
     def write_snr(self):
         ### Harry's fscrunch and L2 snr script
         base2=self.burst_dedispersed
-        quadsn=triangle_snr(base2)
+        quadsn=L2_clean(base2)
         fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
 
         # print(quadsn)
@@ -508,7 +508,7 @@ def delta_t(dm,v,bwchan): ### calculate dm smearing
     B=bwchan ###1MHz channels in fly's eye change if needed
     inverse_v=1/v #### 1/GHz
     #print(v)
-    dt=8.3*dm*(inverse_v**3)*B/2 #### unit:us, 2 sigma---> 1 sigma
+    dt=8.3*dm*(inverse_v**3)*B/2.355 #### unit:us, 2 sigma---> 1 sigma
     return dt/1000 ###us ---> ms
 
 

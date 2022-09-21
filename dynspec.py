@@ -245,8 +245,8 @@ class spectra:
         # print(snfactor,snfactor2)
         self.base=base
         self.base2=base2
-        self.burst_original=base#/snfactor*A
-        self.burst_dedispersed=base2#/snfactor*A
+        self.burst_original=base.reshape(self.nchan,fbin,nsamp).mean(1)#/snfactor*A
+        self.burst_dedispersed=base2.reshape(self.nchan,fbin,nsamp).mean(1)#/snfactor*A
         return self.burst_original,self.burst_dedispersed
 
     # def model_pulse(self)

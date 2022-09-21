@@ -144,7 +144,7 @@ class spectra:
         self.injected_array=imprint
 
 
-    def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,fstart=0,fend=336,dmoff=0):
+    def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,fstart=0,fend=336,dmoff=0,fbin=10,tbin=10):
         """Create a dispersed pulse. Outputs both the dedispered and dedispered pulse
         Parameters
         ----------
@@ -173,8 +173,7 @@ class spectra:
         self.pulse_nsamp=nsamp
         tsamp=self.tsamp
         time=np.arange(nsamp)*tsamp
-        bins=10
-        fbin=10
+        bins=tbin
         scrunchbw=self.bwchan/fbin
         matrix=np.ones((nsamp,bins))*np.linspace(-0.5,0.5,bins)*tsamp
         timematrix=(np.ones((nsamp,bins)).T*time).T
@@ -479,8 +478,9 @@ def boxcar_func(t,t0,a,width):
 
 
 def gaus_func(t,t0,sigi):
-    #ti=0### gaussian function
-    sit=10*np.exp(-(t-t0)**2/2/(sigi**2)) ### model 0 in ravi 2018
+    #ti=0### gaussian function returns a function with amplitude of 10
+    A=10
+    sit=A*np.exp(-1/2*((t-t0)**2)/(sigi**2)) ### model 0 in ravi 2018
 
     ### normalisation factor is 1/np.sqrt(np.pi*2*(sigi**2)) replace A with this term for a total of 1 pdf
     return sit

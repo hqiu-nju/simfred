@@ -479,7 +479,7 @@ def boxcar_func(t,t0,a,width):
 
 def gaus_func(t,t0,sigi):
     #ti=0### gaussian function returns a function with amplitude of 10
-    A=10
+    A=1/np.sqrt(np.pi*2*(sigi**2))
     sit=A*np.exp(-1/2*((t-t0)**2)/(sigi**2)) ### model 0 in ravi 2018
 
     ### normalisation factor is 1/np.sqrt(np.pi*2*(sigi**2)) replace A with this term for a total of 1 pdf

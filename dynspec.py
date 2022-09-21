@@ -51,7 +51,7 @@ class TimeSeries:
 
 
 class spectra:
-    def __init__(self,fch1=1100,nchan=336,bwchan=1,tsamp=1,nbits=8):
+    def __init__(self,fch1=1100,nchan=336,bwchan=1,tsamp=1,nbits=8,fbin=10,tbin=10):
         """initiate function for creating a mock dynamic spectrum. This sets up the header.
         Parameters
         ----------
@@ -94,9 +94,11 @@ class spectra:
         'tstart': 57946.52703893818,
         'za_start': 0.0}
         vif,chan_idx=freq_splitter_idx(self.nchan,0,self.nchan,self.bwchan,self.fch1)
-        fbin=10 ### finer frequency grid use
+         ### finer frequency grid use
         ff,ff_idx=freq_splitter_idx(self.nchan*fbin,0,self.nchan*fbin,self.bwchan/fbin,self.fch1)
         self.vif=vif
+        self.fbin=fbin
+        self.tbin=tbin
         self.finerfreq=ff
         self.chan_idx=chan_idx
         self.ff_idx=ff_idx
@@ -144,7 +146,7 @@ class spectra:
         self.injected_array=imprint
 
 
-    def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,fstart=0,fend=336,dmoff=0,fbin=10,tbin=10):
+    def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,fstart=0,fend=336,dmoff=0):
         """Create a dispersed pulse. Outputs both the dedispered and dedispered pulse
         Parameters
         ----------
@@ -173,7 +175,8 @@ class spectra:
         self.pulse_nsamp=nsamp
         tsamp=self.tsamp
         time=np.arange(nsamp)*tsamp
-        bins=tbin
+        bins=self.tbin
+        fbin=self.fbin
         scrunchbw=self.bwchan/fbin
         matrix=np.ones((nsamp,bins))*np.linspace(-0.5,0.5,bins)*tsamp
         timematrix=(np.ones((nsamp,bins)).T*time).T

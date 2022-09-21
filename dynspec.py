@@ -287,13 +287,23 @@ class spectra:
         tsamp=self.tsamp
         time=np.arange(nsamp)*tsamp
         bins=10
+        fbin=10
+        scrunchbw=self.bwchan/fbin
         matrix=np.ones((nsamp,bins))*np.linspace(-0.5,0.5,bins)*tsamp
         timematrix=(np.ones((nsamp,bins)).T*time).T
         finergrid=(matrix+timematrix).flatten()
         self.grid=finergrid
         self.x_time=time
-        base = np.zeros((self.nchan, nsamp))
-        vif=self.vif
+        base = np.zeros((self.nchan*fbin, nsamp))
+        base2 = np.zeros((self.nchan*fbin, nsamp))
+        vif=self.finerfreq
+        smear=delta_t(dm,vif,scrunchbw) ## add the smear factor here to shift the pulse when considering smearing
+        smeared=np.sqrt(smear**2+width**2)
+        toas=np.array(delaypos(vif,scrunchbw,self.fch1,dm+dmoff))
+        # toas_withsmear=toas+np.sqrt(smear**2+width**2)
+        self.toas=toas
+        effbw=self.bwchan
+
 
         if mode=="coherent":
             coh_smear=delta_t(dmoff,vif,self.bwchan) ## add the smear factor here to shift the pulse when considering smearing
@@ -305,7 +315,7 @@ class spectra:
         # toas_withsmear=toas#+np.sqrt(smear**2+width**2)
         self.toas=toas
         # self.bwchan=eff
-        for i in range(self.nchan):
+        for i in range(self.nchan*fbin):
 
             # print(t0)
             # print (ampx)
@@ -331,8 +341,9 @@ class spectra:
 
         # snfactor=np.max(np.sum(base2,axis=0))
         # print(snfactor,snfactor2)
-        self.model_burst=base#/snfactor*A
-        return base
+        self.model_original=base#/snfactor*A
+        self.model_burst=np.mean(base.reshape(self.nchan,fbin,nsamp),axis=1)
+        return self.model_burst
 
 def scat_pulse_smear(t,t0,tau1,dm,sigma,alpha,a,vi,bwchan):
     # fch1=self.fch1

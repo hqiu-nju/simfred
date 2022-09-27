@@ -95,13 +95,13 @@ class spectra:
         'za_start': 0.0}
         vif,chan_idx=freq_splitter_idx(self.nchan,0,self.nchan,self.bwchan,self.fch1)
          ### finer frequency grid use
-        ff,ff_idx=freq_splitter_idx(self.nchan*fbin,0,self.nchan*fbin,self.bwchan/fbin,self.fch1)
+        # ff,ff_idx=freq_splitter_idx(self.nchan*fbin,0,self.nchan*fbin,self.bwchan/fbin,self.fch1-self.bwchan*0.5)
         self.vif=vif
         self.fbin=fbin
         self.tbin=tbin
-        self.finerfreq=ff
+        # self.ff_vif=ff
         self.chan_idx=chan_idx
-        self.ff_idx=ff_idx
+        # self.ff_idx=ff_idx
 
     def create_filterbank(self,file_name,std=18,base=127):
         """Create a mock dynamic spectrum filterbank file.
@@ -173,69 +173,66 @@ class spectra:
         self.amplitude=A
         self.t0=t0
         self.pulse_nsamp=nsamp
-        tsamp=self.tsamp
-        time=np.arange(nsamp)*tsamp
-        bins=self.tbin
-        fbin=self.fbin
-        scrunchbw=self.bwchan/fbin
-        matrix=np.ones((nsamp,bins))*np.linspace(-0.5,0.5,bins)*tsamp
-        timematrix=(np.ones((nsamp,bins)).T*time).T
+        # tsamp=self.tsamp
+        time=np.arange(nsamp)*self.tsamp
+        # bins=self.tbin
+        # fbin=self.fbin
+        scrunchbw=self.bwchan/self.fbin
+        matrix=np.ones((nsamp,self.tbin))*np.linspace(-0.5,0.5,self.tbin)*self.tsamp
+        timematrix=(np.ones((nsamp,self.tbin)).T*time).T
         finergrid=(matrix+timematrix).flatten()
         self.grid=finergrid
         self.x_time=time
-        base = np.zeros((self.nchan*fbin, nsamp))
-        base2 = np.zeros((self.nchan*fbin, nsamp))
-        vif=self.finerfreq
+        base = np.zeros((self.nchan*self.fbin, nsamp))
+        base2 = np.zeros((self.nchan*self.fbin, nsamp))
+        print(f"initialising grid, base shape is {np.shape(base)}")
+        matrix=np.ones((self.nchan,self.fbin))*np.linspace(-0.5,0.5,self.fbin)*self.bwchan
+        ffgrid=(np.ones((self.nchan,self.fbin)).T*self.vif).T
+        vif=(ffgrid+matrix).flatten()
+        self.ff_vif=vif
         smear=delta_t(dm,vif,scrunchbw) ## add the smear factor here to shift the pulse when considering smearing
         smeared=np.sqrt(smear**2+width**2)
-        toas=np.array(delaypos(vif,scrunchbw,self.fch1,dm+dmoff))
+        toas=np.array(delaypos(self.ff_vif,scrunchbw,self.fch1,dm+dmoff))
+        self.ff_toas=toas
         # toas_withsmear=toas+np.sqrt(smear**2+width**2)
-        self.toas=toas
+        self.toas=np.array(delaypos(self.vif,self.bwchan,self.fch1,dm+dmoff))
         effbw=self.bwchan
-        for i in range(self.nchan*fbin):
-
+        for i in range(self.nchan*self.fbin):
+            # excess=self.toas[i//self.fbin]-toas[i]
+            shift=toas[i]
+            # t_dedisp=t0+offset*self.tsamp+excess
+            ti=t0+offset*self.tsamp+shift
             # print(t0)
             # print (ampx)
             # print("channel",i)
             if mode=='boxcar':
-                excess=toas[i]
-                t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
-                ti=t0+offset*self.tsamp+excess
                 # print(vif[i],smear)
                 box=width
                 # print(box)
                 base[i]+=boxcar_func(time,ti,A,box)
-                base2[i]+=boxcar_func(time,t_dedisp,A,box)
+                # base2[i]+=boxcar_func(time,t_dedisp,A,box)
             elif mode=='scat':
-                excess=toas[i]
-                t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
-                ti=t0+offset*self.tsamp+excess
+
                 dm_p=np.mean(scat_pulse(finergrid,ti,tau,smeared[i],alpha,10,vif[i]).reshape(nsamp,-1),axis=1)
-                dedisp_p=np.mean(scat_pulse(finergrid,t_dedisp,tau,smeared[i],alpha,10,vif[i]).reshape(nsamp,-1),axis=1)
-                base[i]+=dm_p/np.max(dm_p)*A
-                base2[i]+=dedisp_p/np.max(dedisp_p)*A
+                # dedisp_p=np.mean(scat_pulse(finergrid,t_dedisp,tau,smeared[i],alpha,10,vif[i]).reshape(nsamp,-1),axis=1)
+                # base[i]+=dm_p/np.max(dm_p)*A
+                # base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="single":
-                excess=toas[i]
-                t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
-                ti=t0+offset*self.tsamp+excess
                 dm_p=np.mean(single_pulse(finergrid,ti,smeared[i],A).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
-                dedisp_p=np.mean(single_pulse(finergrid,t_dedisp,smeared[i],A).reshape(nsamp,-1),axis=1)
-                base[i]+=dm_p/np.max(dm_p)*A
-                base2[i]+=dedisp_p/np.max(dedisp_p)*A
+                # dedisp_p=np.mean(single_pulse(finergrid,t_dedisp,smeared[i],A).reshape(nsamp,-1),axis=1)
+                # base[i]+=dm_p/np.max(dm_p)*A
+                # base2[i]+=dedisp_p/np.max(dedisp_p)*A
             elif mode=="nosmear": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-                excess=toas[i]
-                t_dedisp=t0+(t0+offset*self.tsamp+excess)%self.tsamp
-                ti=t0+offset*self.tsamp+excess
                 dm_p=np.mean(single_pulse(finergrid,ti,width,A).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
-                dedisp_p=np.mean(single_pulse(finergrid,t_dedisp,width,A).reshape(nsamp,-1),axis=1)
-                base[i]+=dm_p/np.max(dm_p)*A
-                base2[i]+=dedisp_p/np.max(dedisp_p)*A
+                # dedisp_p=np.mean(single_pulse(finergrid,t_dedisp,width,A).reshape(nsamp,-1),axis=1)
+            base[i]+=dm_p/np.max(dm_p)*A
+            # base2[i]+=dedisp_p/np.max(dedisp_p)*A
 
         if show:
             plt.imshow(base,aspect='auto')
-            plt.yticks([0,self.nchan*fbin-1],[vif[0],vif[self.nchan-1]])
+            plt.yticks([0,self.nchan*self.fbin-1],[vif[0],vif[self.nchan-1]])
             plt.ylabel('Frequency (MHz)')
             plt.xlabel("Time Samples")
             plt.tight_layout()
@@ -243,10 +240,19 @@ class spectra:
 
         # snfactor=np.max(np.sum(base2,axis=0))
         # print(snfactor,snfactor2)
-        self.base=base
-        self.base2=base2
-        self.burst_original=base.reshape(self.nchan,fbin,nsamp).mean(1)#/snfactor*A
-        self.burst_dedispersed=base2.reshape(self.nchan,fbin,nsamp).mean(1)#/snfactor*A
+        # dedispersed=np.empty(np.shape(base1))
+
+        # self.base=base
+        # p0s=np.argmax(self.base,axis=1)
+        # for i in range(self.base.shape[0]):
+        #     base2[i]=np.roll(self.base[i],t0-p0s[i])
+        # self.base2=base2
+        self.burst_original=base.reshape(self.nchan,self.fbin,nsamp).mean(1)#/snfactor*A
+        p0s=np.argmax(self.burst_original,axis=1)
+        dedispersed=np.empty(np.shape(self.burst_original))
+        for i in range(self.burst_original.shape[0]):
+            dedispersed[i]=np.roll(self.burst_original[i],t0-p0s[i]) #-self.toas[i].astype(np.int)
+        self.burst_dedispersed=dedispersed#/snfactor*A
         return self.burst_original,self.burst_dedispersed
 
     # def model_pulse(self)
@@ -298,7 +304,7 @@ class spectra:
         self.x_time=time
         base = np.zeros((self.nchan*fbin, nsamp))
         base2 = np.zeros((self.nchan*fbin, nsamp))
-        vif=self.finerfreq
+        vif=self.ff_vif
         smear=delta_t(dm,vif,scrunchbw) ## add the smear factor here to shift the pulse when considering smearing
         smeared=np.sqrt(smear**2+width**2)
         toas=np.array(delaypos(vif,scrunchbw,self.fch1,dm+dmoff))
@@ -326,19 +332,19 @@ class spectra:
                 excess=toas[i]
                 ti=t0+excess
                 dm_p=np.mean(scat_pulse(finergrid,ti,tau,smeared[i],alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
-                base[i]+=dm_p/np.max(dm_p)*A
+                # base[i]+=dm_p/np.max(dm_p)*A
                 # base2[i]+=dedisp_p/np.sum(dedisp_p)*A
             elif mode=="single":
                 excess=toas[i]
                 ti=t0+excess
                 dm_p=np.mean(single_pulse(finergrid,ti,smeared[i],A).reshape(nsamp,-1),axis=1)
-                base[i]+=dm_p/np.max(dm_p)*A
+                # base[i]+=dm_p/np.max(dm_p)*A
                 # base2[i]+=dedisp_p/np.sum(dedisp_p)*A
             elif mode=="coherent": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
                 excess=toas[i]
                 ti=t0+excess
                 dm_p=np.mean(scat_pulse(finergrid,ti,tau,coh_smeared[i],alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
-                base[i]+=dm_p/np.max(dm_p)*A
+            base[i]+=dm_p/np.max(dm_p)*A
                 # base2[i]+=dedisp_p/np.sum(dedisp_p)*A
 
         # snfactor=np.max(np.sum(base2,axis=0))
@@ -543,9 +549,11 @@ def delaypos(f,bwchan,fch1,dm):
     #print ("times generated, max delay is",times[-1])
     return times
 def freq_splitter_idx(n,skip,end,bwchan,fch1):
+    ### generates the frequency of channels and then group them into subbands, also returns an array that records the channel numbers of each subband
+    ###
     dw=(end-skip)/n
     #print(dw,bwchan)
-    vi=np.arange(n)*dw*bwchan+0.5*dw*bwchan
+    vi=np.arange(n)*dw*bwchan
     base=fch1+skip*bwchan
     vi=base+vi
     chan_idx=np.arange(n)*dw+skip

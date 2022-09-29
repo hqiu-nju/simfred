@@ -9,14 +9,10 @@ from matplotlib.gridspec import GridSpec
 import fbio
 import math as m
 class TimeSeries:
-    def __init__(self,fch=1000,bwchan=1,tsamp=1,nbits=8,nsamp=1000,bins=10,scatindex=4):
+    def __init__(self,tsamp=1,nsamp=1000,bins=10):
         """initiate function for creating a mock time series. This sets up the frequency.
         Parameters
         ----------
-        fch : float
-            Channel frequency (MHz)
-        bwchan : float
-            channel bandwidth (MHz)
         tsamp : float
             time resolution (ms)
         nsamp : int
@@ -24,11 +20,11 @@ class TimeSeries:
         bins : int
             grid resolution of the array,
         """
-        self.fch=fch
-        self.bwchan=bwchan
+        # self.fch=fch
+        # self.bwchan=bwchan
         self.tsamp=tsamp
         self.nsamp=nsamp
-        self.alpha=scatindex
+        # self.alpha=scatindex
         tsamp=self.tsamp
         time=np.arange(nsamp)*tsamp
         matrix=np.ones((nsamp,bins))*np.linspace(-0.5,0.5,bins)*tsamp
@@ -36,6 +32,10 @@ class TimeSeries:
         finergrid=(matrix+timematrix).flatten()
         self.grid=finergrid
         self.x_time=time
+    def boxcar(self,t0,width,a):
+        tims=boxcar_func(self.x_time,t0,A,width)
+        self.spectra=tims/np.max(tims)*a
+        return self.spectra
     def pulse(self,t0,width,a):
         tims=np.mean(single_pulse(self.grid,t0,width,100).reshape(self.nsamp,-1),axis=1)
         self.spectra=tims/np.max(tims)*a
@@ -52,7 +52,7 @@ class TimeSeries:
 
 class spectra:
     def __init__(self,fch1=1100,nchan=336,bwchan=1,tsamp=1,nbits=8,fbin=10,tbin=10):
-        """initiate function for creating a mock dynamic spectrum. This sets up the header.
+        """initiate function for creating a mock dynamic spectrum data. This sets up the header.
         Parameters
         ----------
         fch1 : float
@@ -184,7 +184,7 @@ class spectra:
         self.grid=finergrid
         self.x_time=time
         base = np.zeros((self.nchan*self.fbin, nsamp))
-        base2 = np.zeros((self.nchan*self.fbin, nsamp))
+        # base2 = np.zeros((self.nchan*self.fbin, nsamp))
         print(f"initialising grid, base shape is {np.shape(base)}")
         matrix=np.ones((self.nchan,self.fbin))*np.linspace(-0.5,0.5,self.fbin)*self.bwchan
         ffgrid=(np.ones((self.nchan,self.fbin)).T*self.vif).T
@@ -267,90 +267,78 @@ class spectra:
 
         return f"{self.dm};{self.width};{fwhm};{quadsn}\n",quadsn
 
-    def model(self,dm=200,width=1,A=20,nsamp=1000,mode="single",tau=0.1,alpha=4,t0=200,dmoff=0,effbw=1):
-        """Create a dedispersed pulse with a dm offset, good for subband modelling, bandwidth tunable
+class fgrid:
+    def __init__(self,fch=1000,bwchan=1,nchan=336,tsamp=1,nsamp=1000,tbin=10,fbin=10):
+        """Simulate a burst
+        Parameters
+        ----------
+        fch1 : float
+            First channel of array (MHz)
+        bwchan: float
+            Channel bandwidth (MHz)
+        nchan : int
+            Number of channels
+        nsamp : int
+            This sets the length of the array. Make it long enough for the dispersion/scattering track, use dynspec.tidm to estimate.
+        tsamp : float
+            time resolution (ms)
+        nsamp : int
+            This sets the length of the array. Must be long enough for scattering tail and dispersion track
+        bins : int
+            grid resolution of the array,
+        """
+        self.fch=fch
+        self.bwchan=bwchan
+        self.nchan=nchan
+        self.tsamp=tsamp
+        self.nsamp=nsamp
+        tsamp=self.tsamp
+        time=np.arange(nsamp)*tsamp
+        tims=TimeSeries(tsamp=tsamp,nsamp=nsamp,bins=tbin)
+        self.tims=tims
+        self.tgrid=tims.grid
+        self.x_time=tims.x_time
+        vif,chan_idx=freq_splitter_idx(self.nchan,0,self.nchan,self.bwchan,self.fch)
+         ### finer frequency grid use
+        # ff,ff_idx=freq_splitter_idx(self.nchan*fbin,0,self.nchan*fbin,self.bwchan/fbin,self.fch1-self.bwchan*0.5)
+        self.vif=vif
+        self.fbin=fbin
+        self.tbin=tbin
+        # self.ff_vif=ff
+        self.chan_idx=chan_idx
+        matrix=np.ones((self.nchan,self.fbin))*np.linspace(-0.5,0.5,self.fbin)*self.bwchan
+        ffgrid=(np.ones((self.nchan,self.fbin)).T*self.vif).T
+        vif=(ffgrid+matrix).flatten()
+        self.fgrid=vif
+        base = np.zeros((self.nchan*self.fbin, nsamp)) ## this is the grid
+        self.array=base
+
+
+    def pulse(self,t0,width,A,tau=10,alpha=4,dm=0,mode='gaussian'):
+        """Generate burst
         Parameters
         ----------
         mode : string
-            Enter pulse shape used for injection: coherent,scat,single
-            coherent: dynspec.spectra.single_pulse_smear, only smearing for DM offset
-            scat: dynspec.spectra.scat_pulse_smear
-            single: dynspec.spectra.single_pulse_smear
+            Enter pulse shape used for injection: gaussian,scat,scat_r
+            gaussian: TimeSeries.pulse, Gaussian pulse
+            scat: TimeSeries.scatp
+            scat_r: TimeSeries.inverse_scatp
         width : float
             This is the 1-sigma of the gaussian, in units of ms.
             Note: for the boxcar it is the full width of the boxcar
-        nsamp : int
-            This sets the length of the array. Must be long enough for the dispersion track.
         A : float
             This is now the channel amplitude of the pulse with no frequency variation applied. This is not the same for boxcar mode, this parameter decides the injected value of the boxcar.
         t0 : float
             Pulse position. This is in the units of time not time sample.
-
         """
-        self.dm=dm+dmoff
-        self.width=width
-        self.amplitude=A
-        self.t0=t0
-        self.pulse_nsamp=nsamp
-        tsamp=self.tsamp
-        time=np.arange(nsamp)*tsamp
-        bins=10
-        fbin=10
-        scrunchbw=self.bwchan/fbin
-        matrix=np.ones((nsamp,bins))*np.linspace(-0.5,0.5,bins)*tsamp
-        timematrix=(np.ones((nsamp,bins)).T*time).T
-        finergrid=(matrix+timematrix).flatten()
-        self.grid=finergrid
-        self.x_time=time
-        base = np.zeros((self.nchan*fbin, nsamp))
-        base2 = np.zeros((self.nchan*fbin, nsamp))
-        vif=self.ff_vif
-        smear=delta_t(dm,vif,scrunchbw) ## add the smear factor here to shift the pulse when considering smearing
-        smeared=np.sqrt(smear**2+width**2)
-        toas=np.array(delaypos(vif,scrunchbw,self.fch1,dm+dmoff))
-        # toas_withsmear=toas+np.sqrt(smear**2+width**2)
-        self.toas=toas
-        effbw=self.bwchan
-
-
-        if mode=="coherent":
-            coh_smear=delta_t(dmoff,vif,self.bwchan) ## add the smear factor here to shift the pulse when considering smearing
-            coh_smeared=np.sqrt(coh_smear**2+width**2)
-        else:
-            smear=delta_t(dm+dmoff,vif,self.bwchan) ## add the smear factor here to shift the pulse when considering smearing
-            smeared=np.sqrt(smear**2+width**2)
-        toas=np.array(delaypos(vif,self.bwchan,self.fch1,dmoff))
-        # toas_withsmear=toas#+np.sqrt(smear**2+width**2)
-        self.toas=toas
-        # self.bwchan=eff
-        for i in range(self.nchan*fbin):
-
-            # print(t0)
-            # print (ampx)
-            # print("channel",i)
-            if mode=='scat':
-                excess=toas[i]
-                ti=t0+excess
-                dm_p=np.mean(scat_pulse(finergrid,ti,tau,smeared[i],alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
-                # base[i]+=dm_p/np.max(dm_p)*A
-                # base2[i]+=dedisp_p/np.sum(dedisp_p)*A
-            elif mode=="single":
-                excess=toas[i]
-                ti=t0+excess
-                dm_p=np.mean(single_pulse(finergrid,ti,smeared[i],A).reshape(nsamp,-1),axis=1)
-                # base[i]+=dm_p/np.max(dm_p)*A
-                # base2[i]+=dedisp_p/np.sum(dedisp_p)*A
-            elif mode=="coherent": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
-                excess=toas[i]
-                ti=t0+excess
-                dm_p=np.mean(scat_pulse(finergrid,ti,tau,coh_smeared[i],alpha,A,vif[i]).reshape(nsamp,-1),axis=1)
-            base[i]+=dm_p/np.max(dm_p)*A
-                # base2[i]+=dedisp_p/np.sum(dedisp_p)*A
-
-        # snfactor=np.max(np.sum(base2,axis=0))
-        # print(snfactor,snfactor2)
-        self.model_original=base#/snfactor*A
-        self.model_burst=np.mean(base.reshape(self.nchan,fbin,nsamp),axis=1)
+        for i in range(self.nchan*self.fbin):
+            if mode == 'gaussian':
+                self.array[i]=self.tims.pulse(t0,width,A)
+            elif mode =='scat':
+                tscat=tau*(self.fgrid[i]/1000)**(-alpha)
+                self.array[i]=self.tims.scatp(t0,width,A,tscat)
+        # self.model_original=base#/snfactor*A
+        self.model_burst=np.mean(self.array.reshape(self.nchan,self.fbin,self.nsamp),axis=1)
         return self.model_burst
 
 def scat_pulse_smear(t,t0,tau1,dm,sigma,alpha,a,vi,bwchan):
@@ -494,12 +482,12 @@ def gaus_func(t,t0,sigi):
     ### normalisation factor is 1/np.sqrt(np.pi*2*(sigi**2)) replace A with this term for a total of 1 pdf
     return sit
 
-def scattering(t,t_0,tau1,alpha,v):
+def scattering(t,t_0,tau1,alpha=4,v=1000):
     ###tau=tau1/1000 ## ms
     flux=np.zeros(len(t))
     flux[t>=t_0]=np.exp(-(t[t>=t_0]-t_0)/(tau1*(v/1000)**(-alpha)))
     return flux
-def inverse_scattering(t,t_0,tau1,alpha,v):
+def inverse_scattering(t,t_0,tau1,alpha=4,v=1000):
     ###tau=tau1/1000 ## ms
     flux=np.zeros(len(t))
     flux[t<=t_0]=np.exp((t[t<=t_0]-t_0)/(tau1*(v/1000)**(-alpha)))
@@ -553,7 +541,7 @@ def freq_splitter_idx(n,skip,end,bwchan,fch1):
     ###
     dw=(end-skip)/n
     #print(dw,bwchan)
-    vi=np.arange(n)*dw*bwchan
+    vi=(np.arange(n)+0.5)*dw*bwchan
     base=fch1+skip*bwchan
     vi=base+vi
     chan_idx=np.arange(n)*dw+skip

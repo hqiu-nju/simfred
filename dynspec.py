@@ -8,6 +8,7 @@ from scipy.signal import convolve
 from matplotlib.gridspec import GridSpec
 import fbio
 import math as m
+
 class TimeSeries:
     def __init__(self,tsamp=1,nsamp=1000,bins=10):
         """initiate function for creating a mock time series. This sets up the frequency.
@@ -165,9 +166,9 @@ class spectra:
 
 
         """
-        t0=nsamp//4
+        t0=nsamp//3
         if self.bwchan > 0:
-            t0=nsamp//4*3
+            t0=nsamp//2*3
         self.dm=dm
         self.width=width
         self.amplitude=A
@@ -185,7 +186,7 @@ class spectra:
         self.x_time=time
         base = np.zeros((self.nchan*self.fbin, nsamp))
         # base2 = np.zeros((self.nchan*self.fbin, nsamp))
-        print(f"initialising grid, base shape is {np.shape(base)}")
+        # print(f"initialising grid, base shape is {np.shape(base)}")
         matrix=np.ones((self.nchan,self.fbin))*np.linspace(-0.5,0.5,self.fbin)*self.bwchan
         ffgrid=(np.ones((self.nchan,self.fbin)).T*self.vif).T
         vif=(ffgrid+matrix).flatten()
@@ -348,7 +349,7 @@ def scat_pulse_smear(t,t0,tau1,dm,sigma,alpha,a,vi,bwchan):
     vi=vi
     smear=delta_t(dm,vi,bwchan) ##ms
     # print (vi)
-    width=np.sqrt(sigma**2+smear**2)
+    width=np.sqrt((sigma*2)**2+smear**2)
     gt0=np.mean(t)
     pulse=gaus_func(t,t0,width/2) ## create pulse
     scat_corr=scattering(t,gt0,tau1,alpha,vi) ## create scatter kernel
@@ -369,7 +370,7 @@ def single_pulse_smear(t,t0,dm,sigma,a,vi,bwchan):
 #     print(ti)
     smear=delta_t(dm,vi,bwchan) ##msdelta_t(dm,v,bwchan)
 #     print(smear)
-    width=np.sqrt(sigma**2+smear**2)
+    width=np.sqrt((sigma*2)**2+smear**2)
     # print(vi,width)
     pulse=gaus_func(t,t0,width/2) ## create pulse
     # plt.plot(t,pulse)
@@ -397,7 +398,7 @@ def single_pulse(t,t0,sigma,a):
 #     print(smear)
     width=sigma
     # print(vi,width)
-    pulse=gaus_func(t,t0,width/2) ## create pulse
+    pulse=gaus_func(t,t0,width) ## create pulse
     # plt.plot(t,pulse)
     # plt.show()
     sf=pulse
@@ -419,7 +420,7 @@ def scat_pulse(t,t0,tau1,sigma,alpha,a,vi):
     # print (vi)
     kernel=t
     gt0=np.mean(kernel)
-    pulse=gaus_func(t,t0,sigma/2) ## create pulse
+    pulse=gaus_func(t,t0,sigma) ## create pulse
     scat_corr=scattering(kernel,gt0,tau1,alpha,vi) ## create scatter kernel
     # flux=convolve(scat_corr,pulse,'same')
     sf=convolve(pulse,scat_corr,'same',method='fft')
@@ -434,7 +435,7 @@ def invscat_pulse(t,t0,tau1,sigma,alpha,a,vi):
     # print (vi)
     kernel=t
     gt0=np.mean(kernel)
-    pulse=gaus_func(t,t0,sigma/2) ## create pulse
+    pulse=gaus_func(t,t0,sigma) ## create pulse
     scat_corr=inverse_scattering(kernel,gt0,tau1,alpha,vi) ## create scatter kernel
     # flux=convolve(scat_corr,pulse,'same')
     sf=convolve(pulse,scat_corr,'same',method='fft')

@@ -249,10 +249,10 @@ class spectra:
         #     base2[i]=np.roll(self.base[i],t0-p0s[i])
         # self.base2=base2
         self.burst_original=base.reshape(self.nchan,self.fbin,nsamp).mean(1)#/snfactor*A
-        p0s=np.argmax(self.burst_original,axis=1)
+        # p0s=np.argmax(self.burst_original,axis=1)
         dedispersed=np.empty(np.shape(self.burst_original))
         for i in range(self.burst_original.shape[0]):
-            dedispersed[i]=np.roll(self.burst_original[i],t0-p0s[i]) #-self.toas[i].astype(np.int)
+            dedispersed[i]=np.roll(self.burst_original[i],t0-self.toas[i]) #-self.toas[i].astype(np.int)
         self.burst_dedispersed=dedispersed#/snfactor*A
         return self.burst_original,self.burst_dedispersed
 
@@ -347,11 +347,11 @@ def scat_pulse_smear(t,t0,tau1,dm,sigma,alpha,a,vi,bwchan):
     # bwchan=self.bwchan
     ### vi is MHz
     vi=vi
-    smear=delta_t(dm,vi,bwchan) ##ms
+    smear=delta_t(dm,vi,bwchan) ##ms smear is 1 sigma
     # print (vi)
-    width=np.sqrt((sigma*2)**2+smear**2)
+    width=np.sqrt(sigma**2+smear**2)
     gt0=np.mean(t)
-    pulse=gaus_func(t,t0,width/2) ## create pulse
+    pulse=gaus_func(t,t0,width) ## create pulse
     scat_corr=scattering(t,gt0,tau1,alpha,vi) ## create scatter kernel
     # flux=convolve(scat_corr,pulse,'same')
     sf=convolve(pulse,scat_corr,'same',method='fft')
@@ -370,9 +370,9 @@ def single_pulse_smear(t,t0,dm,sigma,a,vi,bwchan):
 #     print(ti)
     smear=delta_t(dm,vi,bwchan) ##msdelta_t(dm,v,bwchan)
 #     print(smear)
-    width=np.sqrt((sigma*2)**2+smear**2)
+    width=np.sqrt(sigma**2+smear**2)
     # print(vi,width)
-    pulse=gaus_func(t,t0,width/2) ## create pulse
+    pulse=gaus_func(t,t0,width) ## create pulse
     # plt.plot(t,pulse)
     # plt.show()
     sf=pulse
@@ -517,7 +517,7 @@ def delta_t(dm,v,bwchan): ### calculate dm smearing
     B=bwchan ###1MHz channels in fly's eye change if needed
     inverse_v=1/v #### 1/GHz
     #print(v)
-    dt=8.3*dm*(inverse_v**3)*B/2.355 #### unit:us, 2 sigma---> 1 sigma
+    dt=8.3*dm*(inverse_v**3)*B/2.355 #### unit:us, fwhm ---> 1 sigma
     return dt/1000 ###us ---> ms
 
 

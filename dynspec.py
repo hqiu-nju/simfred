@@ -252,7 +252,7 @@ class spectra:
         # p0s=np.argmax(self.burst_original,axis=1)
         dedispersed=np.empty(np.shape(self.burst_original))
         for i in range(self.burst_original.shape[0]):
-            dedispersed[i]=np.roll(self.burst_original[i],t0-self.toas[i]) #-self.toas[i].astype(np.int)
+            dedispersed[i]=np.roll(self.burst_original[i],-self.toas[i].astype(np.int)) #-self.toas[i].astype(np.int)
         self.burst_dedispersed=dedispersed#/snfactor*A
         return self.burst_original,self.burst_dedispersed
 

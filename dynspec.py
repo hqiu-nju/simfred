@@ -104,14 +104,14 @@ class spectra:
         self.chan_idx=chan_idx
         # self.ff_idx=ff_idx
 
-    def create_filterbank(self,file_name,std=18,base=127):
+    def create_filterbank(self,file_name,std=np.sqrt(336),base=127):
         """Create a mock dynamic spectrum filterbank file.
         Parameters
         ----------
         file_name : string
             filename of filterbank
         std : float
-            standard deviation of white noise
+            standard deviation of white noise, for normalised noise after fscrunching, set to sqrt(nchan)
         base : float
             base level of array
         """
@@ -141,14 +141,15 @@ class spectra:
         array : numpy array object
             the burst array data to be injected into the filterbank object
         """
+        scaledarray=array*self.fil_std/np.sqrt(array.shape[0])
         bkg=np.random.randn(array.shape[0],array.shape[1])*self.fil_std+self.fil_base
-        imprint=(bkg+array).astype(np.uint8)
+        imprint=(bkg+scaledarray).astype(np.uint8)
         self.filterbank.writeblock(imprint)
         self.injected_array=imprint
 
 
-    def burst(self,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,fstart=0,fend=336,dmoff=0):
-        """Create a dispersed pulse. Outputs both the dedispered and dedispered pulse
+    def burst(self,t0=100,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,dmoff=0):
+        """Create a dispersed pulse in noiseless data. Outputs both the dedispered and dedispered pulse
         Parameters
         ----------
         mode : string
@@ -166,9 +167,9 @@ class spectra:
 
 
         """
-        t0=nsamp//3
-        if self.bwchan > 0:
-            t0=nsamp//2*3
+        # t0=nsamp//3*self.tsamp
+        # if self.bwchan > 0:
+        #     t0=nsamp//3*2*self.tsamp
         self.dm=dm
         self.width=width
         self.amplitude=A
@@ -218,17 +219,21 @@ class spectra:
                 # dedisp_p=np.mean(scat_pulse(finergrid,t_dedisp,tau,smeared[i],alpha,10,vif[i]).reshape(nsamp,-1),axis=1)
                 # base[i]+=dm_p/np.max(dm_p)*A
                 # base2[i]+=dedisp_p/np.max(dedisp_p)*A
+                base[i]+=dm_p/np.max(dm_p)*A
+
             elif mode=="single":
                 dm_p=np.mean(single_pulse(finergrid,ti,smeared[i],A).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
                 # dedisp_p=np.mean(single_pulse(finergrid,t_dedisp,smeared[i],A).reshape(nsamp,-1),axis=1)
                 # base[i]+=dm_p/np.max(dm_p)*A
                 # base2[i]+=dedisp_p/np.max(dedisp_p)*A
+                base[i]+=dm_p/np.max(dm_p)*A
+
             elif mode=="nosmear": #single_pulse_smear(t,t0,dm,dmerr,sigma,a,vi)
                 dm_p=np.mean(single_pulse(finergrid,ti,width,A).reshape(nsamp,-1),axis=1)
                 # print("dedisp file")
                 # dedisp_p=np.mean(single_pulse(finergrid,t_dedisp,width,A).reshape(nsamp,-1),axis=1)
-            base[i]+=dm_p/np.max(dm_p)*A
+                base[i]+=dm_p/np.max(dm_p)*A
             # base2[i]+=dedisp_p/np.max(dedisp_p)*A
 
         if show:
@@ -316,7 +321,7 @@ class fgrid:
 
 
     def pulse(self,t0,width,A,tau=10,alpha=4,dm=0,mode='gaussian'):
-        """Generate burst
+        """Simulates pulse in datagrid
         Parameters
         ----------
         mode : string
@@ -419,7 +424,7 @@ def scat_pulse(t,t0,tau1,sigma,alpha,a,vi):
 
     # print (vi)
     kernel=t
-    gt0=np.mean(kernel)
+    gt0=0
     pulse=gaus_func(t,t0,sigma) ## create pulse
     scat_corr=scattering(kernel,gt0,tau1,alpha,vi) ## create scatter kernel
     # flux=convolve(scat_corr,pulse,'same')
@@ -434,7 +439,7 @@ def invscat_pulse(t,t0,tau1,sigma,alpha,a,vi):
 
     # print (vi)
     kernel=t
-    gt0=np.mean(kernel)
+    gt0=0
     pulse=gaus_func(t,t0,sigma) ## create pulse
     scat_corr=inverse_scattering(kernel,gt0,tau1,alpha,vi) ## create scatter kernel
     # flux=convolve(scat_corr,pulse,'same')
@@ -511,6 +516,8 @@ def delta_t(dm,v,bwchan): ### calculate dm smearing
         frequency of channel MHz
     bwchan : float
         channel bandwidth MHz
+    ---------
+    Return smearing width in ms
 
     """
     v=v/1000 ###MHz ---> GHz

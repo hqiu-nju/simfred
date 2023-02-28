@@ -275,23 +275,25 @@ class spectra:
 
 class fgrid:
     def __init__(self,fch=1000,bwchan=1,nchan=336,tsamp=1,nsamp=1000,tbin=10,fbin=10):
-        """Simulate a burst
+        """Simulate a burst in a higher resolution grid. tgrid is the higher resolution while fgrid is the final dynamic higher resolution 
         Parameters
         ----------
         fch1 : float
-            First channel of array (MHz)
+            Upper frequency of array, not first channel frequency (MHz)
         bwchan: float
-            Channel bandwidth (MHz)
+            Final product Channel bandwidth (MHz)
         nchan : int
-            Number of channels
+            Number of channels of final product
         nsamp : int
             This sets the length of the array. Make it long enough for the dispersion/scattering track, use dynspec.tidm to estimate.
         tsamp : float
             time resolution (ms)
         nsamp : int
             This sets the length of the array. Must be long enough for scattering tail and dispersion track
-        bins : int
-            grid resolution of the array,
+        tbin : int
+            grid time resolution of the tgrid array,
+        fbin : int
+            grid frequency resolution of the fgrid array,
         """
         self.fch=fch
         self.bwchan=bwchan
@@ -307,11 +309,11 @@ class fgrid:
         vif,chan_idx=freq_splitter_idx(self.nchan,0,self.nchan,self.bwchan,self.fch)
          ### finer frequency grid use
         # ff,ff_idx=freq_splitter_idx(self.nchan*fbin,0,self.nchan*fbin,self.bwchan/fbin,self.fch1-self.bwchan*0.5)
-        self.vif=vif
+        self.vif=vif   ### frequency index
         self.fbin=fbin
         self.tbin=tbin
         # self.ff_vif=ff
-        self.chan_idx=chan_idx
+        self.chan_idx=chan_idx  ### channel index
         matrix=np.ones((self.nchan,self.fbin))*np.linspace(-0.5,0.5,self.fbin)*self.bwchan
         ffgrid=(np.ones((self.nchan,self.fbin)).T*self.vif).T
         vif=(ffgrid+matrix).flatten()
@@ -333,16 +335,17 @@ class fgrid:
             This is the 1-sigma of the gaussian, in units of ms.
             Note: for the boxcar it is the full width of the boxcar
         A : float
-            This is now the channel amplitude of the pulse with no frequency variation applied. This is not the same for boxcar mode, this parameter decides the injected value of the boxcar.
+            This is now the amplitude of the pulse with no frequency variation applied. This is not the same for boxcar mode, this parameter decides the injected value of the boxcar.
         t0 : float
             Pulse position. This is in the units of time not time sample.
         """
         for i in range(self.nchan*self.fbin):
+            tstart=t0+tidm(dm,self.fgrid[i],self.fch)
             if mode == 'gaussian':
-                self.array[i]=self.tims.pulse(t0,width,A)
+                self.array[i]=self.tims.pulse(tstart,width,A)
             elif mode =='scat':
-                tscat=tau*(self.fgrid[i]/1000)**(-alpha)
-                self.array[i]=self.tims.scatp(t0,width,A,tscat)
+                tscat=tau*(self.fgrid[i]/1000)**(-alpha)  ### tau is scaled to 1 GHz
+                self.array[i]=self.tims.scatp(tstart,width,A,tscat)
         # self.model_original=base#/snfactor*A
         self.model_burst=np.mean(self.array.reshape(self.nchan,self.fbin,self.nsamp),axis=1)
         return self.model_burst
@@ -428,9 +431,9 @@ def scat_pulse(t,t0,tau1,sigma,alpha,a,vi):
     pulse=gaus_func(t,t0,sigma) ## create pulse
     scat_corr=scattering(kernel,gt0,tau1,alpha,vi) ## create scatter kernel
     # flux=convolve(scat_corr,pulse,'same')
-    sf=convolve(pulse,scat_corr,'same',method='fft')
+    sf=convolve(pulse,scat_corr,'full')[:len(pulse)]
     # sn_norm=quick_snr(sf)
-    sn_norm=np.sum(sf)
+    sn_norm=np.max(sf)
 
     flux=sf/sn_norm### normalise
     return a*flux
@@ -443,9 +446,9 @@ def invscat_pulse(t,t0,tau1,sigma,alpha,a,vi):
     pulse=gaus_func(t,t0,sigma) ## create pulse
     scat_corr=inverse_scattering(kernel,gt0,tau1,alpha,vi) ## create scatter kernel
     # flux=convolve(scat_corr,pulse,'same')
-    sf=convolve(pulse,scat_corr,'same',method='fft')
+    sf=convolve(pulse,scat_corr,'full')[:len(pulse)]
     # sn_norm=quick_snr(sf)
-    sn_norm=np.sum(sf)
+    sn_norm=np.max(sf)
 
     flux=sf/sn_norm### normalise
     return a*flux

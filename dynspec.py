@@ -314,9 +314,7 @@ class fgrid:
         self.tbin=tbin
         # self.ff_vif=ff
         self.chan_idx=chan_idx  ### channel index
-        matrix=np.ones((self.nchan,self.fbin))*np.linspace(-0.5,0.5,self.fbin)*self.bwchan
-        ffgrid=(np.ones((self.nchan,self.fbin)).T*self.vif).T
-        vif=(ffgrid+matrix).flatten()
+        vif,chan_idx=freq_splitter_idx(self.nchan*fbin,0,self.nchan*fbin,bwchan/fbin,self.fch-self.bwchan*0.5)
         self.fgrid=vif
         base = np.zeros((self.nchan*self.fbin, nsamp)) ## this is the grid
         self.array=base

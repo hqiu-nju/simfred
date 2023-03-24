@@ -4,6 +4,7 @@ Sigproc utilities
 
 See here for format description: http://sigproc.sourceforge.net/sigproc.pdf
 Copyright (C) Keith Bannister 2011
+Converted to Python3 by Harry Qiu 2019
 """
 
 import struct

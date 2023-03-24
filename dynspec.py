@@ -57,7 +57,7 @@ class spectra:
         Parameters
         ----------
         fch1 : float
-            First channel frequency (MHz)
+            First channel centre frequency (MHz)
         nchan : int
             Total number of channels
         bwchan : float
@@ -65,7 +65,7 @@ class spectra:
         tsamp : float
             time resolution (ms)
         """
-        self.ftop=fch1-bwchan*0.5
+        # self.ftop=fch1+bwchan*0.5
         self.fch1=fch1
         self.bwchan=bwchan
         self.nchan=np.int(nchan)

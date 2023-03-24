@@ -60,7 +60,7 @@ def fluencebatch(fch1,bwchan,nchan,tsamp,mode,label,nsamp,npulse,sigmarange,dmra
             xset=np.random.rand()-0.5
             model.writenoise(nsamp=nsamp)
             model.writenoise(nsamp=nsamp)
-            base1,base2=model.burst(dm=j,A=50,width=i,mode=mode,nsamp=nsamp,offset=xset)
+            base1,base2=model.burst(t0=nsamp*tsamp/2,dm=j,A=50,width=i,mode=mode,nsamp=nsamp,offset=xset)
             # print(model.L2_snr())
             # print(i)
             # print(model.L2_snr()[0][:-2]+";"+str(dynspec.L2_snr(base2/model.L2_snr()[1]*50))+"\n")

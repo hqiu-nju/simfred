@@ -272,6 +272,12 @@ class spectra:
         # sf=base2
 
         return f"{self.dm};{self.width};{fwhm};{quadsn}\n",quadsn
+    def write_flux(self):
+        base2=self.burst_dedispersed
+        flux=L2_flux(base2)
+        return flux
+
+
 
 class fgrid:
     def __init__(self,fch=1000,bwchan=1,nchan=336,tsamp=1,nsamp=1000,tbin=10,fbin=10):
@@ -644,3 +650,18 @@ def rollingbox(base2):
         box_snr=np.sum(box)/np.sqrt(width)
         if box_snr > snr:
             snr=box_snr
+
+def L2_flux(base2):
+    ### Harry's fscrunch and L2 snr script with no noise, assume rms/std is 1
+    ydata=base2 #base2 is the clean burst array
+    fscrunched=np.mean((ydata.astype(np.float64)),axis=0)
+    mask=np.mean(base2,axis=0)>0 # no noise find where the pulse is after fscrunch
+    # fwhm=(m.sqrt(8.0*m.log(2.0)))*self.width
+    # print("rms",fscrun_rms)
+    sf=fscrunched[mask]
+    ### real snr here
+    flux=np.sum(sf)
+    # print(quadsn)
+    # sf=base2
+
+    return flux

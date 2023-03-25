@@ -392,7 +392,7 @@ def single_pulse_smear(t,t0,dm,sigma,a,vi,bwchan):
     # sn_norm=quick_snr(sf)
     sn_norm=np.sum(sf)
     if sn_norm==0.0:
-        print(f"warning check these parameters {vi} {t0},{width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
+        print(f"warning check these parameters channel{vi}, time={t0},width={width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
         # plt.plot(t,pulse)
         # plt.show()
 
@@ -418,7 +418,8 @@ def single_pulse(t,t0,sigma,a):
     # sn_norm=quick_snr(sf)
     sn_norm=np.max(sf)
     if sn_norm==0.0:
-        print(f"warning check these parameters{t0},{width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
+        print(f"warning check these parameters, time={t0},width={width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
+        # print(f"warning check these parameters{t0},{width}, gives max intensity {sn_norm}, pulse may be located out of array limits")
         # plt.plot(t,pulse)
         # plt.show()
 

@@ -50,7 +50,11 @@ def fluencebatch(fch1,bwchan,nchan,tsamp,mode,label,nsamp,npulse,sigmarange,dmra
     w=open(f"{testname}.txt",'w')
     ### create file
     printloop=0
-    print("starting injection\n")
+    if bwchan>0:        
+        tstart=nsamp*0.75*tsamp
+    else:
+        tstart=nsamp*0.25*tsamp
+    print(f"starting injection tstart={tstart} bwchan={bwchan}\n")
     for i in sigmarange:  ### intrinsic standard deviation sigma
         for j in dmrange:  ### DM
             model.create_filterbank(f"{testname}_dm{np.round(j,0)}_width{np.round(i,1)}",std=18,base=127)
@@ -60,7 +64,7 @@ def fluencebatch(fch1,bwchan,nchan,tsamp,mode,label,nsamp,npulse,sigmarange,dmra
             xset=np.random.rand()-0.5
             model.writenoise(nsamp=nsamp)
             model.writenoise(nsamp=nsamp)
-            base1,base2=model.burst(t0=nsamp*tsamp/2,dm=j,A=50,width=i,mode=mode,nsamp=nsamp,offset=xset)
+            base1,base2=model.burst(t0=tstart,dm=j,A=50,width=i,mode=mode,nsamp=nsamp,offset=xset)
             # print(model.L2_snr())
             # print(i)
             # print(model.L2_snr()[0][:-2]+";"+str(dynspec.L2_snr(base2/model.L2_snr()[1]*50))+"\n")
@@ -83,6 +87,10 @@ def snrbatch(fch1,bwchan,nchan,tsamp,mode,label,nsamp,npulse,sigmarange,dmrange,
     w=open(f"{testname}.txt",'w')
     ### create file
     printloop=0
+    if bwchan<0:        
+        tstart=nsamp*0.75*tsamp
+    else:
+        tsign=nsamp*0.25*tsamp
     print("starting injection\n")
     for i in sigmarange:  ### intrinsic standard deviation sigma
         for j in dmrange:  ### DM
@@ -93,7 +101,7 @@ def snrbatch(fch1,bwchan,nchan,tsamp,mode,label,nsamp,npulse,sigmarange,dmrange,
             xset=np.random.rand()-0.5
             model.writenoise(nsamp=nsamp)
             model.writenoise(nsamp=nsamp)
-            base1,base2=model.burst(dm=j,A=50,width=i,mode=mode,nsamp=nsamp,offset=xset)
+            base1,base2=model.burst(t0=tstart,dm=j,A=50,width=i,mode=mode,nsamp=nsamp,offset=xset)
             # print(model.L2_snr())
             # print(i)
             # print(model.L2_snr()[0][:-2]+";"+str(dynspec.L2_snr(base2/model.L2_snr()[1]*50))+"\n")

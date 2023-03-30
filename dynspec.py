@@ -148,7 +148,7 @@ class spectra:
         self.injected_array=imprint
 
 
-    def burst(self,t0=100,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,dmoff=0):
+    def burst(self,t0=100,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,dmoff=0,bandfrac=None):
         """Create a dispersed pulse in noiseless data. Outputs both the dedispered and dedispered pulse
         Parameters
         ----------
@@ -164,7 +164,8 @@ class spectra:
             This sets the length of the array. Must be long enough for the dispersion track.
         A : float
             This is now the channel amplitude of the pulse with no frequency variation applied. This is not the same for boxcar mode, this parameter decides the injected value of the boxcar.
-
+        bandfrac : float
+            array for channel spectra, input an array the length of channels to scale emission/mimic scintillation.
 
         """
         # t0=nsamp//3*self.tsamp
@@ -199,6 +200,8 @@ class spectra:
         # toas_withsmear=toas+np.sqrt(smear**2+width**2)
         self.toas=np.array(delaypos(self.vif,self.bwchan,self.fch1,dm+dmoff))
         effbw=self.bwchan
+        if bandfrac is None:
+            bandfrac=np.ones(self.nchan)
         for i in range(self.nchan*self.fbin):
             # excess=self.toas[i//self.fbin]-toas[i]
             shift=toas[i]
@@ -253,7 +256,7 @@ class spectra:
         # for i in range(self.base.shape[0]):
         #     base2[i]=np.roll(self.base[i],t0-p0s[i])
         # self.base2=base2
-        self.burst_original=base.reshape(self.nchan,self.fbin,nsamp).mean(1)#/snfactor*A
+        self.burst_original= np.transpose(base.reshape(self.nchan,self.fbin,nsamp).mean(1).T *bandfrac)#/snfactor*A
         # p0s=np.argmax(self.burst_original,axis=1)
         dedispersed=np.empty(np.shape(self.burst_original))
         for i in range(self.burst_original.shape[0]):

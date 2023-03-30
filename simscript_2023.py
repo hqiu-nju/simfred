@@ -90,7 +90,7 @@ def snrbatch(fch1,bwchan,nchan,tsamp,mode,label,nsamp,npulse,sigmarange,dmrange,
     if bwchan<0:        
         tstart=nsamp*0.75*tsamp
     else:
-        tsign=nsamp*0.25*tsamp
+        tstart=nsamp*0.25*tsamp
     print("starting injection\n")
     for i in sigmarange:  ### intrinsic standard deviation sigma
         for j in dmrange:  ### DM

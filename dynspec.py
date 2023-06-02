@@ -148,7 +148,7 @@ class spectra:
         self.injected_array=imprint
 
 
-    def burst(self,t0=100,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,dmoff=0,bandfrac=None):
+    def burst(self,t0=100,dm=200,width=1,A=20,nsamp=5000,mode="boxcar",show=False,tau=0.1,alpha=4,offset=0.,dmoff=0,drift=0,bandfrac=None):
         """Create a dispersed pulse in noiseless data. Outputs both the dedispered and dedispered pulse
         Parameters
         ----------
@@ -195,10 +195,10 @@ class spectra:
         self.ff_vif=vif
         smear=delta_t(dm,vif,scrunchbw) ## add the smear factor here to shift the pulse when considering smearing
         smeared=np.sqrt(smear**2+width**2)
-        toas=np.array(delaypos(self.ff_vif,scrunchbw,self.fch1,dm+dmoff))
+        toas=np.array(delaypos(self.ff_vif,scrunchbw,self.fch1,dm+dmoff)+pdrift(drift,self.ff_vif,self.fch1))
         self.ff_toas=toas
         # toas_withsmear=toas+np.sqrt(smear**2+width**2)
-        self.toas=np.array(delaypos(self.vif,self.bwchan,self.fch1,dm+dmoff))
+        self.toas=np.array(delaypos(self.vif,self.bwchan,self.fch1,dm)+pdrift(drift,self.vif,self.fch1))
         effbw=self.bwchan
         if bandfrac is None:
             bandfrac=np.ones(self.nchan)
@@ -258,10 +258,7 @@ class spectra:
         # self.base2=base2
         self.burst_original= np.transpose(base.reshape(self.nchan,self.fbin,nsamp).mean(1).T *bandfrac)#/snfactor*A
         # p0s=np.argmax(self.burst_original,axis=1)
-        dedispersed=np.empty(np.shape(self.burst_original))
-        for i in range(self.burst_original.shape[0]):
-            dedispersed[i]=np.roll(self.burst_original[i],-self.toas[i].astype(np.int)) #-self.toas[i].astype(np.int)
-        self.burst_dedispersed=dedispersed#/snfactor*A
+        self.burst_dedispersed=dedisperse(self.burst_original,dm=self.dm,vif=self.vif,fch1=self.fch1,tsamp=self.tsamp)#/snfactor*A
         return self.burst_original,self.burst_dedispersed
 
     # def model_pulse(self)
@@ -283,7 +280,7 @@ class spectra:
 
 
 class fgrid:
-    def __init__(self,fch=1000,bwchan=1,nchan=336,tsamp=1,nsamp=1000,tbin=10,fbin=10):
+    def __init__(self,fch1=1000,bwchan=1,nchan=336,tsamp=1,nsamp=1000,tbin=10,fbin=10):
         """Simulate a burst in a higher resolution grid. tgrid is the higher resolution while fgrid is the final dynamic higher resolution 
         Parameters
         ----------
@@ -304,7 +301,7 @@ class fgrid:
         fbin : int
             grid frequency resolution of the fgrid array,
         """
-        self.fch=fch
+        self.fch1=fch1
         self.bwchan=bwchan
         self.nchan=nchan
         self.tsamp=tsamp
@@ -315,7 +312,7 @@ class fgrid:
         self.tims=tims
         self.tgrid=tims.grid
         self.x_time=tims.x_time
-        vif,chan_idx=freq_splitter_idx(self.nchan,0,self.nchan,self.bwchan,self.fch)
+        vif,chan_idx=freq_splitter_idx(self.nchan,0,self.nchan,self.bwchan,self.fch1)
          ### finer frequency grid use
         # ff,ff_idx=freq_splitter_idx(self.nchan*fbin,0,self.nchan*fbin,self.bwchan/fbin,self.fch1-self.bwchan*0.5)
         self.vif=vif   ### frequency index
@@ -323,13 +320,13 @@ class fgrid:
         self.tbin=tbin
         # self.ff_vif=ff
         self.chan_idx=chan_idx  ### channel index
-        vif,chan_idx=freq_splitter_idx(self.nchan*fbin,0,self.nchan*fbin,bwchan/fbin,self.fch-self.bwchan*0.5)
+        vif,chan_idx=freq_splitter_idx(self.nchan*fbin,0,self.nchan*fbin,bwchan/fbin,self.fch1-self.bwchan*0.5)
         self.fgrid=vif
         base = np.zeros((self.nchan*self.fbin, nsamp)) ## this is the grid
         self.array=base
 
 
-    def pulse(self,t0,width,A,tau=10,alpha=4,dm=0,mode='gaussian'):
+    def pulse(self,t0,width,A,tau=10,alpha=4,dm=0,mode='gaussian',drift=0,dmerr=0):
         """Simulates pulse in datagrid
         Parameters
         ----------
@@ -341,13 +338,17 @@ class fgrid:
         width : float
             This is the 1-sigma of the gaussian, in units of ms.
             Note: for the boxcar it is the full width of the boxcar
+        dm : float
+            This is the dedispersed DM (does not cause time arrival delay),use this to mimic smearing effects
         A : float
             This is now the amplitude of the pulse with no frequency variation applied. This is not the same for boxcar mode, this parameter decides the injected value of the boxcar.
         t0 : float
             Pulse position. This is in the units of time not time sample.
         """
         for i in range(self.nchan*self.fbin):
-            tstart=t0+tidm(dm,self.fgrid[i],self.fch)
+            tstart=t0+tidm(dmerr,self.fgrid[i],self.fch1)+pdrift(drift,self.fgrid[i],self.fch1)
+            smear=delta_t(dm+dmerr,self.fgrid[i],self.bwchan/self.fbin) ## add the smear factor here to shift the pulse when considering smearing
+            smeared=np.sqrt(smear**2+width**2)
             if mode == 'gaussian':
                 self.array[i]=self.tims.pulse(tstart,width,A)
             elif mode =='scat':
@@ -356,6 +357,13 @@ class fgrid:
         # self.model_original=base#/snfactor*A
         self.model_burst=np.mean(self.array.reshape(self.nchan,self.fbin,self.nsamp),axis=1)
         return self.model_burst
+
+def dedisperse(data,dm,vif,fch1,tsamp):
+    reversetoas=tidm(dm,vif,fch1)//tsamp
+    dedispersed=np.empty(np.shape(data))
+    for i in range(data.shape[0]):
+            dedispersed[i]=np.roll(data[i],-reversetoas[i].astype(np.int32))
+    return dedispersed
 
 def scat_pulse_smear(t,t0,tau1,dm,sigma,alpha,a,vi,bwchan):
     # fch1=self.fch1
@@ -382,9 +390,9 @@ def single_pulse_smear(t,t0,dm,sigma,a,vi,bwchan):
     # fch1=self.fch1
     # bwchan=self.bwchan
     # print (t0)
-#     print(ti)
+    #print(ti)
     smear=delta_t(dm,vi,bwchan) ##msdelta_t(dm,v,bwchan)
-#     print(smear)
+    # print(smear)
     width=np.sqrt(sigma**2+smear**2)
     # print(vi,width)
     pulse=gaus_func(t,t0,width) ## create pulse
@@ -409,8 +417,8 @@ def single_pulse(t,t0,sigma,a):
     #dmerr=dmerr ### smaller
     # fch1=self.fch1
     # print (t0)
-#     print(ti)
-#     print(smear)
+    # print(ti)
+    # print(smear)
     width=sigma
     # print(vi,width)
     pulse=gaus_func(t,t0,width) ## create pulse
@@ -516,7 +524,15 @@ def tidm(dmerr,vi,fch1): ## dispersion time delay offset
     ### ftop is in GHz
     ti=4.1488*dmerr*(vi**(-beta)-ftop**(-beta)) ### ms
     return ti ### ms
-
+def pdrift(driftrate,vi,fch1):
+    ### calculate a drift rate for subpulses
+    ### drift rate units are in us/MHz.
+    ### positive drift rate means delay in lower frequencies!(?)
+    vi=vi## MHz
+    ftop=fch1 ### MHz
+    tshift=driftrate*(fch1-vi)/1000  ### positive dv needs positive drift rate to shift to later time/ positive shift
+    ### drift rate units are ms or tsamp/GHz ?
+    return tshift
 def delta_t(dm,v,bwchan): ### calculate dm smearing
     """Calculate dm smearing
     Parameters
@@ -545,7 +561,8 @@ def delta_t(dm,v,bwchan): ### calculate dm smearing
 def get_fwhm(i):
     fwhm=(m.sqrt(8.0*m.log(2.0)))*i
     return fwhm
-def delaypos(f,bwchan,fch1,dm):
+def delaypos(f,bwchan,fch1,dm): ##this function seems to be an overhaul of tidm, should be removed/deprecated
+    ## f is list of frequencies, 
     ftop=fch1
     #print(bwchan)
     times=[]

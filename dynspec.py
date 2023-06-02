@@ -345,15 +345,17 @@ class fgrid:
         t0 : float
             Pulse position. This is in the units of time not time sample.
         """
-        for i in range(self.nchan*self.fbin):
-            tstart=t0+tidm(dmerr,self.fgrid[i],self.fch1)+pdrift(drift,self.fgrid[i],self.fch1)
-            smear=delta_t(dm+dmerr,self.fgrid[i],self.bwchan/self.fbin) ## add the smear factor here to shift the pulse when considering smearing
-            smeared=np.sqrt(smear**2+width**2)
-            if mode == 'gaussian':
-                self.array[i]=self.tims.pulse(tstart,width,A)
-            elif mode =='scat':
-                tscat=tau*(self.fgrid[i]/1000)**(-alpha)  ### tau is scaled to 1 GHz
-                self.array[i]=self.tims.scatp(tstart,width,A,tscat)
+        fbin=self.fbin
+        for i in range(self.nchan):
+            for j in range(fbin):
+                tstart=t0+tidm(dm,self.fgrid[i*fbin+j],self.fgrid[i*fbin])+tidm(dmerr,self.fgrid[i*fbin+j],self.fch1)+pdrift(drift,self.fgrid[i*fbin+j],self.fch1)
+                smear=delta_t(dm+dmerr,self.fgrid[i*fbin+j],self.bwchan/self.fbin) ## add the smear factor here to shift the pulse when considering smearing
+                smeared=np.sqrt(smear**2+width**2)
+                if mode == 'gaussian':
+                    self.array[i*fbin+j]=self.tims.pulse(tstart,width,A)
+                elif mode =='scat':
+                    tscat=tau*(self.fgrid[i*fbin+j]/1000)**(-alpha)  ### tau is scaled to 1 GHz
+                    self.array[i*fbin+j]=self.tims.scatp(tstart,width,A,tscat)
         # self.model_original=base#/snfactor*A
         self.model_burst=np.mean(self.array.reshape(self.nchan,self.fbin,self.nsamp),axis=1)
         return self.model_burst

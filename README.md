@@ -6,7 +6,7 @@ The simulation models are setup in dynspec.py, please link fbio.py and dynspec.p
 
 A basic example to mass generate FRBs is shown in pifa.py. Pifa is from the word 批发, which means bulk buying....
 
-Latest example script to Qiu 2023 is simscript_2023.py
+Latest example script to Qiu et al. 2023 is simscript_2023.py
 
 An example to use the models to fit FRB pulse profiles is in dynspec example.ipynb
 
